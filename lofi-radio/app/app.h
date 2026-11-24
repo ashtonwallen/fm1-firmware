@@ -20,7 +20,7 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x31464F4Cu           /* "LOF1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                  /* 2: 1.1 (its engine plays a format-1 project's settings as they are) */
 #define NSTYLES EN_NSTYLES
 
 typedef struct {

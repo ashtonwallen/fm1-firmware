@@ -58,29 +58,34 @@ void en_param_text(int i, int v, char *buf)
 /* ------------------------------------------------------------ styles --- */
 /* the user's ten (Swing Dust Tempo Mood, Keys Drums Bass Melody, Tone Rain) and the style's own flavour:
  * keys 0 Rhodes, 1 Wurli, 2 felt piano; snare 0 snare, 1 side-stick, 2 both; hats how busy; mel 0 muted lead,
- * 1 vibraphone, 2 either; back: the snare's lay-back (ms); grooves: which (bit i); verb: the room's send */
+ * 1 vibraphone, 2 either; back: the snare's lay-back (ms); grooves: which (bit i); verb: the room's send;
+ * kit: the extra drums it may use (brushes, a rim click, a shaker); inst: the guests a track may bring in (a nylon
+ * guitar, a muted trumpet, a sine sub, chopped vocal) */
+enum { KT_BRUSH = 1, KT_CLICK = 2, KT_SHAKER = 4 };
+enum { IN_GTR = 1, IN_TPT = 2, IN_SUB = 4, IN_VOX = 8 };
 typedef struct {
     const char *name;
     int8_t v[P_NSTYLE];
     uint8_t keys, snare, hats, mel, back, verb, label;
     uint16_t grooves;
+    uint8_t kit, inst;
 } style_t;
 static const style_t STYLES[EN_NSTYLES] = {
     /*                 Swi Dus Tem Moo  Key Drm Bas Mel  Ton Rai    keys sn hats mel back verb label grooves */
-    {"Study",          {45, 35, 80, 40, 70, 70, 70, 50, 55, 0},    0, 0, 50, 2, 12, 40, 0, 0x00FF},
-    {"Rainy Window",   {40, 45, 72, 70, 75, 55, 65, 45, 40, 60},   0, 1, 35, 1, 16, 55, 1, 0x00B5},
-    {"Jazz Cafe",      {62, 30, 88, 10, 75, 70, 75, 60, 66, 0},    0, 0, 70, 2, 8, 45, 2, 0x005B},
-    {"Late Bus",       {50, 40, 76, 75, 70, 65, 70, 40, 45, 15},   1, 1, 40, 0, 14, 45, 3, 0x00D6},
-    {"Sunday",         {38, 25, 84, 25, 70, 65, 65, 55, 62, 0},    2, 0, 55, 1, 10, 40, 4, 0x003F},
-    {"Vinyl Dust",     {48, 85, 78, 50, 70, 70, 70, 45, 35, 0},    0, 0, 50, 0, 12, 40, 5, 0x00FF},
-    {"Tokyo Night",    {44, 35, 82, 45, 70, 70, 75, 55, 55, 10},   0, 1, 60, 0, 10, 50, 6, 0x00AD},
-    {"Snow Day",       {30, 30, 70, 60, 75, 50, 60, 50, 40, 0},    2, 1, 30, 1, 14, 60, 7, 0x0095},
-    {"Library",        {40, 20, 74, 50, 70, 45, 60, 35, 45, 0},    2, 1, 25, 1, 12, 45, 8, 0x0085},
-    {"Midnight Tea",   {46, 40, 72, 85, 70, 60, 70, 45, 38, 20},   1, 0, 40, 1, 16, 55, 9, 0x00F4},
-    {"Old Tape",       {50, 75, 80, 55, 70, 70, 70, 45, 30, 0},    1, 0, 50, 0, 12, 40, 10, 0x00FF},
-    {"Sleepy Cat",     {55, 35, 70, 55, 72, 50, 65, 40, 35, 0},    0, 1, 30, 1, 18, 50, 11, 0x0093},
-    {"Golden Hour",    {42, 30, 86, 20, 70, 70, 70, 60, 70, 0},    0, 0, 65, 0, 8, 40, 0, 0x007B},
-    {"Rooftop",        {52, 35, 90, 35, 70, 75, 75, 55, 62, 0},    1, 2, 75, 2, 10, 40, 2, 0x005F},
+    {"Study",          {45, 35, 80, 40, 70, 70, 70, 50, 55, 0},    0, 0, 50, 2, 12, 40, 0, 0x00FF, KT_SHAKER, IN_GTR | IN_VOX | IN_SUB},
+    {"Rainy Window",   {40, 45, 72, 70, 75, 55, 65, 45, 40, 60},   0, 1, 35, 1, 16, 55, 1, 0x00B5, KT_BRUSH | KT_SHAKER, IN_GTR | IN_VOX | IN_SUB},
+    {"Jazz Cafe",      {62, 30, 88, 10, 75, 70, 75, 60, 66, 0},    0, 0, 70, 2, 8, 45, 2, 0x005B, KT_BRUSH | KT_CLICK, IN_TPT | IN_GTR},
+    {"Late Bus",       {50, 40, 76, 75, 70, 65, 70, 40, 45, 15},   1, 1, 40, 0, 14, 45, 3, 0x00D6, KT_CLICK | KT_SHAKER, IN_TPT | IN_SUB | IN_VOX},
+    {"Sunday",         {38, 25, 84, 25, 70, 65, 65, 55, 62, 0},    2, 0, 55, 1, 10, 40, 4, 0x003F, KT_BRUSH | KT_SHAKER, IN_GTR | IN_TPT},
+    {"Vinyl Dust",     {48, 85, 78, 50, 70, 70, 70, 45, 35, 0},    0, 0, 50, 0, 12, 40, 5, 0x00FF, KT_CLICK, IN_VOX | IN_TPT | IN_SUB},
+    {"Tokyo Night",    {44, 35, 82, 45, 70, 70, 75, 55, 55, 10},   0, 1, 60, 0, 10, 50, 6, 0x00AD, KT_SHAKER | KT_CLICK, IN_VOX | IN_SUB | IN_TPT},
+    {"Snow Day",       {30, 30, 70, 60, 75, 50, 60, 50, 40, 0},    2, 1, 30, 1, 14, 60, 7, 0x0095, KT_BRUSH, IN_GTR | IN_SUB},
+    {"Library",        {40, 20, 74, 50, 70, 45, 60, 35, 45, 0},    2, 1, 25, 1, 12, 45, 8, 0x0085, KT_BRUSH | KT_SHAKER, IN_GTR | IN_SUB},
+    {"Midnight Tea",   {46, 40, 72, 85, 70, 60, 70, 45, 38, 20},   1, 0, 40, 1, 16, 55, 9, 0x00F4, KT_BRUSH | KT_CLICK, IN_TPT | IN_VOX | IN_SUB},
+    {"Old Tape",       {50, 75, 80, 55, 70, 70, 70, 45, 30, 0},    1, 0, 50, 0, 12, 40, 10, 0x00FF, KT_CLICK | KT_SHAKER, IN_VOX | IN_GTR},
+    {"Sleepy Cat",     {55, 35, 70, 55, 72, 50, 65, 40, 35, 0},    0, 1, 30, 1, 18, 50, 11, 0x0093, KT_BRUSH, IN_GTR | IN_SUB | IN_VOX},
+    {"Golden Hour",    {42, 30, 86, 20, 70, 70, 70, 60, 70, 0},    0, 0, 65, 0, 8, 40, 0, 0x007B, KT_SHAKER | KT_CLICK, IN_TPT | IN_GTR},
+    {"Rooftop",        {52, 35, 90, 35, 70, 75, 75, 55, 62, 0},    1, 2, 75, 2, 10, 40, 2, 0x005F, KT_CLICK | KT_SHAKER, IN_TPT | IN_VOX | IN_SUB},
 };
 const char *en_style_name(int i) { return STYLES[(i % EN_NSTYLES + EN_NSTYLES) % EN_NSTYLES].name; }
 uint8_t en_style_label(int i) { return STYLES[(i % EN_NSTYLES + EN_NSTYLES) % EN_NSTYLES].label; }
@@ -93,13 +98,18 @@ void en_style_recipe(int i, int16_t *par)
 }
 
 /* ------------------------------------------------------------ harmony --- */
-enum { Q_MAJ7, Q_MAJ9, Q_M7, Q_M9, Q_M11, Q_DOM9, Q_DOM13, Q_7B9, Q_M7B5, Q_M6, Q_69, Q_9SUS, Q_NQ };
-static const char *const Q_NAME[Q_NQ] = {"maj7", "maj9", "m7", "m9", "m11", "9", "13", "7b9", "m7b5", "m6", "6/9", "9sus"};
+enum { Q_MAJ7, Q_MAJ9, Q_M7, Q_M9, Q_M11, Q_DOM9, Q_DOM13, Q_7B9, Q_M7B5, Q_M6, Q_69, Q_9SUS,
+       Q_MAJ13, Q_MAJ9S11, Q_7ALT, Q_13S11, Q_NQ };     /* (16 at most: the screen hashes it in four bits) */
+static const char *const Q_NAME[Q_NQ] = {"maj7", "maj9", "m7", "m9", "m11", "9", "13", "7b9", "m7b5", "m6", "6/9", "9sus",
+                                         "maj13", "maj#11", "7alt", "13#11"};
 /* rootless voicings (the bass has the root): four notes, semitones above the chord's root */
 static const int8_t Q_VOICE[Q_NQ][4] = {
     {4, 7, 11, 12}, {4, 7, 11, 14}, {3, 7, 10, 12}, {3, 7, 10, 14}, {3, 10, 14, 17}, {4, 10, 14, 19},
     {4, 10, 14, 21}, {4, 10, 13, 19}, {3, 6, 10, 12}, {3, 7, 9, 14}, {4, 9, 14, 19}, {5, 10, 14, 19},
+    {4, 11, 14, 21}, {4, 11, 14, 18}, {4, 10, 15, 20}, {4, 10, 18, 21},
 };
+static int q_dom(int q) { return q == Q_DOM9 || q == Q_DOM13 || q == Q_7B9 || q == Q_9SUS || q == Q_7ALT || q == Q_13S11; }
+static int q_maj(int q) { return q == Q_MAJ7 || q == Q_MAJ9 || q == Q_69 || q == Q_MAJ13 || q == Q_MAJ9S11; }
 const char *en_chord_name(int root, int q, char *buf)
 {
     put_s(put_s(buf, EN_NOTE_NAME[(root % 12 + 12) % 12]), Q_NAME[q < 0 || q >= Q_NQ ? 0 : q]);
@@ -132,6 +142,31 @@ static const prog_t PROGS[] = {
     {84, 1, 2, {{0, Q_M9, 8}, {5, Q_M9, 8}}},                                           /* i iv */
     {88, 1, 4, {{0, Q_M9, 4}, {8, Q_MAJ9, 4}, {5, Q_M9, 4}, {7, Q_7B9, 4}}},           /* i VI iv V */
     {95, 1, 4, {{0, Q_M11, 4}, {10, Q_69, 4}, {8, Q_MAJ7, 4}, {7, Q_7B9, 4}}},         /* i bVII bVI V */
+    /* 1.1 */
+    {2, 0, 4, {{0, Q_MAJ13, 4}, {2, Q_M9, 4}, {4, Q_M7, 4}, {9, Q_7ALT, 4}}},          /* I ii iii VI7alt */
+    {5, 0, 4, {{0, Q_MAJ9, 4}, {9, Q_7ALT, 4}, {2, Q_M9, 4}, {7, Q_DOM13, 4}}},        /* I VI7 ii V */
+    {10, 0, 4, {{4, Q_M7, 4}, {9, Q_7B9, 4}, {2, Q_M9, 4}, {7, Q_7ALT, 4}}},           /* iii VI ii V */
+    {14, 0, 3, {{2, Q_M9, 4}, {1, Q_13S11, 4}, {0, Q_MAJ9, 8}}},                       /* ii bII7 I: the tritone */
+    {20, 0, 4, {{5, Q_MAJ9, 4}, {7, Q_9SUS, 4}, {4, Q_M7, 4}, {9, Q_M9, 4}}},          /* IV V iii vi */
+    {24, 0, 2, {{0, Q_MAJ9S11, 8}, {5, Q_MAJ13, 8}}},                                   /* a lydian float */
+    {30, 0, 4, {{0, Q_MAJ7, 4}, {9, Q_M9, 4}, {5, Q_MAJ9, 4}, {7, Q_9SUS, 4}}},        /* I vi IV V */
+    {32, 0, 4, {{2, Q_M11, 4}, {7, Q_DOM13, 4}, {4, Q_M7, 4}, {9, Q_7B9, 4}}},         /* ii V iii VI */
+    {38, 0, 4, {{5, Q_MAJ7, 4}, {4, Q_M7, 4}, {3, Q_MAJ7, 4}, {2, Q_M9, 4}}},          /* IV iii bIII ii, down */
+    {40, 0, 3, {{5, Q_M9, 4}, {10, Q_DOM13, 4}, {0, Q_MAJ9, 8}}},                      /* the backdoor: iv bVII I */
+    {46, 0, 4, {{9, Q_M9, 4}, {2, Q_M9, 4}, {7, Q_9SUS, 4}, {0, Q_MAJ9, 4}}},          /* vi ii V I */
+    {48, 0, 4, {{0, Q_69, 4}, {4, Q_M7, 4}, {9, Q_M9, 4}, {5, Q_MAJ9, 4}}},            /* I iii vi IV */
+    {54, 0, 4, {{5, Q_MAJ9, 4}, {5, Q_M6, 4}, {0, Q_MAJ9, 4}, {9, Q_M9, 4}}},          /* IV iv I vi */
+    {58, 0, 4, {{5, Q_MAJ7, 4}, {4, Q_7B9, 4}, {9, Q_M9, 4}, {0, Q_MAJ7, 4}}},         /* IV III7 vi I */
+    {62, 0, 3, {{8, Q_MAJ7, 4}, {10, Q_DOM9, 4}, {0, Q_MAJ9, 8}}},                     /* bVI bVII I, borrowed */
+    {52, 1, 4, {{0, Q_M9, 4}, {5, Q_M9, 4}, {10, Q_DOM13, 4}, {3, Q_MAJ9, 4}}},        /* i iv bVII bIII */
+    {60, 1, 2, {{0, Q_M11, 8}, {8, Q_MAJ9S11, 8}}},                                     /* i bVI, floating */
+    {66, 1, 4, {{0, Q_M9, 4}, {10, Q_69, 4}, {8, Q_MAJ7, 4}, {10, Q_DOM9, 4}}},        /* i bVII bVI bVII */
+    {68, 1, 4, {{0, Q_M9, 4}, {0, Q_M11, 4}, {2, Q_M7B5, 4}, {7, Q_7ALT, 4}}},         /* i ii V */
+    {72, 1, 4, {{0, Q_M9, 4}, {5, Q_M9, 4}, {7, Q_M7, 4}, {8, Q_MAJ9, 4}}},            /* i iv v bVI */
+    {80, 1, 4, {{8, Q_MAJ9, 4}, {7, Q_7ALT, 4}, {0, Q_M9, 4}, {5, Q_M9, 4}}},          /* bVI V i iv */
+    {86, 1, 4, {{5, Q_M9, 4}, {7, Q_M7, 4}, {0, Q_M9, 4}, {0, Q_M11, 4}}},             /* iv v i */
+    {91, 1, 2, {{0, Q_M9, 8}, {1, Q_MAJ9S11, 8}}},                                      /* i bII, phrygian */
+    {98, 1, 4, {{0, Q_M11, 4}, {8, Q_MAJ7, 4}, {5, Q_M9, 4}, {7, Q_7ALT, 4}}},         /* i bVI iv V */
 };
 #define NPROGS (sizeof PROGS / sizeof PROGS[0])
 
@@ -399,10 +434,10 @@ static struct {
     float ph, inc, tinc, amp, peak, sus, idx;
     float lp;
     int32_t gate;
-    uint8_t on, atk;
+    uint8_t on, atk, sub;                        /* sub: a soft sine sub, the guest bass */
     int note;
 } bs;
-static void bass_on(int note, float vel, int32_t gate)
+static void bass_on(int note, float vel, int32_t gate, int sub)
 {
     float f = mtof((float)note);
     if (!bs.on || bs.amp < 0.05f)                /* from silence: start there; legato: glide */
@@ -413,7 +448,10 @@ static void bass_on(int note, float vel, int32_t gate)
     bs.gate = gate;
     bs.peak = vel;
     bs.sus = vel * 0.62f;
-    bs.idx = 0.10f + 0.10f * vel;
+    bs.idx = sub ? 0.0f : 0.10f + 0.10f * vel;
+    bs.sub = (uint8_t)sub;
+    if (sub)
+        bs.sus = vel * 0.8f;
     bs.note = note;
 }
 
@@ -467,16 +505,44 @@ static void hat_hit(float v, int open)
     hat.amp = v;
     hat.dec = tau(open ? 0.22f : 0.03f + 0.015f * frand());
 }
+/* the extra kit: brushes (a swept tap of filtered noise), a rim click (a short wooden tick), a shaker */
+static struct {
+    float amp, att, dec, lo, bd;
+} brush;
+static struct {
+    float ph, amp, namp, h;
+} clk;
+static struct {
+    float amp, att, dec, h1, h2, lp;
+} shk;
+static void brush_hit(float v)
+{
+    brush.amp = v;
+    brush.att = 0.0f;
+    brush.dec = tau(0.11f + 0.06f * frand());
+}
+static void click_hit(float v)
+{
+    clk.ph = 0.0f;
+    clk.amp = v * 0.55f;
+    clk.namp = v * 0.35f;
+}
+static void shaker_hit(float v)
+{
+    shk.amp = v;
+    shk.att = 0.0f;
+    shk.dec = tau(0.035f + 0.02f * frand());
+}
 
 /* -------------------------------------------------------------- melody --- */
 #define NMV 2
 static struct {
-    float ph, inc, amp, att, att_inc, dec, rel, bell, bell_dec, vib, vph;
+    float ph, inc, amp, att, att_inc, dec, rel, bell, bell_dec, vib, vph, idx;
     int32_t gate;
     uint8_t on;
 } mv[NMV];
-static float mel_lp;
-static int mel_type;                             /* this track's: 0 muted lead, 1 vibraphone */
+static float mel_lp, mel_lo, mel_bd;
+static int mel_type;                             /* this track's: 0 muted lead, 1 vibraphone, 2 muted trumpet */
 static void mel_on(int note, float vel, int32_t gate)
 {
     int i = mv[0].on && (!mv[1].on || mv[1].amp < mv[0].amp) ? 1 : 0;
@@ -486,7 +552,16 @@ static void mel_on(int note, float vel, int32_t gate)
     mv[i].on = 1;
     mv[i].gate = gate;
     mv[i].vib = 0.0f;
-    if (mel_type == 0) {
+    if (mel_type == 2) {                         /* the trumpet, a harmon mute: a breathy start, the brass opening */
+        mv[i].amp = vel * 0.8f;
+        mv[i].att = 0.0f;
+        mv[i].att_inc = 1.0f / (0.045f * EN_SR);
+        mv[i].dec = tau(2.4f);
+        mv[i].rel = tau(0.07f);
+        mv[i].bell = vel * 0.05f;               /* (the breath) */
+        mv[i].bell_dec = tau(0.06f);
+        mv[i].idx = 0.25f;
+    } else if (mel_type == 0) {
         mv[i].amp = vel;
         mv[i].att = 0.0f;
         mv[i].att_inc = 1.0f / (0.025f * EN_SR);
@@ -502,6 +577,79 @@ static void mel_on(int note, float vel, int32_t gate)
         mv[i].bell = vel * 0.35f;
         mv[i].bell_dec = tau(0.12f);
     }
+}
+
+/* -------------------------------------------------------------- guests --- */
+/* a nylon guitar: plucked strings (Karplus-Strong), a delay line each, a soft averaging loop */
+#define NGV 4
+#define GT_N 512
+static float gt_buf[NGV][GT_N] EN_POOL;
+static struct {
+    float len, g, gdamp, last, env, etc, gl, gr;
+    int w;
+    int32_t gate;
+    uint8_t on;
+} gv[NGV];
+static void gtr_on(int note, float vel, int32_t gate)
+{
+    int i, k = 0, m;
+    float f, lp = 0.0f, br, lo = 9.0f;
+    for (i = 0; i < NGV; i++) {                  /* a free string, else the quietest */
+        if (!gv[i].on) {
+            k = i;
+            break;
+        }
+        if (gv[i].env < lo)
+            lo = gv[i].env, k = i;
+    }
+    while (note < 48)
+        note += 12;
+    while (note > 79)
+        note -= 12;
+    f = mtof((float)note);
+    gv[k].len = EN_SR / f - 0.5f;
+    gv[k].g = fm_expf(-6.9f / (f * 2.6f));       /* about 2.6 s to die away, ringing */
+    gv[k].gdamp = fm_expf(-6.9f / (f * 0.35f));  /* lifted off: a finger on the string */
+    gv[k].etc = 1.0f * EN_SR;
+    br = 0.12f + 0.22f * vel;                    /* the pluck's brightness: soft, nylon */
+    m = (int)gv[k].len + 3;
+    for (i = 0; i < m; i++) {
+        lp += (noise() - lp) * br;
+        gt_buf[k][i] = lp * vel * 1.6f;
+    }
+    gv[k].w = m;
+    gv[k].last = 0.0f;
+    gv[k].env = 1.0f;
+    gv[k].gate = gate;
+    gv[k].on = 1;
+    {
+        float p = fm_clampf((float)(note - 62) * 0.03f, -0.3f, 0.3f);
+        gv[k].gl = 0.8f - 0.7f * p;
+        gv[k].gr = 0.8f + 0.7f * p;
+    }
+}
+
+/* chopped vocal: a sung "oo", "oh" or "ah" (a bright FM source through two formant filters), cut in rhythm */
+#define NVV 2
+static struct {
+    float ph, inc, amp, env, att, rel;
+    int32_t gate;
+    uint8_t on;
+} vv[NVV];
+static float vx_f1 = 0.05f, vx_f2 = 0.1f, vx_t1 = 0.05f, vx_t2 = 0.1f, vx_lo1, vx_bd1, vx_lo2, vx_bd2, vx_lp;
+static const float VOWEL[4][2] = {{330.0f, 820.0f}, {460.0f, 860.0f}, {720.0f, 1150.0f}, {520.0f, 1450.0f}};
+static void vox_on(int note, float vel, int32_t gate, int vowel)
+{
+    int i = vv[0].on && (!vv[1].on || vv[1].env < vv[0].env) ? 1 : 0;
+    vv[i].inc = mtof((float)note) / EN_SR;
+    vv[i].amp = vel;
+    vv[i].att = 1.0f / (0.012f * EN_SR);
+    vv[i].rel = tau(0.045f);
+    vv[i].gate = gate;
+    vv[i].on = 1;
+    vowel &= 3;
+    vx_t1 = 2.0f * fm_sinf(FM_PI * VOWEL[vowel][0] / EN_SR);
+    vx_t2 = 2.0f * fm_sinf(FM_PI * VOWEL[vowel][1] / EN_SR);
 }
 
 /* -------------------------------------------------------------- spaces --- */
@@ -534,22 +682,24 @@ static float wow_ph, wow2_ph, flut_ph, wow_rnd, wow_rnd_t;
 
 /* -------------------------------------------------------- the sequence --- */
 #define BLK 256
-#define NEV 48
-enum { E_KEY, E_BASS, E_KICK, E_SNARE, E_RIM, E_HAT, E_OHAT, E_MEL };
+#define NEV 64
+enum { E_KEY, E_BASS, E_KICK, E_SNARE, E_RIM, E_HAT, E_OHAT, E_MEL, E_SUB, E_BRUSH, E_CLICK, E_SHAKE, E_GTR, E_VOX };
 typedef struct {
     int32_t wait;
-    uint8_t type, note, used;
+    uint8_t type, note, used, aux;
     float vel;
     int32_t gate;
 } ev_t;
 static ev_t evq[NEV];
 
+static int sched_aux;                            /* the next event's extra (a vowel) */
 static void sched(int type, int32_t wait, int note, float vel, int32_t gate)
 {
     int i;
     for (i = 0; i < NEV; i++)
         if (!evq[i].used) {
             evq[i].used = 1;
+            evq[i].aux = (uint8_t)sched_aux;
             evq[i].type = (uint8_t)type;
             evq[i].wait = wait < 0 ? 0 : wait;
             evq[i].note = (uint8_t)note;
@@ -560,6 +710,10 @@ static void sched(int type, int32_t wait, int note, float vel, int32_t gate)
 }
 
 /* the track */
+typedef struct {
+    int8_t root, q, beats;                       /* root: semitones above the key's tonic */
+} seg_t;
+#define NSEG 12
 static struct {
     const prog_t *pg;
     int prog;
@@ -578,6 +732,19 @@ static struct {
     int voicing[4];                              /* the keys' notes now */
     int chord_i;
     int pushed;
+    /* the changes as played: the progression a cycle at a time, this one and the next, each with its own
+     * substitutions and passing chords */
+    seg_t tl[2][NSEG];
+    uint8_t tl_n[2];
+    int tl_cur, tl_cyc, hb, hb_base;             /* hb: beats of harmony (runs on through a repeat) */
+    int ch_root, ch_q;                           /* the chord sounding: pitch class, quality */
+    /* the melody: the motif as this group develops it, the two bars playing now (a question, an answer, a rest) */
+    int8_t dv_deg[32], dv_len[32], ph_deg[32], ph_len[32];
+    uint8_t dv_vel[32], ph_vel[32];
+    int ph_last, mgrp;
+    uint8_t mplan[4];
+    /* this track's guests and extra kit, the breakdown's drums, the vocal's chop pattern */
+    uint8_t kit, inst, bd_mode, vpat;
 } tk;
 
 static float step_len = 5512.0f;                 /* samples a sixteenth */
@@ -589,6 +756,7 @@ static float sweep = 0.15f, sweep_t = 1.0f;      /* the bus filter's opening (th
 static int skipping;
 static float needle_t;                           /* 1 in the groove, 0 lifted */
 static float drop_thump;
+static int8_t prog_hist[6] = {-1, -1, -1, -1, -1, -1};   /* the progressions heard lately */
 
 static int cur_bpm(void)
 {
@@ -607,12 +775,13 @@ static void tempo_set(void)
 static int pick_prog(int mood, int minor_only)
 {
     float w[NPROGS], tot = 0.0f, r;
-    int i;
+    int i, h;
     for (i = 0; i < (int)NPROGS; i++) {
-        float d = ((float)PROGS[i].mood - (float)mood) * (1.0f / 18.0f);
+        float d = ((float)PROGS[i].mood - (float)mood) * (1.0f / 20.0f);
         w[i] = (minor_only >= 0 && PROGS[i].minor != minor_only) ? 0.0f : 1.0f / (1.0f + d * d * d * d);
-        if (i == tk.prog && tk.pg)               /* not the same one again */
-            w[i] *= 0.15f;
+        for (h = 0; h < 6; h++)                  /* not one heard lately */
+            if (prog_hist[h] == i)
+                w[i] *= h == 0 ? 0.05f : 0.2f;
         tot += w[i];
     }
     r = trand() * tot;
@@ -623,6 +792,104 @@ static int pick_prog(int mood, int minor_only)
     }
     return (int)NPROGS - 1;
 }
+
+static int sect_of(int bar)                      /* 0 intro, 1 A, 2 B, 3 breakdown, 4 outro */
+{
+    int i;
+    if (bar < tk.intro)
+        return 0;
+    if (bar >= tk.bars - tk.outro)
+        return 4;
+    i = (bar - tk.intro) / 4;
+    return tk.sect[i < 40 ? i : 39];
+}
+
+/* a chord coloured: a tritone substitute or an altered dominant, a chord borrowed from the parallel key, a richer
+ * extension */
+static void vary(int *r, int *q, int minor)
+{
+    float x = trand();
+    if (q_dom(*q)) {
+        if (x < 0.4f)
+            *r = (*r + 6) % 12, *q = trand() < 0.6f ? Q_13S11 : Q_DOM9;
+        else if (x < 0.75f)
+            *q = Q_7ALT;
+        else
+            *q = *q == Q_DOM13 ? Q_7B9 : Q_DOM13;
+    } else if (q_maj(*q)) {
+        if (!minor && *r == 5 && x < 0.4f)       /* IV to iv */
+            *q = trand() < 0.5f ? Q_M6 : Q_M9;
+        else if (minor && x < 0.12f)
+            *q = Q_MAJ9S11;
+        else
+            *q = trand() < 0.5f ? Q_MAJ13 : Q_MAJ9S11;
+    } else if (*q != Q_M7B5) {
+        if (!minor && *r == 2 && x < 0.3f)       /* ii to the minor key's half-diminished ii */
+            *q = Q_M7B5;
+        else if (!minor && *r == 9 && x < 0.25f) /* vi to bVI */
+            *r = 8, *q = Q_MAJ7;
+        else if (minor && *r == 5 && x < 0.3f)   /* iv to the dorian IV */
+            *q = Q_DOM9;
+        else if (minor && *r == 0 && x < 0.1f)   /* i to I, the parallel major */
+            *q = Q_MAJ9;
+        else
+            *q = trand() < 0.5f ? Q_M11 : Q_M9;
+    }
+}
+
+/* a cycle of the progression as it will be played. Its first cycle is plain; the B sections vary most */
+static void tl_build(int b, int cyc)
+{
+    seg_t *o = tk.tl[b];
+    const prog_t *pg = tk.pg;
+    int r[4], q[4], k, m = 0, n = pg->n, start = tk.hb_base + cyc * tk.cyc_beats - tk.hb;
+    int sect = sect_of(tk.bar + (start > 0 ? start / 4 : 0));
+    float p = cyc == 0 ? 0.0f : sect == 1 ? 0.07f : sect == 2 ? 0.2f : sect == 3 ? 0.14f : sect == 4 ? 0.04f : 0.0f;
+    for (k = 0; k < n; k++) {
+        r[k] = pg->c[k].root;
+        q[k] = pg->c[k].q;
+        if (p > 0.0f && trand() < p)
+            vary(&r[k], &q[k], pg->minor);
+    }
+    for (k = 0; k < n; k++) {
+        int bt = pg->c[k].beats, nr = k + 1 < n ? r[k + 1] : pg->c[0].root, nq = k + 1 < n ? q[k + 1] : pg->c[0].q;
+        int into_minor = !q_dom(nq) && !q_maj(nq);
+        if (p > 0.0f && bt >= 4 && nr != r[k] && !q_dom(q[k]) && trand() < p * 0.8f) {
+            if (bt >= 8 && trand() < 0.5f) {     /* a ii-V into the next */
+                o[m++] = (seg_t){(int8_t)r[k], (int8_t)q[k], (int8_t)(bt - 4)};
+                o[m++] = (seg_t){(int8_t)((nr + 2) % 12), (int8_t)(into_minor ? Q_M7B5 : Q_M9), 2};
+                o[m++] = (seg_t){(int8_t)((nr + 7) % 12), (int8_t)(into_minor ? Q_7B9 : Q_DOM13), 2};
+            } else {                             /* its dominant, or the dominant's tritone substitute */
+                o[m++] = (seg_t){(int8_t)r[k], (int8_t)q[k], (int8_t)(bt - 2)};
+                if (trand() < 0.5f)
+                    o[m++] = (seg_t){(int8_t)((nr + 7) % 12), (int8_t)(into_minor ? Q_7B9 : Q_DOM13), 2};
+                else
+                    o[m++] = (seg_t){(int8_t)((nr + 1) % 12), (int8_t)(into_minor ? Q_DOM9 : Q_13S11), 2};
+            }
+        } else {
+            o[m++] = (seg_t){(int8_t)r[k], (int8_t)q[k], (int8_t)bt};
+        }
+    }
+    tk.tl_n[b] = (uint8_t)m;
+}
+static void tl_reset(void)                       /* the changes from here: plain first */
+{
+    tk.hb_base = tk.hb;
+    tk.tl_cyc = 0;
+    tk.tl_cur = 0;
+    tl_build(0, 0);
+    tl_build(1, 1);
+}
+static void tl_advance(void)                     /* a new cycle begun: the next becomes this, a next made */
+{
+    int c = (tk.hb - tk.hb_base) / tk.cyc_beats;
+    while (c > tk.tl_cyc) {
+        tk.tl_cur ^= 1;
+        tk.tl_cyc++;
+        tl_build(tk.tl_cur ^ 1, tk.tl_cyc + 1);
+    }
+}
+
 static void use_prog(int i)
 {
     int k;
@@ -633,6 +900,9 @@ static void use_prog(int i)
         tk.cyc_beats += tk.pg->c[k].beats;
     en_minor = tk.pg->minor;
     tk.pick_mood = (uint8_t)par[P_MOOD];
+    for (k = 5; k > 0; k--)
+        prog_hist[k] = prog_hist[k - 1];
+    prog_hist[0] = (int8_t)i;
 }
 
 static void make_motif(void)
@@ -661,6 +931,117 @@ static void make_motif(void)
     }
 }
 
+/* the motif developed for a later section: 0 as it is, 1 displaced an eighth, 2 inverted, 3 its first bar
+ * sequenced a step up, 4 cut short (its first bar, held) */
+static void mot_dev(int op)
+{
+    int s, c = -1, last = -1;
+    for (s = 0; s < 32; s++) {
+        tk.dv_deg[s] = tk.mel_deg[s];
+        tk.dv_len[s] = tk.mel_len[s];
+        tk.dv_vel[s] = tk.mel_vel[s];
+    }
+    switch (op) {
+    case 1:
+        for (s = 31; s >= 0; s--) {
+            int t = s + 2;
+            if (tk.dv_deg[s] >= 0 && t < 30) {
+                tk.dv_deg[t] = tk.dv_deg[s], tk.dv_len[t] = tk.dv_len[s], tk.dv_vel[t] = tk.dv_vel[s];
+                if (t + tk.dv_len[t] > 30)
+                    tk.dv_len[t] = (int8_t)(30 - t);
+            } else if (t < 32) {
+                tk.dv_deg[t] = -1;
+            }
+            tk.dv_deg[s] = -1;
+        }
+        break;
+    case 2:
+        for (s = 0; s < 32; s++)
+            if (tk.dv_deg[s] >= 0) {
+                int d;
+                if (c < 0)
+                    c = tk.dv_deg[s];
+                d = 2 * c - tk.dv_deg[s];
+                tk.dv_deg[s] = (int8_t)(d < 0 ? 0 : d > 8 ? 8 : d);
+            }
+        break;
+    case 3:
+        for (s = 0; s < 16; s++)
+            c = tk.dv_deg[s] >= 0 ? s : c;
+        if (c < 0)
+            break;
+        for (s = 0; s < 16; s++) {
+            int d = tk.dv_deg[s];
+            tk.dv_deg[16 + s] = (int8_t)(d < 0 || s >= 12 ? -1 : d + 1 > 8 ? 8 : d + 1);
+            tk.dv_len[16 + s] = tk.dv_len[s];
+            tk.dv_vel[16 + s] = (uint8_t)(tk.dv_vel[s] * 9u / 10u);
+        }
+        for (s = 16; s < 32; s++)                /* the last half bar still breathes */
+            if (tk.dv_deg[s] >= 0 && s + tk.dv_len[s] > 30)
+                tk.dv_len[s] = (int8_t)(s < 29 ? 30 - s : 2);
+        break;
+    case 4:
+        for (s = 16; s < 32; s++)
+            tk.dv_deg[s] = -1;
+        for (s = 0; s < 16; s++)
+            last = tk.dv_deg[s] >= 0 ? s : last;
+        if (last >= 0)
+            tk.dv_len[last] = (int8_t)(last + 8 > 22 ? 22 - last : 8);
+        break;
+    default: break;
+    }
+}
+
+enum { MU_REST, MU_Q, MU_A };
+static void mel_unit(int type)                   /* the two bars to come: a question, its answer, or a rest */
+{
+    int s;
+    for (s = 0; s < 32; s++)
+        tk.ph_deg[s] = -1;
+    if (type != MU_REST)
+        for (s = 0; s < 32; s++) {
+            tk.ph_deg[s] = tk.dv_deg[s];
+            tk.ph_len[s] = tk.dv_len[s];
+            tk.ph_vel[s] = tk.dv_vel[s];
+        }
+    if (type == MU_A) {                          /* the answer: the same opening, then a step or two lower */
+        int down = 1 + tirand(2), any = 0;
+        for (s = 16; s < 32; s++)
+            if (tk.ph_deg[s] >= 0) {
+                int d = tk.ph_deg[s] - down;
+                tk.ph_deg[s] = (int8_t)(d < 0 ? 0 : d);
+                any = 1;
+            }
+        if (!any) {                              /* (nothing there: one long note to settle on) */
+            tk.ph_deg[16] = (int8_t)(1 + tirand(2));
+            tk.ph_len[16] = 6;
+            tk.ph_vel[16] = 60;
+        }
+    }
+    tk.ph_last = -1;
+    for (s = 0; s < 32; s++)
+        if (tk.ph_deg[s] >= 0)
+            tk.ph_last = s;
+    if (type == MU_A && tk.ph_last >= 0) {       /* it ends held */
+        s = tk.ph_last;
+        if (tk.ph_len[s] < 4)
+            tk.ph_len[s] = (int8_t)(s + 4 <= 31 ? 4 : 31 - s);
+        tk.ph_vel[s] = (uint8_t)(tk.ph_vel[s] * 85u / 100u);
+    }
+}
+
+static void mel_group(void)                      /* eight bars of melody: how its motif goes, where it rests */
+{
+    static const uint8_t PLAN[4][4] = {{MU_Q, MU_A, MU_Q, MU_A}, {MU_Q, MU_REST, MU_Q, MU_A},
+                                       {MU_Q, MU_A, MU_REST, MU_A}, {MU_REST, MU_Q, MU_A, MU_REST}};
+    float x = trand();
+    int pl = x < 0.4f ? 0 : x < 0.7f ? 1 : x < 0.88f ? 2 : 3, k;
+    tk.mgrp++;
+    mot_dev(tk.mgrp <= 2 || trand() < 0.25f ? 0 : 1 + tirand(4));
+    for (k = 0; k < 4; k++)
+        tk.mplan[k] = PLAN[pl][k];
+}
+
 static void plan(void)                           /* the sections: intro, A and B (and a breakdown), outro */
 {
     float bar_s = step_len * 16.0f / EN_SR, want;
@@ -687,6 +1068,7 @@ static void plan(void)                           /* the sections: intro, A and B
 static void new_track(void)
 {
     uint32_t seed;
+    const style_t *st = &STYLES[style_i];
     en_track_no++;
     seed = en_track_rand(en_seed_base, en_track_no);
     en_track_seed = seed;
@@ -694,7 +1076,7 @@ static void new_track(void)
     en_key = (uint8_t)tirand(12);
     use_prog(pick_prog(par[P_MOOD], -1));
     {
-        uint16_t gm = STYLES[style_i].grooves;
+        uint16_t gm = st->grooves;
         int tries = 0;
         do
             tk.groove = tirand((int)NGROOVES);
@@ -706,9 +1088,28 @@ static void new_track(void)
     tk.push_p = 0.4f + 0.5f * trand();
     tk.ghost_p = 0.1f + 0.25f * trand();
     tk.tempo_off = tirand(7) - 3;
-    mel_type = STYLES[style_i].mel == 2 ? tirand(2) : STYLES[style_i].mel;
+    mel_type = st->mel == 2 ? tirand(2) : st->mel;
     tk.scratch = (uint8_t)(trand() < 0.45f);
     make_motif();
+    {                                            /* the guests: one from the style's set, now and then two */
+        uint8_t list[4];
+        int n = 0, b;
+        for (b = 0; b < 4; b++)
+            if (st->inst >> b & 1u)
+                list[n++] = (uint8_t)(1u << b);
+        tk.inst = n ? list[tirand(n)] : 0;
+        if (n > 1 && trand() < 0.35f)
+            tk.inst |= list[tirand(n)];
+        tk.kit = 0;
+        for (b = 0; b < 3; b++)
+            if ((st->kit >> b & 1u) && trand() < 0.55f)
+                tk.kit |= (uint8_t)(1u << b);
+        b = tirand(20);
+        tk.bd_mode = (uint8_t)(b < 7 ? 0 : b < 15 ? 1 : 2);
+        tk.vpat = (uint8_t)tirand(4);
+    }
+    if (tk.inst & IN_TPT)
+        mel_type = 2;
     tempo_set();
     plan();
     tempo_set();
@@ -717,6 +1118,13 @@ static void new_track(void)
     tk.step_left = 0.0f;
     tk.chord_i = -1;
     tk.pushed = 0;
+    tk.hb = 0;
+    tl_reset();
+    tk.ch_root = (en_key + tk.pg->c[0].root) % 12;
+    tk.ch_q = tk.pg->c[0].q;
+    tk.mgrp = 0;
+    mot_dev(0);
+    mel_unit(MU_REST);
     trk_samples = 0;
     en_track_ms = 0;
     en_phase = PH_INTRO;
@@ -786,20 +1194,33 @@ static void voice(int root_pc, int q)
         tk.voicing[i] = best[i];
 }
 
-static int chord_at(int beat, int *start, int *len)   /* the progression's chord at this beat of the track */
+/* the chord at this beat of harmony: an id (its cycle, its place), where it starts, how long */
+static const seg_t *seg_of(int id)
 {
-    int b = beat % tk.cyc_beats, k, at = 0;
-    for (k = 0; k < tk.pg->n; k++) {
-        if (b < at + tk.pg->c[k].beats) {
+    int c = id >> 4;
+    return &tk.tl[c == tk.tl_cyc + 1 ? tk.tl_cur ^ 1 : tk.tl_cur][id & 15];
+}
+static int chord_at(int beat, int *start, int *len)
+{
+    int rel = beat - tk.hb_base, c, b, k, at = 0, buf;
+    if (rel < 0)
+        rel = 0;
+    c = rel / tk.cyc_beats;
+    b = rel - c * tk.cyc_beats;
+    if (c != tk.tl_cyc + 1)
+        c = tk.tl_cyc;
+    buf = c == tk.tl_cyc + 1 ? tk.tl_cur ^ 1 : tk.tl_cur;
+    for (k = 0; k < tk.tl_n[buf]; k++) {
+        if (b < at + tk.tl[buf][k].beats) {
             *start = beat - (b - at);
-            *len = tk.pg->c[k].beats;
-            return k;
+            *len = tk.tl[buf][k].beats;
+            return c * 16 + k;
         }
-        at += tk.pg->c[k].beats;
+        at += tk.tl[buf][k].beats;
     }
     *start = beat;
     *len = 4;
-    return 0;
+    return c * 16;
 }
 
 /* samples the step is late: an eighth-note swing (the off-beat eighth up to 0.6 of a sixteenth late, two thirds
@@ -811,15 +1232,29 @@ static float swing_off(int step)
 }
 static int32_t hum(float ms) { return (int32_t)((frand() * 2.0f - 1.0f) * ms * 44.1f); }
 
-static void play_chord(int k, int32_t at, int len_steps, float vel)
+/* who comps: 0 the keys, 1 the guitar, 2 the vocal chops (the keys rest) */
+static int comp_inst(int sect, int bar)
 {
-    int root = (en_key + tk.pg->c[k].root) % 12, i;
+    int rel = bar - tk.intro;
+    if ((tk.inst & IN_VOX) && (sect == 3 || (sect == 2 && rel % 8 >= 4)))
+        return 2;
+    if ((tk.inst & IN_GTR) && (sect == 0 || sect == 1 || (sect == 3 && !(tk.inst & IN_VOX))))
+        return 1;
+    return 0;
+}
+
+static void play_chord(int k, int32_t at, int len_steps, float vel, int inst, int pick)
+{
+    const seg_t *sg = seg_of(k);
+    int root = (en_key + sg->root) % 12, i;
     float roll = (8.0f + 14.0f * frand()) * 44.1f;
     if (k != tk.chord_i) {
         tk.chord_i = k;
-        voice(root, tk.pg->c[k].q);
+        voice(root, sg->q);
+        tk.ch_root = root;
+        tk.ch_q = sg->q;
         en_chord_root = (uint8_t)root;
-        en_chord_q = (uint8_t)tk.pg->c[k].q;
+        en_chord_q = (uint8_t)sg->q;
         {
             uint16_t m = 0;
             for (i = 0; i < 4; i++)
@@ -827,20 +1262,28 @@ static void play_chord(int k, int32_t at, int len_steps, float vel)
             en_chord_pcs = (uint16_t)(m | 1u << root);
         }
     }
+    if (inst == 2)
+        return;
     for (i = 0; i < 4; i++) {
         float v = vel * (0.85f + 0.2f * frand()) * (i == 3 ? 1.08f : 1.0f);
         int32_t g = (int32_t)((float)len_steps * step_len) - (int32_t)(roll * (float)i) + 400;
-        sched(E_KEY, at + (int32_t)(roll * (float)i), tk.voicing[i], v, g);
+        if (inst == 1) {                         /* the guitar: picked across the strings, or a quick strum */
+            int32_t w = pick ? (int32_t)(step_len * (float)i) : (int32_t)(roll * 1.4f * (float)i);
+            g = (int32_t)((float)len_steps * step_len) - w + 2000;
+            sched(E_GTR, at + w, tk.voicing[i] - (i == 0 ? 12 : 0), v * 0.9f, g < 1 ? 1 : g);
+        } else {
+            sched(E_KEY, at + (int32_t)(roll * (float)i), tk.voicing[i], v, g);
+        }
     }
 }
 
 /* the melody's ladder for this chord: its tones and its ninth, from G4 up */
 static int mel_note(int deg)
 {
-    int k = tk.chord_i < 0 ? 0 : tk.chord_i, root = (en_key + tk.pg->c[k].root) % 12, lad[8], i, n = 0, oct;
+    int root = tk.ch_root, lad[8], i, n = 0, oct;
     lad[n++] = root;
     for (i = 0; i < 4; i++) {
-        int pc = (root + Q_VOICE[tk.pg->c[k].q][i]) % 12, j, dup = 0;
+        int pc = (root + Q_VOICE[tk.ch_q][i]) % 12, j, dup = 0;
         for (j = 0; j < n; j++)
             dup |= lad[j] == pc;
         if (!dup)
@@ -858,16 +1301,33 @@ static int mel_note(int deg)
     i = 67 + (lad[deg % n] - 7 + 12) % 12 + 12 * oct;
     return i > 86 ? i - 12 : i;
 }
+/* a phrase's last note: onto the chord's root, third or fifth, the nearest (down first) */
+static int mel_rest_on(int note)
+{
+    int root = tk.ch_root, q = tk.ch_q, d;
+    int third = (root + Q_VOICE[q][0]) % 12, fifth = (root + (q == Q_M7B5 ? 6 : 7)) % 12;
+    for (d = 0; d < 7; d++) {
+        int a = note - d, b = note + d;
+        if ((a % 12) == root || (a % 12) == third || ((a % 12) == fifth && q != Q_7ALT))
+            return a;
+        if ((b % 12) == root || (b % 12) == third || ((b % 12) == fifth && q != Q_7ALT))
+            return b;
+    }
+    return note;
+}
+
+/* the vocal's chops: X a cut, - held on */
+static const char *const VPAT[4] = {"X---..X-..X---..", "X-.X-.X-..X-X-..", "X-----..X---X-..", "X.X.X.X-..X.X---"};
 
 static void seq_step(void)
 {
-    int bar = tk.bar, s = tk.step, beat = bar * 4 + s / 4, start, len, k, pos, sect, in_body;
+    int bar = tk.bar, s = tk.step, beat, start, len, k, pos, sect, in_body, ci, rel = tk.bar - tk.intro;
     int32_t sw = (int32_t)swing_off(s);
     float dv = 0.6f + 0.4f * (float)par[P_DRUMS] * 0.01f;
     const groove_t *g = &GROOVES[tk.groove];
     const style_t *st = &STYLES[style_i];
     in_body = bar >= tk.intro && bar < tk.bars - tk.outro;
-    sect = bar < tk.intro ? 0 : in_body ? tk.sect[(bar - tk.intro) / 4 < 40 ? (bar - tk.intro) / 4 : 39] : 4;
+    sect = sect_of(bar);
     en_section = (uint8_t)sect;
     if (s == 0) {
         en_phase = (uint8_t)(bar < tk.intro ? PH_INTRO : in_body ? PH_BODY : PH_OUTRO);
@@ -880,7 +1340,7 @@ static void seq_step(void)
             fade_t = 0.0f;
             fade_rate = 1.0f / (step_len * 32.0f);
         }
-        if (in_body && (bar - tk.intro) % 4 == 0 && bar > tk.intro) {   /* the mood moved a long way: re-picked */
+        if (in_body && rel % 4 == 0 && bar > tk.intro) {   /* the mood moved a long way: re-picked */
             int dm = par[P_MOOD] - tk.pick_mood;
             if (dm > 30 || dm < -30) {
                 int was = tk.pg->minor, np = pick_prog(par[P_MOOD], -1);
@@ -888,6 +1348,7 @@ static void seq_step(void)
                     en_key = (uint8_t)((en_key + (was ? 3 : 9)) % 12);
                 use_prog(np);
                 tk.chord_i = -1;
+                tl_reset();
             }
             if (trand() < 0.3f) {                /* the motif changes a little */
                 int at = tirand(14) * 2;
@@ -895,10 +1356,18 @@ static void seq_step(void)
                     tk.mel_deg[at] = (int8_t)(1 + tirand(7));
             }
         }
+        if (in_body && rel % 8 == 0)
+            mel_group();
+        if (in_body && rel % 2 == 0)
+            mel_unit(tk.mplan[(rel % 8) / 2]);
     }
-    /* keys */
+    /* keys (or the guest who comps) */
+    if (s % 4 == 0)
+        tl_advance();
+    beat = tk.hb;
     k = chord_at(beat, &start, &len);
     pos = (beat - start) * 4 + s % 4;            /* steps into the chord */
+    ci = comp_inst(sect, bar);
     if (sect != 4 || bar < tk.bars - 1) {
         const comp_t *c = &COMPS[tk.comp];
         int i, lsteps = len * 4, p16 = pos % 16, second = pos >= 16;
@@ -911,92 +1380,183 @@ static void seq_step(void)
                     int l = c->len[i];
                     if (pos + l > lsteps)
                         l = lsteps - pos;
-                    play_chord(k, sw + hum(4.0f), l, kv0 * (float)c->vel[i] * 0.01f * (second ? 0.85f : 1.0f));
+                    play_chord(k, sw + hum(4.0f), l, kv0 * (float)c->vel[i] * 0.01f * (second ? 0.85f : 1.0f), ci,
+                               pos == 0);
                 }
         }
         if (tk.push && pos == lsteps - 2 && frand() < tk.push_p && sect != 0) {   /* the next one an eighth early */
             int st2, l2, nk = chord_at(beat + 1, &st2, &l2);
             if (nk != k) {
-                play_chord(nk, sw + hum(4.0f), 2 + 14, kv0 * 0.8f);
+                play_chord(nk, sw + hum(4.0f), 2 + 14, kv0 * 0.8f, ci, 0);
                 tk.pushed = 1;
             }
         }
     }
-    /* bass */
+    /* the vocal chops, in the keys' place */
+    if (ci == 2 && VPAT[tk.vpat][s] == 'X' && bar < tk.bars - 1) {
+        int l = 1, v;
+        uint32_t h = en_track_rand(en_track_seed ^ 0x564F58u, (uint32_t)(bar * 16 + s));
+        float vel = (0.5f + 0.25f * frand()) * (0.6f + 0.4f * (float)par[P_KEYS] * 0.01f);
+        while (s + l < 16 && VPAT[tk.vpat][s + l] == '-')
+            l++;
+        sched_aux = (int)(h % 4u);
+        for (v = 1; v < 4; v += 2)
+            sched(E_VOX, sw + hum(3.0f), tk.voicing[v], vel * (v == 3 ? 1.0f : 0.8f),
+                  (int32_t)((float)l * step_len * 0.85f));
+        sched_aux = 0;
+    }
+    /* bass (or the sine sub, long roots) */
     if (sect != 0 && bar < tk.bars - 1 && par[P_BASS] > 0) {
-        const bpat_t *b = &BPATS[tk.bpat];
-        int p16 = pos % 16;
-        char c = pos < len * 4 ? b->n[p16] : '.';
-        if (sect == 3 && bar % 4 < 2)
-            c = p16 == 0 ? 'R' : '.';            /* the breakdown: roots only */
-        if (c != '.') {
-            int root = (en_key + tk.pg->c[k].root) % 12, n = 33 + (root - 9 + 12) % 12, l = b->len[p16];
-            if (c == 'A' && pos != len * 4 - 2)
-                c = frand() < 0.5f ? 'R' : 'F';      /* not the chord's last bar: no next root to lead to */
-            if (c == 'F')
-                n += 7;
-            else if (c == 'O')
-                n += 12;
-            else if (c == 'A') {
-                int st2, l2, nk = chord_at(beat + 1, &st2, &l2);
-                int nr = 33 + ((en_key + tk.pg->c[nk].root) % 12 - 9 + 12) % 12;
-                if (nk == k)
-                    nr = n + 7;
-                n = nr + (frand() < 0.5f ? -1 : 1);   /* a semitone off the next root */
+        const seg_t *sg = seg_of(k);
+        int root = (en_key + sg->root) % 12;
+        if ((tk.inst & IN_SUB) && (sect == 1 || sect == 3)) {
+            if (pos == 0 || (s == 0 && sect_of(bar - 1) != sect)) {
+                int n = 33 + (root - 9 + 12) % 12, l = len * 4 - pos;
+                if (n > 44)
+                    n -= 12;
+                sched(E_SUB, sw + hum(3.0f) + 120, n, 0.72f + 0.12f * frand(), (int32_t)((float)l * step_len) - 900);
             }
-            if (n > 50)
-                n -= 12;
-            if (pos + l <= len * 4 + 1)
-                sched(E_BASS, sw + hum(3.0f) + 120, n, 0.75f + 0.25f * frand(), (int32_t)((float)l * step_len) - 300);
+        } else {
+            const bpat_t *b = &BPATS[tk.bpat];
+            int p16 = pos % 16;
+            char c = pos < len * 4 ? b->n[p16] : '.';
+            if (sect == 3 && bar % 4 < 2)
+                c = p16 == 0 ? 'R' : '.';        /* the breakdown: roots only */
+            if (c != '.') {
+                int n = 33 + (root - 9 + 12) % 12, l = b->len[p16];
+                if (c == 'A' && pos != len * 4 - 2)
+                    c = frand() < 0.5f ? 'R' : 'F';  /* not the chord's last bar: no next root to lead to */
+                if (c == 'F')
+                    n += 7;
+                else if (c == 'O')
+                    n += 12;
+                else if (c == 'A') {
+                    int st2, l2, nk = chord_at(beat + 1, &st2, &l2);
+                    int nr = 33 + ((en_key + seg_of(nk)->root) % 12 - 9 + 12) % 12;
+                    if (nk == k)
+                        nr = n + 7;
+                    n = nr + (frand() < 0.5f ? -1 : 1);   /* a semitone off the next root */
+                }
+                if (n > 50)
+                    n -= 12;
+                if (l > len * 4 - pos)
+                    l = len * 4 - pos;           /* (a passing chord is short) */
+                if (l < 1)
+                    l = 1;
+                if (pos + l <= len * 4 + 1)
+                    sched(E_BASS, sw + hum(3.0f) + 120, n, 0.75f + 0.25f * frand(), (int32_t)((float)l * step_len) - 300);
+            }
         }
     }
-    /* drums: the body and the outro's first half; a fill at the end of a phrase; out for the breakdown */
-    if ((sect == 1 || sect == 2 || (sect == 4 && bar < tk.bars - 2)) && par[P_DRUMS] > 0) {
-        int phr_end = (bar - tk.intro) % 8 == 7 && sect != 4, stop = 0;
-        char kc = g->k[s], sc = g->s[s], hc = g->h[s];
+    /* drums: the body and the outro's first half. Fills where a section ends, now and then a thinner bar; the
+     * breakdown out, half-time, or kick and hats */
+    if ((sect == 1 || sect == 2 || (sect == 3 && tk.bd_mode) || (sect == 4 && bar < tk.bars - 2)) && par[P_DRUMS] > 0) {
         uint32_t hb = en_track_rand(en_track_seed, (uint32_t)bar);
-        if (phr_end && (hb & 7u) == 0)
-            stop = s >= 8;                       /* the drums stop for the bar's second half */
-        if (phr_end && (hb >> 3 & 3u) == 1 && s >= 12) {   /* a fill: no kick, a ghost, an open hat */
-            kc = '.';
-            sc = s == 14 ? 'g' : sc;
-            hc = s == 14 ? 'o' : hc;
+        int sect_end = in_body && rel % 4 == 3 && sect_of(bar + 1) != sect;
+        int phr_end = rel % 8 == 7 && sect != 4, stop = 0, fill = -1, thin = 0, roll = 0, pct = (int)(hb >> 12 & 1023u) % 100;
+        char kc = g->k[s], sc = g->s[s], hc = g->h[s];
+        int shaker = (tk.kit & KT_SHAKER) && (sect == 1 || sect == 3);
+        if (sect == 3) {
+            if (tk.bd_mode == 1) {               /* half-time: the kick on one, the snare on three */
+                kc = s == 0 ? 'X' : (s == 10 && (bar & 1)) ? 'x' : '.';
+                sc = s == 8 ? 'X' : '.';
+                hc = s % 4 == 0 ? 's' : s % 4 == 2 && (tk.kit & KT_SHAKER) ? 's' : '.';
+            } else {                             /* kick and hats */
+                thin = 1;
+            }
         }
+        if (sect_end) {
+            int f = (int)(hb >> 5 & 15u) % 10;
+            fill = f < 4 ? 2 : f < 7 ? 3 : f < 9 ? 1 : 0;
+        } else if (phr_end) {
+            if ((hb & 7u) == 0)
+                fill = 0;
+            else if ((hb >> 3 & 3u) == 1)
+                fill = 1;
+        } else if (rel % 4 != 0 && sect == 1) {
+            if (pct < 5)
+                thin = 1;                        /* kick and hats */
+            else if (pct < 7)
+                stop = 1;                        /* the drums sit out a bar */
+        } else if (rel % 4 != 0 && sect == 2 && pct < 3) {
+            thin = 1;
+        }
+        switch (fill) {
+        case 0: stop = s >= 8; break;            /* the drums stop for the bar's second half */
+        case 1:                                  /* no kick, a ghost, an open hat */
+            if (s >= 12) {
+                kc = '.';
+                sc = s == 14 ? 'g' : sc;
+                hc = s == 14 ? 'o' : hc;
+            }
+            break;
+        case 2:                                  /* a soft roll up into the next */
+            if (s >= 12) {
+                kc = s == 12 ? 'x' : '.';
+                sc = '.';
+                roll = 1;
+                hc = s == 12 ? hc : '.';
+            }
+            break;
+        case 3:                                  /* a syncopated turn */
+            if (s >= 8) {
+                kc = s == 10 ? 'x' : '.';
+                sc = s == 12 ? 'X' : (s == 9 || s == 15) ? 'g' : '.';
+                hc = s == 14 ? 'o' : (s & 1) ? '.' : hc;
+            }
+            break;
+        default: break;
+        }
+        if (fill >= 1)
+            thin = 0;
         if (!stop) {
+            int32_t back = (int32_t)((float)st->back * 44.1f);
+            int rimq = st->snare == 1 || (st->snare == 2 && (bar & 2));
+            int main_e = (tk.kit & KT_BRUSH) ? E_BRUSH : rimq ? E_RIM : E_SNARE;
+            int ghost_e = (tk.kit & KT_CLICK) ? E_CLICK : main_e;
+            int hat_e = shaker ? E_SHAKE : E_HAT;
             if (kc != '.')
                 sched(E_KICK, sw + hum(2.0f) + 60, 0, dv * (kc == 'X' ? 0.95f : 0.6f) * (0.9f + 0.1f * frand()), 0);
-            else if (s == 14 && frand() < tk.ghost_p * 0.5f)
+            else if (s == 14 && !thin && fill < 0 && frand() < tk.ghost_p * 0.5f)
                 sched(E_KICK, sw + hum(2.0f), 0, dv * 0.45f, 0);
-            if (sc != '.' || ((s & 1) && frand() < tk.ghost_p * 0.25f)) {
+            if (roll) {
+                sched(ghost_e, sw + back + hum(3.0f), 0, dv * (0.16f + 0.08f * (float)(s - 12)), 0);
+            } else if (!thin && (sc != '.' || ((s & 1) && fill < 0 && frand() < tk.ghost_p * 0.25f))) {
                 float v = sc == 'X' ? 0.85f : 0.28f;
-                int32_t back = (int32_t)((float)st->back * 44.1f);
-                int rimq = st->snare == 1 || (st->snare == 2 && (bar & 2));
-                sched(rimq ? E_RIM : E_SNARE, sw + back + hum(5.0f), 0, dv * v * (0.88f + 0.12f * frand()), 0);
+                int e = sc == 'X' ? main_e : ghost_e;
+                if (e == E_BRUSH)
+                    v *= 1.15f;
+                sched(e, sw + back + hum(5.0f), 0, dv * v * (0.88f + 0.12f * frand()), 0);
             }
             if (hc != '.') {
                 float v = hc == 's' ? 0.35f : 0.6f;
                 if (s % 4 == 2)
                     v *= 1.12f;              /* the off-beat eighths lean */
-                sched(hc == 'o' ? E_OHAT : E_HAT, sw + hum(4.0f), 0, dv * v * (0.75f + 0.35f * frand()), 0);
+                sched(hc == 'o' && !shaker ? E_OHAT : hat_e, sw + hum(4.0f), 0, dv * v * (0.75f + 0.35f * frand()), 0);
             } else if ((s & 1) && frand() < (float)st->hats * 0.004f) {
-                sched(E_HAT, sw + hum(4.0f), 0, dv * 0.22f * (0.7f + 0.6f * frand()), 0);
+                sched(hat_e, sw + hum(4.0f), 0, dv * 0.22f * (0.7f + 0.6f * frand()), 0);
             }
         }
     }
     /* the intro's last bar: soft hats lead in */
     if (sect == 0 && bar == tk.intro - 1 && s % 2 == 0 && par[P_DRUMS] > 0)
         sched(E_HAT, sw + hum(4.0f), 0, dv * (0.15f + 0.03f * (float)s), 0);
-    /* melody: B sections and the breakdown; with Melody high, the second half of A too */
-    if (par[P_MELODY] > 0 && (sect == 2 || sect == 3 || (sect == 1 && par[P_MELODY] > 60 && (bar - tk.intro) % 8 >= 4))) {
-        int m = (bar & 1) * 16 + s;
-        if (tk.mel_deg[m] >= 0) {
-            float v = (float)tk.mel_vel[m] * 0.01f * (0.3f + 0.7f * (float)par[P_MELODY] * 0.01f);
-            sched(E_MEL, sw + hum(6.0f) + 200, mel_note(tk.mel_deg[m]), v,
-                  (int32_t)((float)tk.mel_len[m] * step_len * 0.9f));
+    /* melody: B sections and the breakdown; with Melody high, the second half of A too. In phrases: a question,
+     * its answer, a rest between; each phrase ends on the chord */
+    if (par[P_MELODY] > 0 && in_body && (sect == 2 || sect == 3 || (sect == 1 && par[P_MELODY] > 60 && rel % 8 >= 4))) {
+        int m = (rel & 1) * 16 + s;
+        if (tk.ph_deg[m] >= 0) {
+            float v = (float)tk.ph_vel[m] * 0.01f * (0.3f + 0.7f * (float)par[P_MELODY] * 0.01f);
+            int n = mel_note(tk.ph_deg[m]);
+            if (m == tk.ph_last)
+                n = mel_rest_on(n);
+            sched(E_MEL, sw + hum(6.0f) + 200, n, v, (int32_t)((float)tk.ph_len[m] * step_len * 0.9f));
         }
     }
     if (s % 4 == 0)
         en_beats++;
+    if (s % 4 == 3)
+        tk.hb++;
     /* on */
     if (++tk.step >= 16) {
         tk.step = 0;
@@ -1023,9 +1583,14 @@ static void quiet(void)
         mv[i].on = 0;
     for (i = 0; i < NEV; i++)
         evq[i].used = 0;
+    for (i = 0; i < NGV; i++)
+        gv[i].on = 0;
+    for (i = 0; i < NVV; i++)
+        vv[i].on = 0, vv[i].env = 0.0f;
     bs.on = 0;
     bs.amp = 0.0f;
     kick.amp = kick.click = snare.tamp = snare.namp = rim.amp = rim.namp = hat.amp = 0.0f;
+    brush.amp = clk.amp = clk.namp = shk.amp = 0.0f;
 }
 
 static void play_on(int on)
@@ -1047,6 +1612,11 @@ static void play_on(int on)
                 kv[i].gate = 0;
         for (i = 0; i < NMV; i++)
             mv[i].gate = 0;
+        for (i = 0; i < NGV; i++)
+            if (gv[i].gate > 0)
+                gv[i].gate = 1;
+        for (i = 0; i < NVV; i++)
+            vv[i].gate = 0;
         bs.gate = 0;
     }
 }
@@ -1220,13 +1790,18 @@ static void render_bass(uint32_t n)
     uint32_t j;
     float lv = (float)par[P_BASS] * 0.01f * 0.30f, a = onepole(700.0f), glide = 1.0f - tau(0.025f);
     float idec = tau(0.08f), dec = tau(0.35f), rel = tau(0.07f), att = 1.0f / (0.006f * EN_SR);
+    float h2 = 0.18f, ifl = 0.02f;
     if (!bs.on)
         return;
+    if (bs.sub) {                                /* the sine sub: pure, a slow swell, a longer let-go */
+        h2 = 0.0f, ifl = 0.0f, lv *= 0.75f;
+        att = 1.0f / (0.035f * EN_SR), dec = tau(1.2f), rel = tau(0.15f);
+    }
     lv *= 1.0f - 0.25f * duck;
     for (j = 0; j < n; j++) {
         float s;
         bs.inc += (bs.tinc - bs.inc) * glide;
-        s = sn(bs.ph + sn(bs.ph) * bs.idx) + 0.18f * sn(bs.ph * 2.0f);
+        s = sn(bs.ph + sn(bs.ph) * bs.idx) + h2 * sn(bs.ph * 2.0f);
         bs.ph = wrap1(bs.ph + bs.inc);
         if (bs.gate > 0) {
             bs.gate--;
@@ -1240,7 +1815,7 @@ static void render_bass(uint32_t n)
         } else {
             bs.amp *= rel;
         }
-        bs.idx = 0.02f + (bs.idx - 0.02f) * idec;
+        bs.idx = ifl + (bs.idx - ifl) * idec;
         s = s * bs.amp;
         s = s * (1.0f - 0.12f * s * s);          /* a little warmth */
         bs.lp += (s - bs.lp) * a;
@@ -1312,16 +1887,19 @@ static void render_mel(uint32_t n)
 {
     int i;
     uint32_t j;
-    float lv = 0.20f, a = onepole(mel_type ? 4200.0f : 1900.0f);
+    float lv = 0.20f, a = onepole(mel_type == 1 ? 4200.0f : mel_type == 2 ? 3000.0f : 1900.0f);
     for (i = 0; i < NMV; i++) {
         if (!mv[i].on)
             continue;
         for (j = 0; j < n; j++) {
-            float s, ph = mv[i].ph, vib = mel_type ? 0.0f : sn(mv[i].vph) * fm_minf(mv[i].vib, 1.0f) * 0.004f;
+            float s, ph = mv[i].ph, vib = mel_type == 1 ? 0.0f : sn(mv[i].vph) * fm_minf(mv[i].vib, 1.0f) * 0.004f;
             mv[i].vph = wrap1(mv[i].vph + 5.2f / EN_SR);
             if (mel_type == 0)
                 s = sn(ph) + 0.16f * sn(ph * 3.0f) + 0.06f * sn(ph * 2.0f);
-            else
+            else if (mel_type == 2) {
+                s = sn(ph + sn(ph) * mv[i].idx) + noise() * mv[i].bell;
+                mv[i].idx += (1.05f - mv[i].idx) * 0.0004f;
+            } else
                 s = sn(ph) + mv[i].bell * 2.0f * sn(ph * 4.0f);
             mv[i].ph = wrap1(ph + mv[i].inc * (1.0f + vib));
             if (mv[i].att < 1.0f)
@@ -1340,12 +1918,156 @@ static void render_mel(uint32_t n)
         if (mv[i].amp < 0.001f)
             mv[i].on = 0;
     }
+    if (mel_type == 2) {                         /* the mute: a nasal band around 1.4 kHz over a darker body */
+        float f = 2.0f * fm_sinf(FM_PI * 1400.0f / EN_SR);
+        for (j = 0; j < n; j++) {
+            float hp;
+            mel_lp += (esend[j] - mel_lp) * a;
+            mel_lo += f * mel_bd;
+            hp = mel_lp - mel_lo - 0.7f * mel_bd;
+            mel_bd += f * hp;
+            esend[j] = (mel_lp * 0.35f + mel_bd * 0.75f) * lv;
+            bufl[j] += esend[j] * 1.1f;
+            bufr[j] += esend[j] * 0.75f;
+            rsend[j] += esend[j] * 0.6f;
+        }
+        return;
+    }
     for (j = 0; j < n; j++) {                    /* the melody bus: darkened, left of centre, to the echo and the room */
         mel_lp += (esend[j] - mel_lp) * a;
         esend[j] = mel_lp * lv;
         bufl[j] += esend[j] * 1.1f;
         bufr[j] += esend[j] * 0.75f;
         rsend[j] += esend[j] * 0.6f;
+    }
+}
+
+/* the guests: the guitar, the vocal chops, the extra kit (each costs nothing while silent) */
+static void render_gtr(uint32_t n)
+{
+    int i;
+    uint32_t j;
+    float lv = (float)par[P_KEYS] * 0.01f * 1.05f;
+    for (i = 0; i < NGV; i++) {
+        float *d = gt_buf[i], len = gv[i].len, last = gv[i].last, g, gl, gr;
+        int w = gv[i].w;
+        if (!gv[i].on)
+            continue;
+        if (gv[i].gate > 0) {
+            gv[i].gate -= (int32_t)n;
+            if (gv[i].gate <= 0)
+                gv[i].gate = 0, gv[i].etc = 0.12f * EN_SR;
+        }
+        g = gv[i].gate == 0 ? gv[i].gdamp : gv[i].g;
+        gl = gv[i].gl * lv, gr = gv[i].gr * lv;
+        for (j = 0; j < n; j++) {
+            float rd = (float)w - len, fr, y, v;
+            int ri;
+            if (rd < 0.0f)
+                rd += (float)GT_N;
+            ri = (int)rd;
+            fr = rd - (float)ri;
+            y = d[ri & (GT_N - 1)] + (d[(ri + 1) & (GT_N - 1)] - d[ri & (GT_N - 1)]) * fr;
+            v = (y + last) * 0.5f * g;
+            last = y;
+            d[w] = v;
+            w = (w + 1) & (GT_N - 1);
+            bufl[j] += v * gl;
+            bufr[j] += v * gr;
+            rsend[j] += v * lv * 0.45f;
+        }
+        gv[i].w = w;
+        gv[i].last = last;
+        gv[i].env *= fm_expf(-(float)n / gv[i].etc);
+        if (gv[i].env < 0.003f)
+            gv[i].on = 0;
+    }
+}
+
+static void render_vox(uint32_t n)
+{
+    int i;
+    uint32_t j;
+    float lv = (float)par[P_KEYS] * 0.01f * 0.70f, a = onepole(2600.0f), att, s;
+    if (!vv[0].on && !vv[1].on)
+        return;
+    vx_f1 += (vx_t1 - vx_f1) * 0.25f;            /* the vowel glides */
+    vx_f2 += (vx_t2 - vx_f2) * 0.25f;
+    for (j = 0; j < n; j++) {
+        float x = 0.0f, hp, y;
+        for (i = 0; i < NVV; i++) {
+            if (!vv[i].on)
+                continue;
+            x += sn(vv[i].ph + 0.9f * sn(vv[i].ph)) * vv[i].amp * vv[i].env;
+            vv[i].ph = wrap1(vv[i].ph + vv[i].inc);
+            if (vv[i].gate > 0) {
+                vv[i].gate--;
+                att = vv[i].env + vv[i].att;
+                vv[i].env = att > 1.0f ? 1.0f : att;
+            } else {
+                vv[i].env *= vv[i].rel;
+            }
+        }
+        x += noise() * 0.02f * (vv[0].env + vv[1].env);   /* a little air */
+        vx_lo1 += vx_f1 * vx_bd1;                /* the formants: two state-variable bands */
+        hp = x - vx_lo1 - 0.22f * vx_bd1;
+        vx_bd1 += vx_f1 * hp;
+        vx_lo2 += vx_f2 * vx_bd2;
+        hp = x - vx_lo2 - 0.3f * vx_bd2;
+        vx_bd2 += vx_f2 * hp;
+        y = vx_bd1 * 0.22f + vx_bd2 * 0.12f;
+        vx_lp += (y - vx_lp) * a;
+        s = vx_lp * lv;
+        bufl[j] += s * 0.85f;
+        bufr[j] += s;
+        rsend[j] += s * 0.9f;
+    }
+    for (i = 0; i < NVV; i++)
+        if (vv[i].on && vv[i].gate <= 0 && vv[i].env < 0.0005f)
+            vv[i].on = 0;
+}
+
+static void render_kit(uint32_t n)
+{
+    uint32_t j;
+    float lv = (float)par[P_DRUMS] * 0.01f * 0.55f;
+    float fb = 2.0f * fm_sinf(FM_PI * 2600.0f / EN_SR), ha = onepole(6000.0f), hl = onepole(11000.0f);
+    float bat = 1.0f / (0.006f * EN_SR), sat = 1.0f / (0.010f * EN_SR), cinc = 1250.0f / EN_SR;
+    float cdec = tau(0.012f), cndec = tau(0.004f);
+    if (brush.amp < 1e-3f && clk.amp < 1e-3f && clk.namp < 1e-3f && shk.amp < 1e-3f)
+        return;
+    for (j = 0; j < n; j++) {
+        float b = 0.0f, c = 0.0f, h = 0.0f, x;
+        if (brush.amp > 1e-3f) {                 /* a band of noise round 2.6 kHz, swept in */
+            x = noise();
+            brush.lo += fb * brush.bd;
+            brush.bd += fb * (x - brush.lo - 1.1f * brush.bd);
+            b = brush.bd * brush.amp * brush.att * 0.55f;
+            brush.att = fm_minf(brush.att + bat, 1.0f);
+            brush.amp *= brush.dec;
+        }
+        if (clk.amp > 1e-3f || clk.namp > 1e-3f) {
+            x = noise();
+            clk.h += (x - clk.h) * 0.5f;
+            c = sn(clk.ph) * clk.amp + (x - clk.h) * clk.namp;
+            clk.ph = wrap1(clk.ph + cinc);
+            clk.amp *= cdec;
+            clk.namp *= cndec;
+        }
+        if (shk.amp > 1e-3f) {
+            x = noise();
+            shk.h1 += (x - shk.h1) * ha;
+            x -= shk.h1;
+            shk.h2 += (x - shk.h2) * ha;
+            x -= shk.h2;
+            shk.lp += (x - shk.lp) * hl;
+            h = shk.lp * shk.amp * shk.att * 0.7f;
+            shk.att = fm_minf(shk.att + sat, 1.0f);
+            shk.amp *= shk.dec;
+        }
+        bufl[j] += (b + c * 0.8f + h * 0.75f) * lv;
+        bufr[j] += (b + c * 0.6f + h * 1.15f) * lv;
+        rsend[j] += (b + c) * lv * 0.35f;
     }
 }
 
@@ -1542,11 +2264,56 @@ static void control(uint32_t n)
     }
 }
 
+#ifdef EN_HOST
+uint32_t en_fired[16];
+en_part_t en_part[EN_NPART];
+static void part_meas(int p, const float *l0, const float *r0, uint32_t n)
+{
+    uint32_t j;
+    double e = 0.0;
+    float pk = 0.0f;
+    for (j = 0; j < n; j++) {
+        float a = bufl[j] - l0[j], b = bufr[j] - r0[j];
+        e += (double)(a * a + b * b) * 0.5;
+        a = fm_maxf(fm_fabsf(a), fm_fabsf(b));
+        pk = a > pk ? a : pk;
+    }
+    if (e > 1e-9 * (double)n) {
+        en_part[p].sum2 += e;
+        en_part[p].n += n;
+        if (pk > en_part[p].peak)
+            en_part[p].peak = pk;
+    }
+}
+int en_meas;
+static float meas_l[BLK], meas_r[BLK];
+#define MEAS(p, call)                                                                                              \
+    do {                                                                                                           \
+        if (en_meas)                                                                                               \
+            for (j = 0; j < k; j++)                                                                                \
+                meas_l[j] = bufl[j], meas_r[j] = bufr[j];                                                          \
+        call;                                                                                                      \
+        if (en_meas)                                                                                               \
+            part_meas(p, meas_l, meas_r, k);                                                                       \
+    } while (0)
+#else
+#define MEAS(p, call) call
+#endif
+
 static void fire(ev_t *e)
 {
+#ifdef EN_HOST
+    en_fired[e->type & 15]++;
+#endif
     switch (e->type) {
     case E_KEY: key_on(e->note, e->vel, e->gate, 0); break;
-    case E_BASS: bass_on(e->note, e->vel, e->gate); break;
+    case E_BASS: bass_on(e->note, e->vel, e->gate, 0); break;
+    case E_SUB: bass_on(e->note, e->vel, e->gate, 1); break;
+    case E_BRUSH: brush_hit(e->vel); break;
+    case E_CLICK: click_hit(e->vel); break;
+    case E_SHAKE: shaker_hit(e->vel); break;
+    case E_GTR: gtr_on(e->note, e->vel, e->gate); break;
+    case E_VOX: vox_on(e->note, e->vel, e->gate, e->aux); break;
     case E_KICK: kick_hit(e->vel); break;
     case E_SNARE: snare_hit(e->vel); break;
     case E_RIM: rim_hit(e->vel); break;
@@ -1627,10 +2394,13 @@ void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
         control(k);
         for (j = 0; j < k; j++)
             bufl[j] = bufr[j] = rsend[j] = esend[j] = 0.0f;
-        render_keys(k);
-        render_bass(k);
-        render_drums(k);
-        render_mel(k);
+        MEAS(EN_PART_KEYS, render_keys(k));
+        MEAS(bs.sub ? EN_PART_SUB : EN_PART_BASS, render_bass(k));
+        MEAS(EN_PART_DRUMS, render_drums(k));
+        MEAS(EN_PART_KIT, render_kit(k));
+        MEAS(EN_PART_GTR, render_gtr(k));
+        MEAS(EN_PART_VOX, render_vox(k));
+        MEAS(mel_type == 2 ? EN_PART_TPT : EN_PART_MEL, render_mel(k));
         render_space(k);
         render_bus(out, k, gain);
         out += 2 * k;
