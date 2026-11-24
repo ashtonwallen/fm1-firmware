@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "shortwave",
+  "name": "Shortwave",
+  "author": "ashtonwallen",
+  "license": "MPL-2.0",
+  "tagline": "Four self-playing ambient radio stations",
+  "description": "A simulated shortwave receiver with four generative ambient stations, tuning noise, an automatic scan and a scrolling spectrum.",
+  "tags": ["ambient", "generative", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/shortwave",
+  "screenshot": "docs/screen.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on fm1-base by Charles Vestal and felucca-bsp by Leo Kuroshita and contributors."
+}

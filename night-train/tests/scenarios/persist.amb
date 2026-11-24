@@ -1,0 +1,28 @@
+# the journey survives a power-off: saved at a station (by itself, or with SAVE), it comes back where it was, the
+# passengers in their seats; another firmware's saved project (AMB-1's) gives a new journey
+wait 2000
+ff 120
+spin K1 2
+expect stretch 3
+tap SAVE
+expect store_writes >0
+expect dirty 0
+reboot
+wait 300
+expect station >10
+expect stretch 3
+expect nlog >10
+# by itself: a setting, at a station 5 minutes after the last save at least
+spin K1 -2
+expect stretch 1
+ff 1
+wait 1300000
+expect store_writes >1
+# another firmware's project: a new journey from the first station
+storeold
+reboot
+wait 300
+expect station 0
+expect stretch 1
+expect nlog 1
+expect playing 1

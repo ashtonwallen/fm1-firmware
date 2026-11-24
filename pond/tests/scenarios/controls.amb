@@ -1,0 +1,58 @@
+# the controls: PLAY rests and sings, REC freezes, OCT moves the fish's octave, the knobs, PRESETS follows a fish
+wait 1000
+tap PLAY
+wait 300
+expect playing 0
+tap PLAY
+wait 300
+expect playing 1
+tap REC
+wait 200
+expect frozen 1
+tap REC
+wait 200
+expect frozen 0
+tap OCT+
+wait 100
+expect par21 1
+tap OCT-
+tap OCT-
+wait 100
+expect par21 -1
+tap OCT+
+# the Mix page: K2 is the fish's level
+tap FX
+wait 200
+spin K2 -10
+wait 200
+expect par1 60
+# ALGORITHM: Busy
+turn ALGO 2
+wait 200
+expect busy 60
+# the World page: the fish cap
+tap GLO
+tap GLO
+wait 200
+spin K2 -2
+wait 200
+expect cap 6
+spin K1 1
+wait 200
+expect par0 50
+# PRESETS: the next fish, its ring and name in the pond
+tap HOME
+turn PRESET 1
+wait 400
+shot follow.png
+# a help card: hold a button
+press ENV
+wait 1200
+shot help.png
+release ENV
+wait 200
+expect view 0
+# SELECT: the pages
+turn SELECT 2
+wait 200
+expect view 2

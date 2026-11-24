@@ -1,0 +1,22 @@
+# the sound over a long run: never silent, never clipping; the plots ring; full garden, sparse garden
+wav sound.wav
+wait 300
+tap HOME
+spin K2 2
+wait 1200000
+expect rung >500
+wavstop
+expect peak_db_max -1
+expect peak_db_min -30
+# loud: master up, bells and pad up, the garden full
+master 4096
+spin K3 30
+spin K4 50
+peakreset
+wait 300000
+expect peak_db_max -0.1
+# an empty garden still sounds (the pad, the bass): never silent
+clear
+peakreset
+wait 20000
+expect peak_db_min -40

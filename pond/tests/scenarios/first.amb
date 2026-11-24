@@ -1,0 +1,36 @@
+# a first look and listen: it sings from power-on; the pond, its fish and pages
+wav first.wav
+wait 200
+expect playing 1
+expect fish 5
+wait 8000
+shot pond.png
+expect pad_level >20
+wait 40000
+shot pond48.png
+expect sixteenths >40
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -35
+tap ENV
+wait 300
+shot fish.png
+turn PRESET 1
+wait 300
+shot fish2.png
+tap SEQ
+wait 300
+shot journal.png
+tap FX
+wait 300
+shot mix.png
+tap GLO
+wait 300
+shot setup.png
+tap GLO
+wait 300
+shot world.png
+expect view 5
+tap HOME
+wait 300
+expect view 0

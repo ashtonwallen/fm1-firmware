@@ -1,0 +1,39 @@
+# the monastery keeps itself rarely (the flash's wear): events, big ones too, only mark it; the world is saved once
+# an hour at most, while nobody sings
+wait 2000
+expect saves 0
+days 2
+office 3
+wait 600000
+expect dirty 1
+days 1
+wait 600000
+office 5
+wait 600000
+days 2
+wait 600000
+office 1
+wait 600000
+expect store_writes 0
+# ~50 minutes of events, no save; the hour's save, once, at a quiet moment
+wait 900000
+expect store_writes 1
+expect saves 1
+days 1
+wait 1200000
+expect store_writes 1
+# a setting: kept after a debounce, 5 minutes after the last save at least
+tap GLO
+spin K1 -1
+tap HOME
+wait 600000
+expect store_writes 2
+spin K1 1
+wait 60000
+expect store_writes 2
+wait 600000
+expect store_writes 3
+# SAVE saves at once
+days 1
+tap SAVE
+expect store_writes 4

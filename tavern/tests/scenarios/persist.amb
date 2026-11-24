@@ -1,0 +1,36 @@
+# the tavern survives a power-off: the night, the clock, moods, quarrels, the mix and memories, saved by
+# SAVE and by itself at a quiet moment (once an hour at most)
+wait 300
+expect night 1
+mood3 -60
+turn K1 -20
+wait 200
+expect par0 50
+timewarp 3
+wait 120000
+tap SAVE
+wait 300
+expect dirty 0
+reboot
+wait 300
+expect night 1
+expect minute >30
+expect mood3 <-40
+expect aff_0_1 <-60
+expect par0 50
+expect playing 1
+wait 15000
+expect sess 1
+# by itself: a night goes by and nobody presses SAVE; what's saved is at most an hour behind (the flash's wear)
+timewarp 20
+wait 420000
+expect night >1
+expect store_writes 1
+# (a new night, too, waits for the hour's save, between tunes)
+wait 3300000
+expect store_writes 2
+reboot
+wait 300
+expect night >1
+expect tunes >2
+shot after.png

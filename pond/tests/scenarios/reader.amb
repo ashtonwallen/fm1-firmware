@@ -1,0 +1,19 @@
+# the screen reader: pages, values, what happens in the pond
+wait 200
+listen
+wait 100
+said Pond page: Busy 50, Tempo 66, Space 70, Tone 30
+tap FX
+wait 300
+said Mix page: Pad 50, Fish 70, Bass 38, Frogs 35
+spin K1 2
+wait 300
+said Pad 52
+tap ENV
+wait 300
+said Fish page
+heron
+noon
+wait 3000
+said Heron
+speakdump

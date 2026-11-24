@@ -1,0 +1,50 @@
+# the garden survives a restart: SAVE, then the same plants, lineage, gardener and lines; it saves by itself, rarely,
+# while growing; another firmware's saved data (AMB-1 Drift's) or a damaged project gives a new garden
+wait 300
+expect store_writes 0
+tap HOME
+spin K2 2
+tapkey 5
+tapkey 12
+wait 600000
+tap SAVE
+wait 20
+snap
+reboot
+expect same 1
+expect growth 3
+expect yours 2
+wait 300
+expect playing 1
+shot after_reboot.png
+# a long while growing: saves itself, rarely (wear: once an hour at most; autosave.amb). Three so far: the growth
+# setting at 5 minutes, SAVE, the hour's
+wait 3600000
+expect saves 3
+expect store_writes 3
+# resting: a setting saved a few seconds after a change, 5 minutes after the last save at least
+spin K3 -5
+tap PLAY
+wait 300000
+expect dirty 0
+snap
+reboot
+expect same 1
+expect par1 65
+# AMB-1 Drift's project in the store: a new garden, not a misread one
+foreign
+reboot
+wait 300
+expect seconds <2
+expect living 3
+expect growth 1
+expect par1 70
+shot foreign.png
+# ours, damaged: a new garden too
+wait 60000
+tap SAVE
+junk
+reboot
+wait 300
+expect seconds <2
+expect living 3

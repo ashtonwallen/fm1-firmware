@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "nighttrain",
+  "name": "NIGHT TRAIN",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless night train: passing landscapes, stations, passengers with stories",
+  "description": "NIGHT TRAIN turns the FM-1 into a window on an endless night journey. The train runs a seeded route between stations: forest, coast, city lights, snowfields, mountains, villages, lakes, moors, with tunnels, bridges, signal stops and rain. Each stretch has its own key and sound; the wheels' clack is the beat and follows the train's speed. At stations it slows, chimes, and passengers get on and off: a conductor, a night nurse, a cellist, an old man who won't say where he is going, an art student and a cat, with stories that go on from night to night. It plays itself and remembers the journey.",
+  "tags": ["ambient", "generative", "fm", "game"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/night-train",
+  "screenshot": "docs/img/window.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Engine: AMB-1 by Charles Vestal. Built on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

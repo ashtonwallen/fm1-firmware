@@ -1,0 +1,40 @@
+# the journey keeps itself rarely (the flash's wear): stations and stories only mark it; it is saved once an hour at
+# most, at a station
+wait 2000
+expect store_writes 0
+ff 30
+wait 600000
+expect station >2
+ff 20
+wait 600000
+ff 20
+wait 600000
+ff 20
+wait 600000
+ff 20
+wait 600000
+expect store_writes 0
+# ~50 minutes of stations, no save; the hour's save, once, at the first station after the hour
+wait 1500000
+expect store_writes 1
+expect dirty 0
+wait 1800000
+expect store_writes 1
+# a setting: kept at a station 5 minutes after the last save at least
+spin K2 -2
+wait 1500000
+expect store_writes 2
+expect dirty 0
+# SAVE saves at once
+spin K2 1
+tap SAVE
+expect store_writes 3
+# standing: a setting kept a few seconds after the knobs rest, 5 minutes after the last save at least
+tap PLAY
+wait 10000
+spin K2 1
+wait 10000
+expect store_writes 3
+wait 300000
+expect store_writes 4
+expect dirty 0

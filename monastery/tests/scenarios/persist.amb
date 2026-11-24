@@ -1,0 +1,39 @@
+# the world is kept: the day, the office, the brothers and their histories, the chronicle; it saves by itself only
+# while nobody sings (the world at most hourly, settings at most every 5 minutes); another firmware's saved data
+# gives the defaults
+tap GLO
+spin K1 -2
+spin K2 7
+tap HOME
+wait 2000000
+expect saves >0
+expect store_writes >0
+days 25
+tap SAVE
+expect day >25
+expect vowed1 1
+expect par16 7
+reboot
+wait 300
+expect day >25
+expect vowed1 1
+expect par16 7
+expect chron >5
+expect slips1 >0
+# it starts the office it was at, from the bell
+expect phase 0
+wait 40000
+expect phase 1
+shot after_reboot.png
+# AMB-1 Drift's project in the store (its magic "ENO1"): the defaults, day 1 at Lauds
+storeamb
+reboot
+wait 300
+expect day 1
+expect office 1
+expect vowed1 0
+expect par16 0
+expect chron 0
+expect playing 1
+wait 30000
+expect singing >0

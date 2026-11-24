@@ -1,0 +1,11 @@
+# an hour and a half at the default Day length (2 h): never silent for long, never clipping
+wav long.wav
+wait 2700000
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect peak_db_min -30
+wavstop
+shot long.png
+expect day 1
+expect office >4

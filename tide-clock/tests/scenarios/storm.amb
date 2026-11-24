@@ -1,0 +1,38 @@
+# a storm drives the music: the pulse and the bass come up, quicker, a darker mode, the choir; the keeper watches it in
+# his oilskins; it goes in the log; it passes to a wind
+wav storm.wav
+tap PLAY
+weather calm 5000
+settime 17 40
+wait 60000
+expect par20 0
+expect par3 <30
+weather storm 120
+expect wx 3
+expect storms 1
+expect logtype 5
+wait 1000
+expect act 13
+expect lamp 1
+expect tgt3 >50
+expect tgt20 5
+expect tgt22 1
+wait 60000
+expect par3 >50
+expect par20 5
+expect par22 1
+expect par29 >80
+shot storm.png
+wait 20000
+wavstop
+expect peak_db_max -0.3
+expect peak_db_min -30
+# it blows itself out (two hours on): a wind, then calm
+wait 7300000
+expect wx 2
+expect logn >1
+wait 3600000
+expect storm <30
+tap SEQ
+wait 300
+shot log.png

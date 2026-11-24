@@ -1,0 +1,12 @@
+# half an hour of the night at three minutes a stretch: stations come and go, the sound stays between quiet and clipping
+# the whole way (the wheels, the chimes, tunnels, the rain and Theo's playing included)
+spin K1 -1
+expect stretch 0
+wav longrun.wav
+wait 1800000
+wavstop
+expect station >4
+expect peak_db_max -0.5
+expect peak_db_min -24
+expect playing 1
+shot after-half-an-hour.png

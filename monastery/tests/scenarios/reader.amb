@@ -1,0 +1,25 @@
+# the screen reader (fm1-reader, announce.c): WHERE is the office, the hour, the day and who sings, then the page;
+# events are said as they happen; a knob as it turns; a page once it settles
+wait 200
+listen
+wait 100
+said Lauds, 05:30, day 1, singing. Day 1
+tap ARP
+wait 300
+said Brothers page: Abbot Benedict
+tap GLO
+wait 300
+said Setup page: Day 2 h, Tune 0, MIDI out Off, Lights On
+spin K1 -1
+wait 300
+said Day 1 h
+turn SELECT -1
+wait 300
+said Space page: Echo 14, Size 94, Colour 48, Pace 100%
+tap HOME
+tapkey w2
+wait 100
+said Br. Ambrose stood to sing
+where
+said Lauds
+speakdump

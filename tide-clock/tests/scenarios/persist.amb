@@ -1,0 +1,62 @@
+# what is kept: the settings (5 s after a change, 5 minutes after the last save at least), the day, the log, the
+# time; a clock set earlier than the time saved at power-on is a new day; another firmware's saved project (AMB-1
+# Drift's) gives the defaults
+wait 300
+tap PLAY
+expect store_writes 0
+tap GLO
+spin K3 2
+expect sea 7
+expect dirty 1
+wait 16000
+expect dirty 1
+expect store_writes 0
+wait 300000
+expect dirty 0
+expect store_writes 1
+weather fog 100
+expect fogs 1
+settime 20 0
+tap SAVE
+expect store_writes 2
+reboot
+wait 300
+expect sea 7
+expect fogs 1
+expect logn 1
+expect setting 1
+expect min 1200
+expect day 1
+# set back to 8:00 (the next morning): a new day
+turn K1 -48
+expect min 480
+tap PLAY
+expect day 2
+expect logtype 1
+wait 310000
+reboot
+wait 300
+expect day 2
+expect min >479
+expect min <490
+# Cycle mode: no clock screen at power-on
+tap PLAY
+tap GLO
+spin K1 1
+wait 310000
+reboot
+wait 300
+expect clock 1
+expect setting 0
+expect playing 1
+# another firmware's project: the defaults
+storeamb
+reboot
+wait 300
+expect clock 0
+expect sea 5
+expect day 1
+expect logn 0
+expect setting 1
+expect min 540
+expect playing 1

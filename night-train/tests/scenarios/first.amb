@@ -1,0 +1,22 @@
+# a first look and listen: from power-on the train stands at its first station, passengers board, the doors close
+# and it pulls away; the music is there from the start, neither silent nor clipping
+wav first.wav
+wait 500
+expect playing 1
+expect station 0
+expect phase 2
+shot station.png
+wait 20000
+expect pad_level >10
+expect nlog >1
+shot boarding.png
+wait 30000
+expect phase 0
+expect station 1
+wait 60000
+expect kmh >50
+expect sixteenths >40
+shot window.png
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30

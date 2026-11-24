@@ -1,0 +1,22 @@
+# the heron: sudden silence, the fish scatter, then their notes come back
+wav heron.wav
+wait 20000
+noon
+heron
+wait 1500
+expect heron 2
+expect herons 1
+peakreset
+wait 1200
+shot heron.png
+wait 1500
+expect peak_db_max -26
+wait 2000
+expect heron 3
+peakreset
+wait 4000
+expect peak_db_min -40
+wait 4000
+expect heron 0
+shot after.png
+wavstop

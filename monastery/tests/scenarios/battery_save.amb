@@ -1,0 +1,21 @@
+# on the battery, empty (0): one save of what changed (while nobody sings), then none until it reads above 0; USB
+# (4) never counts
+battery 4
+wait 400000
+days 1
+wait 120000
+expect store_writes 0
+battery 1
+wait 120000
+expect store_writes 0
+battery 0
+wait 600000
+expect store_writes 1
+days 1
+wait 600000
+expect store_writes 1
+battery 1
+wait 5000
+battery 0
+wait 600000
+expect store_writes 2

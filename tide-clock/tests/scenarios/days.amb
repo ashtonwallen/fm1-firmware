@@ -1,0 +1,122 @@
+# days on the coast, Cycle mode at a day an hour: the world runs by itself, days are counted, things happen and are
+# logged, the flash is written rarely, and the sound is never silent or clipping (checked every 10 minutes, four
+# world hours: the quiet hours before dawn included), and it all survives a restart
+wait 300
+tap PLAY
+tap GLO
+spin K1 1
+spin K2 -4
+tap HOME
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+expect day 2
+shot day2.png
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+expect day 5
+expect logn >2
+expect trust >25
+expect store_writes <60
+shot day5.png
+tap SAVE
+reboot
+wait 300
+expect day 5
+expect logn >2
+expect clock 1
+expect trust >25
+tap SEQ
+wait 300
+shot log.png

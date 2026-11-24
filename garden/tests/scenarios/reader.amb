@@ -1,0 +1,18 @@
+# the screen reader: pages, knobs, events said in the screen's own text
+wait 200
+listen
+wait 100
+said Garden page: Tempo 72, Growth Calm, Bells 70, Pad 50
+tap ENV
+wait 300
+said Sound page: Bass 30, Echo 40, Reverb 65, Colour Rhodes
+spin K1 2
+wait 300
+said Bass 32
+tap HOME
+wait 300
+tapkey 3
+said PLANTED
+where
+said plants
+speakdump

@@ -1,0 +1,46 @@
+# the world's events: rain (everything grows fast, the hats patter), frost (the weak wither), an empty garden seeds
+# itself, bees make hybrids with two parents, the gardener keeps busy, moods move
+wait 300
+weather 2
+wait 2000
+expect rains 1
+expect weather 2
+expect par3 0
+shot rain.png
+wait 30000
+expect sixteenths >10
+weather 0
+wait 1000
+# a frost: sprouts wither
+weather 3
+wait 1000
+expect frosts 1
+expect stage2 0
+shot frost.png
+weather 0
+# nothing growing: within a minute a seed blows in over the wall
+clear
+wait 60000
+expect wild >0
+expect living >0
+shot wild.png
+# Quick, an hour and a half: bees cross flowers (hybrids, two parents), rabbits nibble, the gardener tends
+tap HOME
+spin K2 2
+wait 5400000
+expect hybrids >0
+expect lineage >0
+expect nibbles >0
+expect tended >20
+expect day >5
+expect living >0
+shot later.png
+tap SEQ
+wait 300
+shot ledger.png
+# after all that growing, the garden still saves and loads whole
+tap SAVE
+wait 20
+snap
+reboot
+expect same 1

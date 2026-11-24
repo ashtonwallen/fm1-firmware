@@ -1,0 +1,14 @@
+# a life in the pond: days pass (fast-forwarded), fish meet, make friends and rivals, have fry, grow old
+wait 500
+names
+ff 240
+names
+expect day >8
+expect meets >20
+ff 720
+names
+expect day >35
+expect died >0
+expect fish >2
+wait 3000
+shot later.png

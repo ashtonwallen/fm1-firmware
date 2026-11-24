@@ -1,0 +1,28 @@
+# the battery at the header's right (plat_battery): three bars, rust at one or none, a plug on USB power, nothing
+# until it is read; a screen reader hears it at the end of the page's summary (WHERE)
+wait 300
+expect battery 3
+shot full.png
+battery 1
+wait 100
+shot one.png
+battery 4
+wait 100
+shot usb.png
+battery -1
+wait 100
+shot unread.png
+battery 2
+tap GLO
+wait 300
+listen
+wait 100
+said Battery two thirds
+battery 4
+where
+said On USB power
+battery -1
+where
+unsaid Battery
+battery off
+expect battery 3

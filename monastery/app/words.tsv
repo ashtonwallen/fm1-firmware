@@ -1,0 +1,9 @@
+# MONASTERY's words for the screen reader (fm1-reader): the screen's text <TAB> what to say.
+# (url: a placeholder, as fm1.toml repo: nothing is published yet; a reader that cannot fetch it says the text as it is)
+# url: https://ashtonwallen.github.io/fm1-monastery/words/
+Br.	Brother
+2 h	2 hours
+1 h	1 hour
+4 h	4 hours
+8 h	8 hours
+30 min	30 minutes

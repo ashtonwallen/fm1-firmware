@@ -1,0 +1,72 @@
+# the panel: PLAY rests and sings (the world's clock stops), EDIT rings the next office, REC holds, OCT- / OCT+ the
+# pace, the knobs, the white keys (a brother), SAVE held: the sound's defaults
+wait 40000
+expect phase 1
+tap PLAY
+wait 6000
+expect playing 0
+expect pad_level <2
+shot resting.png
+expect office 1
+wait 60000
+expect office 1
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the bell, the next office
+tap EDIT
+wait 200
+expect office 2
+expect phase 0
+shot prime_bell.png
+tap EDIT
+wait 200
+expect office 3
+# REC: hold
+wait 30000
+tap REC
+wait 100
+expect frozen 1
+shot held.png
+tap REC
+wait 100
+expect frozen 0
+# the pace
+tap OCT+
+expect par0 72
+tap FX
+wait 100
+shot pace.png
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+# the chapel's knobs
+tap HOME
+spin K1 -20
+expect par0 52
+spin K2 10
+expect par2 44
+spin K4 -30
+expect par10 52
+shot knobs.png
+# SAVE held: the sound back to its defaults (the world kept)
+press SAVE
+wait 1700
+release SAVE
+expect par0 72
+expect par10 82
+expect office 3
+# a white key: a brother. Asleep, he wakes; ill, he is in the infirmary; else he stands to sing the next verse
+tapkey w4
+wait 100
+expect events >0
+wait 40000
+expect sung4 >0
+expect dirty 1
+tap SAVE
+expect dirty 0

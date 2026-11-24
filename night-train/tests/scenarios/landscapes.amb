@@ -1,0 +1,38 @@
+# the window in each landscape, and in a tunnel, on a bridge, in the rain and at a signal stop: screenshots to look at
+wait 60000
+land 0
+wait 3000
+shot forest.png
+land 1
+wait 3000
+shot coast.png
+land 2
+wait 3000
+shot city.png
+land 3
+rain 1
+wait 3000
+shot snow.png
+rain 0
+land 4
+wait 3000
+shot mountains.png
+land 5
+wait 3000
+shot villages.png
+land 6
+wait 3000
+shot lakes.png
+land 7
+rain 1
+wait 3000
+shot moors-rain.png
+rain 0
+tunnel
+wait 3000
+expect tunnel 1
+shot tunnel.png
+wait 120000
+bridge
+wait 3000
+shot bridge.png

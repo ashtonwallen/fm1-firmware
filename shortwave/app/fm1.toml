@@ -1,0 +1,19 @@
+name = "SHORTWAVE"
+id_prefix = "FM-1_82"
+usb_manufacturer = "Shortwave"
+usb_product = "SHORTWAVE FM-1"
+usb_audio_in = true
+usb_audio_out = false
+ble = false
+o2 = ["radio.c"]
+
+author = "ashtonwallen"
+licence = "MPL-2.0"
+tagline = "Four self-playing ambient radio stations"
+description = "A simulated shortwave receiver with four generative ambient stations, tuning noise, an automatic scan and a scrolling spectrum."
+tags = ["ambient", "generative", "fm"]
+# Shortwave is local. These URLs identify the underlying platform and desktop installer.
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/shortwave"
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/screen.png"
+credits = "Built on fm1-base by Charles Vestal and felucca-bsp by Leo Kuroshita and contributors."

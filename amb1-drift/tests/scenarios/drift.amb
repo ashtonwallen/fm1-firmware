@@ -1,0 +1,194 @@
+# AMB-1 Drift 1.1's sounds: the Lead, Strings and Air pages (ENV, ARP and FX again), the pad's third colour, the
+# eight new pieces (each makes sound, never clips, over two minutes), Wander into a new piece and out of one (the
+# levels glide, the texture and the pad's colour change halfway), and Drift 1.0's project (format 5) carried over
+wait 500
+tap ENV
+tap ENV
+expect view 8
+wait 100
+shot lead.png
+tap ENV
+expect view 1
+tap ARP
+tap ARP
+expect view 9
+wait 100
+shot strings.png
+tap FX
+tap FX
+expect view 10
+wait 100
+shot air.png
+tap FX
+expect view 5
+# a help card says the second page
+press ENV
+wait 1000
+shot help-env.png
+release ENV
+# the pad's third colour: Strings (Garden is Rhodes)
+tap ENV
+spin K4 2
+expect par22 2
+wait 20000
+expect pad_level >10
+shot pad-strings.png
+# the air on Garden: the sea, and its level
+tap FX
+tap FX
+spin K1 2
+expect par36 2
+spin K2 30
+expect par37 30
+spin K4 50
+expect par39 50
+wait 200
+shot air-sea.png
+peakreset
+wait 30000
+expect peak_db_max -0.5
+expect peak_db_min -30
+# SAVE held: Garden as its recipe again (all of Drift 1.1's off)
+press SAVE
+wait 1700
+release SAVE
+expect par22 0
+expect par37 0
+expect par39 0
+# the eight new pieces: each sounds, and never clips
+turn PRESET 16
+expect piece 16
+expect par28 65
+expect par37 55
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot monsoon.png
+turn PRESET 1
+expect piece 17
+expect par32 55
+expect par22 2
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot lighthouse.png
+turn PRESET 1
+expect piece 18
+expect par36 3
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+turn PRESET 1
+expect piece 19
+expect par36 1
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+turn PRESET 1
+expect piece 20
+expect par39 70
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot aurora.png
+turn PRESET 1
+expect piece 21
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+turn PRESET 1
+expect piece 22
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+turn PRESET 1
+expect piece 23
+wait 5000
+peakreset
+wait 120000
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot orchard.png
+# Wander from Monsoon into Lighthouse over 15 s: the lead and the shimmer slide in; the sea and the strings pad
+# come in halfway
+turn PRESET -7
+expect piece 16
+tap GLO
+tap GLO
+expect view 7
+spin K1 1
+spin K4 -2
+expect wander 1
+wander_skip
+wait 300
+expect wbusy 1
+expect piece 16
+wait 4500
+expect par32 >5
+expect par32 <40
+expect par39 >5
+expect par39 <35
+expect par36 0
+expect par22 1
+wait 4000
+expect piece 17
+expect par36 2
+expect par22 2
+wait 8000
+expect wbusy 0
+expect piece 17
+expect par32 55
+expect par39 45
+expect par28 0
+# and out of a new piece: Orchard into Garden (the next after the last), everything new back to off
+turn PRESET 6
+expect piece 23
+wander_skip
+wait 300
+expect wbusy 1
+wait 8000
+expect piece 0
+wait 8000
+expect wbusy 0
+expect par28 0
+expect par32 0
+expect par37 0
+expect par39 0
+expect par22 0
+peakreset
+wait 20000
+expect peak_db_min -30
+# Drift 1.0's project (format 5): the pieces and Wander kept, Drift 1.1's settings from the recipes
+storev5 33
+reboot
+wait 300
+expect piece 0
+expect par0 33
+expect wander 1
+expect wglide 1
+expect par28 0
+expect par37 0
+expect slot16p28 65
+expect slot17p32 55
+expect slot0p0 33
+expect slot13p0 90
+tap SAVE
+reboot
+wait 300
+expect par0 33
+expect wander 1
+expect slot16p28 65

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "monastery",
+  "name": "MONASTERY",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Monks sing the hours in a stone chapel",
+  "description": "MONASTERY turns the M-VAVE FM-1 into a small monastery that sings the hours by itself. Seven brothers in a stone chapel chant slow modal lines over a drone, side answering side, through a long reverb. A bell marks each office, Matins to Compline, each with its own mode, pace and singers. The brothers have their ways: the novice comes in early or misses his entry and slowly learns, the old brother sinks flat and falls ill now and then, two rivals argue over the pitch, one dozes at Matins. Their histories are kept across power-offs.",
+  "tags": ["ambient", "generative", "game"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/monastery",
+  "screenshot": "docs/img/screen-chapel.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

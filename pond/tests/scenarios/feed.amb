@@ -1,0 +1,31 @@
+# keys drop food: its note joins the scale, the fish swarm to it, the pond gets busier; ARP sprinkles
+wait 2000
+expect pool 0xAD5
+expect food 0
+key 9 down
+wait 50
+key 9 up
+wait 100
+expect food 1
+# key 9 is D4: the root, already in Lydian; key 1 is F#3... Lydian on D has G#: F (key 0) is new
+tapkey 0
+wait 100
+expect pool 0xADD
+expect food 2
+shot food.png
+tapkey 4
+tapkey 12
+tapkey 20
+wait 12000
+shot swarm.png
+expect act >38
+# the notes leave the scale after 90 s
+wait 86000
+expect pool 0xAD5
+tap ARP
+wait 200
+expect food >3
+# a MIDI note feeds too
+midi 90 3C 64
+wait 100
+expect food >4

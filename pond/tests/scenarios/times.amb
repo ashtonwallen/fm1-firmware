@@ -1,0 +1,26 @@
+# night and seasons on the screen; frogs at night (the pulse), Voices on the pad
+noon
+wait 3000
+shot summer_day.png
+season 1
+noon
+wait 3000
+shot summer.png
+night
+wait 4000
+expect tod 0
+expect par3 35
+wav night.wav
+wait 20000
+wavstop
+expect peak_db_min -40
+shot night.png
+season 2
+noon
+wait 3000
+shot autumn.png
+season 3
+noon
+wait 3000
+shot winter.png
+expect season 3

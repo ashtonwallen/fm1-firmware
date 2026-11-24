@@ -1,0 +1,64 @@
+# the controls: the clock screen (any knob, 15 minutes a detent; PLAY done), PLAY rests and plays, the pages (their
+# buttons, SELECT), setup's four knobs, EDIT sets the clock again, a help card
+wait 300
+expect setting 1
+turn K1 4
+expect min 600
+turn ALGO -8
+expect min 480
+spin SELECT 1
+expect min 495
+tap PLAY
+expect setting 0
+expect playing 1
+expect min <500
+# PLAY: rest, then play again (the world goes on)
+tap PLAY
+wait 3000
+expect playing 0
+shot resting.png
+wait 40000
+peakreset
+wait 40000
+expect peak_db_max -50
+tap PLAY
+wait 300
+expect playing 1
+# the pages
+tap SEQ
+expect view 1
+tap GLO
+expect view 2
+turn SELECT 1
+expect view 0
+turn SELECT -1
+expect view 2
+# setup: Cycle mode, a day every hour, the sea down, lights on the keys only
+spin K1 1
+expect clock 1
+spin K2 -4
+expect cycle 0
+spin K3 -2
+expect sea 3
+spin K4 1
+expect leds 2
+shot setup.png
+tap HOME
+expect view 0
+# Cycle 1 h: a world hour every 2.5 minutes
+expect min <500
+wait 150000
+expect min >553
+expect min <560
+# EDIT: the clock screen again; HOME closes it
+tap EDIT
+expect setting 1
+turn K4 -2
+tap HOME
+expect setting 0
+# a help card: SEQ held
+press SEQ
+wait 1200
+shot help.png
+release SEQ
+expect view 0

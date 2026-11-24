@@ -1,0 +1,69 @@
+# AMB-1 Drift's Wander: GLO twice is its page; on, it glides to the next piece after its wait; the key and the
+# scale change halfway; the pieces keep their own settings; a knob mid-glide ends it; it is saved; AMB-1's own
+# project (format 4) loads with the new pieces from their recipes and Wander off
+wait 500
+expect wander 0
+expect piece 0
+tap GLO
+expect view 6
+tap GLO
+expect view 7
+shot wander-page.png
+spin K1 1
+expect wander 1
+# every 2 minutes, a 15 s glide
+spin K2 -5
+spin K4 -2
+# the wait skipped: the glide starts, Garden still named until halfway
+wander_skip
+wait 300
+expect wbusy 1
+expect piece 0
+wait 8000
+expect piece 1
+expect wbusy 1
+expect par19 1
+wait 8000
+expect wbusy 0
+expect piece 1
+expect par18 60
+expect par3 0
+expect slotpad0 60
+shot after-glide.png
+# the real wait: two minutes of growing, then a 15 s glide to Voices
+wait 136000
+expect piece 2
+expect wbusy 0
+expect par22 1
+# a knob mid-glide: it ends at once, on the next piece, and the knob turns from there
+wander_skip
+wait 2000
+expect wbusy 1
+tap ENV
+spin K1 1
+expect wbusy 0
+expect piece 3
+expect par0 51
+expect slotpad2 85
+# frozen: the clock stops
+tap REC
+expect frozen 1
+wait 130000
+expect piece 3
+tap REC
+expect frozen 0
+# saved, and kept through a restart
+tap SAVE
+reboot
+wait 300
+expect wander 1
+expect piece 3
+# AMB-1 1.x's project: carried over, the new pieces as their recipes, Wander off
+storev4 33
+reboot
+wait 300
+expect piece 3
+expect par0 33
+expect wander 0
+expect slotpad13 90
+expect slotpad8 70

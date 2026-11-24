@@ -1,0 +1,39 @@
+# a first look and listen: the bell from power-on, then the abbot intones and the choir answers; the pages
+wav first.wav
+wait 200
+expect playing 1
+expect office 1
+expect phase 0
+wait 2000
+shot bell.png
+expect singing 0
+wait 30000
+expect phase 1
+expect sung0 >0
+expect pad_level >5
+shot chapel.png
+wait 60000
+shot chapel90.png
+expect bass_level >10
+wavstop
+expect peak_db_max -1
+expect peak_db_min -30
+tap ARP
+wait 200
+expect view 1
+shot brothers.png
+tap FX
+wait 200
+shot space.png
+tap GLO
+wait 200
+shot setup.png
+# SELECT steps through the pages, SEL too
+turn SELECT -3 100
+expect view 0
+tap SEL
+wait 100
+expect view 1
+tap HOME
+wait 100
+expect view 0

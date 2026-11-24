@@ -1,0 +1,27 @@
+# two nights and a bit (the clock at 2x): pints, quarrels, strangers, memorable nights; Old Tom and Rosie never
+# warm to each other; the Night setting; the regulars page and the nights page keep up
+wait 300
+timewarp 2
+wait 1200000
+expect night 1
+expect playing_n >0
+shot midnight.png
+wait 2900000
+expect night >2
+expect mem >1
+expect aff_0_1 <-50
+tap ENV
+wait 200
+shot regulars.png
+tap ARP
+wait 200
+shot nights.png
+# Night: how long a night takes, 20 minutes to 2 hours
+tap LFO
+wait 100
+turn K4 -6
+wait 200
+expect nightlen 0
+turn K4 9
+wait 200
+expect nightlen 5

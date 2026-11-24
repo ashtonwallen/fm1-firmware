@@ -1,0 +1,42 @@
+# the coast keeps itself rarely (the flash's wear): events and the clock only mark it; the world and the time are
+# saved once an hour at most
+wait 300
+tap PLAY
+expect setting 0
+# the time set at power-on is a setting: kept 5 minutes in
+wait 310000
+expect store_writes 1
+weather fog 10
+wait 600000
+expect store_writes 1
+weather storm 10
+wait 600000
+weather wind 10
+wait 600000
+weather calm
+wait 600000
+weather fog 5
+wait 600000
+expect store_writes 1
+# ~50 minutes of events, no save; the hour's save, once (the time with it)
+wait 660000
+expect store_writes 2
+weather storm 10
+wait 1200000
+expect store_writes 2
+# a setting: kept 5 s after the change, 5 minutes after the last save at least
+tap GLO
+spin K3 -1
+wait 20000
+expect store_writes 3
+expect dirty 0
+spin K3 1
+wait 60000
+expect dirty 1
+expect store_writes 3
+wait 260000
+expect store_writes 4
+expect dirty 0
+# SAVE saves at once
+tap SAVE
+expect store_writes 5

@@ -1,0 +1,6 @@
+# TIDE CLOCK's words for the screen reader (fm1-reader): the screen's text <TAB> what to say. "#" a number, "*" a
+# word left out. tools/gen_words.py makes web/words/<id>.json. No published words site yet: the reader says the
+# screen's own text, which TIDE CLOCK writes out in full for it.
+# url: https://charlesvestal.github.io/fm1-amb/words/
+# (that is AMB-1's site: this words file is not published there, so the reader says the text as it is)
+1 day / # h	one day every # hours

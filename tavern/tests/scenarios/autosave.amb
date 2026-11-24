@@ -1,0 +1,42 @@
+# the tavern keeps itself rarely (the flash's wear): tunes, quarrels and new nights only mark it; the world is saved
+# once an hour at most, between tunes
+wait 300
+expect store_writes 0
+timewarp 10
+mood2 -50
+wait 600000
+expect dirty 1
+endtune
+wait 600000
+mood4 60
+wait 600000
+endtune
+wait 600000
+mood1 -70
+wait 600000
+expect night >1
+expect store_writes 0
+# ~50 minutes of events, new nights among them, no save; the hour's save, once, between tunes
+wait 900000
+expect store_writes 1
+timewarp 1
+wait 1200000
+expect store_writes 1
+# a setting: kept a few seconds after the knobs rest (paused), 5 minutes after the last save at least
+tap PLAY
+wait 10000
+turn K1 -5
+wait 10000
+expect store_writes 2
+expect dirty 0
+turn K1 2
+wait 60000
+expect dirty 1
+expect store_writes 2
+wait 250000
+expect store_writes 3
+expect dirty 0
+# SAVE saves at once
+turn K1 1
+tap SAVE
+expect store_writes 4

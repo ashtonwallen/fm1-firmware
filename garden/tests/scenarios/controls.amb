@@ -1,0 +1,111 @@
+# the controls: keys plant seeds (in the scale, low left, high right), a seed of yours rings at once and sprouts in
+# seconds; PLAY rests (time stops), REC freezes (time stops), EDIT waters, ARP a random seed; the knobs and pages;
+# the mode; a held button's card; SAVE held 3 s: a new garden
+wait 300
+expect living 3
+expect yours 0
+# key 0 (F3): the front row's left plot; D Dorian has F
+tapkey 0
+wait 100
+expect yours 1
+expect plot6 1
+expect living 4
+shot planted.png
+# the top key (G5): the right of the front row
+tapkey 26
+wait 100
+expect plot11 1
+# a seed of yours rings within a beat and sprouts within seconds (Calm: 40 quarters = 10 s)
+wait 15000
+expect plot6 2
+expect plot11 2
+# PLAY: resting, the garden's clock stops
+tap PLAY
+wait 100
+expect playing 0
+snap
+wait 20000
+expect same 1
+tap PLAY
+wait 100
+expect playing 1
+# REC: frozen, the clock stops too
+tap REC
+wait 100
+expect frozen 1
+snap
+wait 10000
+expect same 1
+tap REC
+wait 100
+expect frozen 0
+# EDIT: the gardener waters everything
+tap EDIT
+wait 100
+shot watering.png
+# ARP: a seed at a random note
+tap ARP
+wait 100
+expect yours 3
+# the Garden's knobs: tempo, growth, bells, pad
+spin K1 3
+expect par18 75
+spin K2 1
+expect growth 2
+spin K3 -10
+expect par1 60
+wait 300
+shot knob.png
+# the pages, by button and by SELECT
+tap ENV
+expect view 1
+spin K2 5
+expect par8 45
+tap GLO
+expect view 2
+spin K1 2
+expect par19 4
+tap SEQ
+expect view 3
+turn SELECT -3
+expect view 0
+# PRESETS: the ledger, then its scroll
+turn PRESET 1
+expect view 3
+tap HOME
+# the mode: Phrygian
+turn ALGO 1
+expect par20 2
+expect pool 0x5AB
+# HOME + SELECT: tempo
+press HOME
+turn SELECT 2 100
+release HOME
+expect par18 77
+# a held button's card, which then does nothing
+press REC
+wait 1200
+shot help_rec.png
+release REC
+wait 100
+expect frozen 0
+# the octave buttons: the bells' octave
+tap OCT+
+expect par21 1
+tap OCT-
+expect par21 0
+# MIDI in: a note plants a seed
+midi 90 3C 64
+wait 50
+expect yours 4
+# SAVE held 3 s: a new garden, saved at once
+expect born >3
+press SAVE
+wait 3300
+release SAVE
+wait 100
+expect born 0
+expect living 3
+expect yours 0
+expect dirty 0
+shot new_garden.png

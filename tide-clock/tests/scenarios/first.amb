@@ -1,0 +1,26 @@
+# first power-on: it plays at once; Clock mode asks the time, starting at the time saved (9:00 the first time),
+# and the music meanwhile is the morning's; 20 s untouched and the clock screen confirms itself
+wav first.wav
+wait 300
+expect playing 1
+expect setting 1
+expect clock 0
+expect min 540
+expect phase 3
+expect day 1
+expect par18 72
+expect par19 7
+expect par20 0
+shot setclock.png
+wait 21000
+expect setting 0
+expect view 0
+shot coast.png
+wait 40000
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+# the screen reader: the coast in words
+listen
+wait 100
+said 09:01, Morning. Calm, tide rising. Day 1. Abel is mending nets

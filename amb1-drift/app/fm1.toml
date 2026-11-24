@@ -1,0 +1,24 @@
+# AMB-1 Drift's build settings (AMB-1 with Wander, new sounds and sixteen more pieces) (fm1-base's tools/build.py: ./build.sh)
+name = "AMBDRIFT"              # the build's files: ambdrift.fwsc, ambdrift-X.Y.fwsc
+id_prefix = "FM-1_74"          # package identity: dev FM-1_7400, releases FM-1_74XXYYZZ (AMB-1 is FM-1_7)
+usb_manufacturer = "AMB-1 Drift"
+usb_product = "AMB-1 Drift FM-1"
+ble = false                    # AMB-1 never uses the radio
+usb_audio_in = true            # the music recordable over USB
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/amb.c"]             # the engine, at -O2
+# the site
+tagline = "AMB-1, wandering from piece to piece"
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/amb1-drift"
+licence = "MPL-2.0"
+credits = "Built on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "Charles Vestal (AMB-1); Wander, new sounds and new pieces: ashtonwallen"
+description = "AMB-1 Drift is AMB-1 with Wander (it glides from piece to piece by itself), new sounds (plucked harp and kalimba, a strings pad, a bowed or glass lead, rain, wind, sea and vinyl, a reverb shimmer) and 24 pieces. AMB-1 turns the M-VAVE FM-1 into a generative ambient machine, inspired by Brian Eno's Music for Airports: breathing voices, soft bells on tape loops of unequal length, a gliding bass and quiet Euclidean percussion, through a tape echo and a plate reverb. You don't perform it, you tend it."
+tags = ["ambient", "generative", "fm"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+site = "https://charlesvestal.github.io/fm1-amb/"
+screenshot = "docs/img/screen-garden.png"

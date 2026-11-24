@@ -1,0 +1,35 @@
+# a whole night, the clock at 3x (the music as it is): the regulars come in, tunes come and go, someone
+# leads, last orders, "Time", the last tune, Hugh's air alone, then a new night
+wait 300
+timewarp 3
+wait 240000
+expect minute >80
+expect present >3
+expect tunes >0
+shot early.png
+wait 240000
+peakreset
+wav busy.wav
+wait 120000
+wavstop
+expect peak_db_max -1
+expect peak_db_min -30
+expect minute >200
+expect present >4
+expect tunes >2
+shot busy.png
+tap ENV
+wait 200
+shot regulars.png
+tap HOME
+wait 480000
+expect minute >360
+shot late.png
+wait 400000
+expect night 2
+expect tunes >5
+expect mem >0
+shot night2.png
+tap ARP
+wait 200
+shot memories.png

@@ -1,0 +1,15 @@
+# Per-unit and personal files: kept locally, never published
+flasher/backups/
+flasher/firmware/
+flasher/tools/
+flasher/state.json
+flasher/scripts/*.local.json
+flasher/scripts/mflash.last.log
+flasher/docs/log.md
+flasher/docs/favorites.md
+/CLAUDE.md
+flasher/CLAUDE.md
+.claude/
+
+__pycache__/
+*.tmp

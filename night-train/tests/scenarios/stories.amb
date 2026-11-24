@@ -1,0 +1,24 @@
+# the stories over many nights: the world run on alone (ff: no sound) for three days of journey, the regulars have
+# ridden and their stories moved on; the pages show it; then saved, and kept through a restart
+wait 2000
+ff 1500
+expect station >200
+expect trips1 >5
+expect beat0 >2
+expect beat1 >1
+expect beat3 >1
+wait 3000
+shot window-later.png
+tap ENV
+wait 300
+shot passengers.png
+tap SEQ
+wait 300
+shot journal.png
+story
+ff 3000
+expect beat2 >4
+expect beat4 >4
+tap ENV
+wait 300
+shot passengers-later.png

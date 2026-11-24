@@ -1,0 +1,24 @@
+[submodule "amb1-drift/base"]
+	path = amb1-drift/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "pond/base"]
+	path = pond/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "garden/base"]
+	path = garden/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "night-train/base"]
+	path = night-train/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "monastery/base"]
+	path = monastery/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "tide-clock/base"]
+	path = tide-clock/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "tavern/base"]
+	path = tavern/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "shortwave/base"]
+	path = shortwave/base
+	url = https://github.com/charlesvestal/fm1-base

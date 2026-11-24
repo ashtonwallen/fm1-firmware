@@ -1,0 +1,15 @@
+# the screen reader (fm1-reader, announce.c): each page, knob and the tavern's events are said in the
+# screen's own words
+wait 200
+listen
+wait 300
+said Tavern page
+tap ENV
+wait 300
+said Regulars page
+spin K1 -3
+wait 300
+said Mix page: Melody 67, Backing 65, Bodhran 55, Echo 15
+tap HOME
+wait 15000
+said launches into

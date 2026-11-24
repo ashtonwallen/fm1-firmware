@@ -1,0 +1,21 @@
+# a store from another firmware (AMB-1 Drift's project), or nonsense under this one's name: defaults, and
+# the tavern opens as new
+storeamb
+reboot
+wait 300
+expect night 1
+expect minute 0
+expect par0 70
+expect nightlen 3
+expect aff_0_1 <-60
+expect playing 1
+wait 15000
+expect sess 1
+storejunk
+reboot
+wait 300
+expect night 1
+expect minute 0
+expect mood0 -15
+expect playing 1
+shot fresh.png

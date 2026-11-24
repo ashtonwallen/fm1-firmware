@@ -1,0 +1,21 @@
+# on the battery, empty (0): one save of what changed (between tunes), then none until it reads above 0; USB (4)
+# never counts
+battery 4
+wait 400000
+mood2 -50
+wait 60000
+expect store_writes 0
+battery 1
+wait 60000
+expect store_writes 0
+battery 0
+wait 400000
+expect store_writes 1
+mood3 40
+wait 600000
+expect store_writes 1
+battery 1
+wait 5000
+battery 0
+wait 400000
+expect store_writes 2

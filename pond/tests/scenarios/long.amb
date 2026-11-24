@@ -1,0 +1,8 @@
+# ten minutes of the pond, heard: never silent, never clipping
+wav long.wav
+wait 600000
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+expect meets >5
+shot long.png

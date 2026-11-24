@@ -1,0 +1,33 @@
+# the pond survives a power-off: the same fish, the same day; settings too
+wait 1000
+ff 120
+spin K1 -20
+wait 200
+expect busy 30
+tap SAVE
+wait 300
+expect store_writes >0
+expect day 6
+reboot
+wait 500
+expect busy 30
+expect day 6
+expect fish >2
+shot rebooted.png
+# another firmware's data (AMB-1 Drift's) gives a new pond, not garbage
+storeamb
+reboot
+wait 500
+expect day 1
+expect fish 5
+expect busy 50
+expect playing 1
+# SAVE held 3 s: a new pond
+ff 60
+expect day 3
+press SAVE
+wait 3300
+release SAVE
+wait 300
+expect day 1
+expect fish 5

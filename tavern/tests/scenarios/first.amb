@@ -1,0 +1,35 @@
+# power-on: the tavern opens and someone starts a tune by itself; the pages; a minute of music
+wav first.wav
+wait 300
+expect playing 1
+expect wstate 0
+expect present >0
+wait 15000
+expect sess 1
+expect wstate 1
+expect playing_n >0
+expect live >0
+shot tavern.png
+wait 45000
+shot tavern60.png
+expect playing_n >1
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+tap ENV
+wait 100
+shot regulars.png
+tap ARP
+wait 100
+shot nights.png
+tap FX
+wait 100
+shot mix.png
+tap LFO
+wait 100
+shot room.png
+tap GLO
+wait 100
+shot setup.png
+turn SELECT -5 100
+expect view 0

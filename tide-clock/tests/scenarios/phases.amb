@@ -1,0 +1,73 @@
+# the day in Clock mode, phase by phase (calm weather held): the music's targets follow the time, the engine's values
+# get there by small steps, the key changes with the phase; the keeper's routine, the lamp, the boats
+tap PLAY
+weather calm 5000
+settime 1 0
+wait 60000
+expect phase 0
+expect act 0
+expect lamp 1
+expect boatsout 0
+expect tgt18 48
+expect par18 48
+expect par19 2
+expect par20 5
+expect par22 1
+expect par3 0
+shot night.png
+# before dawn: quieter still, the lowest
+settime 4 45
+wait 60000
+expect phase 1
+expect par18 44
+expect par20 1
+expect tgt1 <12
+# dawn: boats going out, the keeper watching them
+settime 6 10
+wait 30000
+expect phase 2
+expect act 2
+expect boatsout >0
+expect par19 7
+expect par20 4
+shot dawn.png
+# midday: full, quick, bright, Lydian
+settime 12 29
+wait 60000
+expect phase 4
+expect par18 >80
+expect par19 0
+expect par20 3
+expect par3 >40
+expect lamp 0
+expect boatsout 3
+expect act 7
+shot midday.png
+# evening: the lamp lit at 18:30, boats home by 19:45
+settime 18 22
+wait 30000
+expect act 10
+expect lamp 0
+wait 600000
+expect lamp 1
+expect phase 6
+expect par20 0
+expect par22 0
+shot evening.png
+settime 21 0
+wait 30000
+expect boatsout 0
+expect act 12
+expect phase 7
+expect par19 9
+expect par20 5
+# no jumps: a clock moved from night to midday takes the music there gradually
+settime 1 0
+wait 60000
+expect par18 48
+settime 12 30
+wait 1000
+expect tgt18 >80
+expect par18 <52
+wait 20000
+expect par18 >60

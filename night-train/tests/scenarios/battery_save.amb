@@ -1,0 +1,23 @@
+# on the battery, empty (0): one save of what changed (standing: once untouched a few seconds; running: at a
+# station), then none until it reads above 0; USB (4) never counts
+battery 4
+wait 400000
+tap PLAY
+wait 10000
+expect playing 0
+expect store_writes 0
+battery 1
+wait 30000
+expect store_writes 0
+battery 0
+wait 10000
+expect store_writes 1
+tap PLAY
+ff 10
+wait 600000
+expect store_writes 1
+battery 1
+wait 5000
+battery 0
+wait 1300000
+expect store_writes 2

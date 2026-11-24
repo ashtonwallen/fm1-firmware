@@ -1,0 +1,27 @@
+# half an hour of the garden at Quick growth: everything happens by itself, plants come and go, families form; it
+# never goes silent, never clips
+wait 300
+tap HOME
+spin K2 2
+expect growth 3
+wav long.wav
+wait 600000
+shot h10.png
+wait 1200000
+shot h30.png
+expect born >30
+expect died >20
+expect lineage >0
+expect living >0
+expect day >1
+expect tended >10
+expect rung >1000
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+# after all that growing, the garden still saves and loads whole
+tap SAVE
+wait 20
+snap
+reboot
+expect same 1

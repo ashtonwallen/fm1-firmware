@@ -1,0 +1,24 @@
+# on the battery, empty (0): one save of what changed, then none until it reads above 0; USB (4) never counts
+# (the time set at power-on is a setting: kept 5 minutes in)
+wait 300
+tap PLAY
+battery 4
+wait 400000
+expect store_writes 1
+weather fog 10
+wait 360000
+expect store_writes 1
+battery 1
+wait 30000
+expect store_writes 1
+battery 0
+wait 70000
+expect store_writes 2
+weather storm 10
+wait 600000
+expect store_writes 2
+battery 1
+wait 5000
+battery 0
+wait 70000
+expect store_writes 3

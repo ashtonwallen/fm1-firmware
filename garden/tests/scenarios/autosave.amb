@@ -1,0 +1,41 @@
+# the garden keeps itself rarely (the flash's wear): events only mark it; the world is saved once an hour at most
+wait 300
+expect saves 0
+tapkey 5
+wait 600000
+expect saves 0
+tapkey 9
+age 400
+wait 600000
+weather 2
+tap ARP
+wait 600000
+tapkey 12
+wait 600000
+age 400
+wait 600000
+expect store_writes 0
+# ~50 minutes of events, no save; the hour's save, once
+wait 660000
+expect store_writes 1
+tapkey 7
+wait 1200000
+expect store_writes 1
+# a setting: kept after a debounce, 5 minutes after the last save at least
+spin K3 -5
+wait 10000
+expect store_writes 2
+expect dirty 0
+spin K3 2
+wait 60000
+expect dirty 1
+expect store_writes 2
+wait 250000
+expect store_writes 3
+expect dirty 0
+# SAVE saves at once
+spin K3 1
+wait 300
+tap SAVE
+wait 300
+expect store_writes 4

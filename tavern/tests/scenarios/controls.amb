@@ -1,0 +1,72 @@
+# the controls: PLAY pauses (and the night with it), REC buys a round (once an hour), EDIT calls a tune
+# between tunes, a key sets the next tune's key, the knobs mix, SAVE saves
+wait 300
+wait 15000
+expect sess 1
+# PLAY: quiet, and the clock stops
+tap PLAY
+wait 3000
+expect playing 0
+expect minute 1
+wait 20000
+expect minute 1
+shot paused.png
+tap PLAY
+wait 500
+expect playing 1
+# REC: a round for the house: every glass full
+tap REC
+wait 300
+expect thirst3 0
+expect drinks3 1
+shot round.png
+# again within the hour: Hugh says no
+tap REC
+wait 300
+expect drinks3 1
+# the knobs: the Mix page from any page
+tap FX
+wait 100
+expect view 3
+expect par0 >0
+turn K1 -80
+wait 200
+expect par0 0
+turn K1 30
+wait 200
+expect par0 30
+shot mix.png
+# a knob on the tavern page goes to the mix
+tap HOME
+wait 100
+turn K3 -5
+wait 200
+expect view 3
+tap HOME
+wait 100
+# EDIT during a tune: "another after this!"; the room held between tunes, EDIT calls one at once, and a
+# key (w1: G) picks its key
+tap EDIT
+wait 300
+endtune
+hold 600000
+wait 150000
+expect wstate 0
+expect sess 0
+tapkey w1
+wait 200
+tap EDIT
+wait 3000
+expect wstate 1
+expect sess 1
+expect root 7
+shot called.png
+# the help card: a button held; SAVE saves
+press SAVE
+wait 1200
+shot help.png
+release SAVE
+wait 300
+tap SAVE
+wait 300
+expect dirty 0

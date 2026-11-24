@@ -1,0 +1,65 @@
+# the controls: the window's knobs (Stretch, Clack, Tone, Space) say themselves in the header; the pages; the
+# journal scrolls; PRESETS sends the train express to the next station; PLAY stands the train still and runs it again;
+# a held button shows its card; a key rings a bell
+wait 60000
+expect phase 0
+expect stretch 1
+spin K1 1
+expect stretch 2
+wait 100
+shot knob.png
+spin K2 -20
+expect clack 50
+spin K3 10
+expect tone 10
+wait 3000
+expect par28 <51
+# pages
+tap SEQ
+expect view 1
+wait 300
+shot journal.png
+spin K1 2
+expect scroll 2
+turn ALGO -2
+expect scroll 0
+tap ENV
+expect view 2
+wait 300
+shot passengers.png
+tap GLO
+expect view 3
+wait 300
+shot setup.png
+spin K1 5
+wait 200
+expect par16 5
+turn SELECT -3
+expect view 0
+# express: at the next station within a few minutes
+turn PRESET 1
+wait 40000
+expect phase 1
+wait 60000
+expect phase 2
+expect station 2
+shot express-station.png
+# PLAY: the train stands, the journey stops with it
+tap PLAY
+wait 200
+expect playing 0
+expect phase 2
+wait 120000
+expect phase 2
+expect station 2
+tap PLAY
+wait 200
+expect playing 1
+# a card: held SAVE
+press SAVE
+wait 1200
+shot help.png
+release SAVE
+# a key: a bell
+tapkey 5
+wait 500

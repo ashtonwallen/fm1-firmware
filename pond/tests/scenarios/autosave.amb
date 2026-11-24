@@ -1,0 +1,43 @@
+# the pond keeps itself rarely (the flash's wear): events only mark it; the world is saved once an hour at most
+wait 1000
+expect store_writes 0
+ff 30
+heron
+wait 600000
+expect hush >0
+heron
+ff 20
+wait 600000
+heron
+wait 600000
+ff 20
+heron
+wait 600000
+heron
+wait 600000
+expect store_writes 0
+# ~50 minutes of events, no save; the hour's save, once, at a quiet moment
+wait 780000
+expect store_writes 1
+expect playing 1
+heron
+wait 1200000
+expect store_writes 1
+# a setting: kept after a debounce, 5 minutes after the last save at least
+spin K1 -20
+wait 10000
+expect store_writes 2
+expect dirty 0
+spin K1 5
+wait 60000
+expect dirty 1
+expect store_writes 2
+wait 250000
+expect store_writes 3
+expect dirty 0
+# SAVE saves at once
+spin K1 5
+wait 300
+tap SAVE
+wait 300
+expect store_writes 4
