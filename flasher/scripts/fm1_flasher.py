@@ -159,14 +159,20 @@ STATE = ROOT / "state.json"
 PRIVATE = ("backup", "favorite")
 
 
-# Who made each firmware: catalog "made" is "Claude" or "ChatGPT"; no "made" means downloaded from its author.
-MADE_ORDER = ("downloaded", "Claude", "ChatGPT")
+# Who made each firmware: catalog "made" is "Claude" or "ChatGPT" (built in this project, shown in OWN_FG in the
+# list); no "made" means downloaded from its author. The firmware's page names the model.
 MADE_LABEL = {"downloaded": "Downloaded", "Claude": "Made by Claude", "ChatGPT": "Made by ChatGPT"}
-MADE_FG = {"downloaded": None, "Claude": "#e59a72", "ChatGPT": "#6cc8ad"}
+OWN_FG = "#e59a72"
+# The list's sections, in order (catalog "category"); anything else goes under "Other".
+CATEGORIES = ("Music generators", "Ambient", "Visual generators", "Worlds", "Instruments and grooveboxes", "Other")
 
 
 def made(fw):
-    return fw.get("made") if fw.get("made") in MADE_FG else "downloaded"
+    return fw.get("made") if fw.get("made") in MADE_LABEL else "downloaded"
+
+
+def category(fw):
+    return fw.get("category") if fw.get("category") in CATEGORIES else "Other"
 
 
 def load_catalog():
@@ -325,15 +331,16 @@ def run_app(smoke=False):
     lst.pack(side="top", fill="y", expand=True, pady=4)
     legend = tk.Frame(left, bg=BG)
     legend.pack(side="top", fill="x")
-    for who in MADE_ORDER:
-        tk.Label(legend, text="● " + MADE_LABEL[who], bg=BG, fg=MADE_FG[who] or FG,
-                 font=("Segoe UI", 9)).pack(side="left", padx=(0, 10))
+    tk.Label(legend, text="● Yours (Claude or ChatGPT)", bg=BG, fg=OWN_FG, font=("Segoe UI", 9)).pack(side="left")
+    tk.Label(legend, text="● Downloaded", bg=BG, fg=FG, font=("Segoe UI", 9)).pack(side="left", padx=(10, 0))
     right = tk.Frame(body, bg=BG)
     right.pack(side="left", fill="both", expand=True, padx=(14, 0))
     title = tk.Label(right, text="", bg=BG, fg=FG, font=("Segoe UI Semibold", 14), anchor="w")
     title.pack(fill="x")
     sub = tk.Label(right, text="", bg=BG, fg=ACC, anchor="w")
     sub.pack(fill="x")
+    who = tk.Label(right, text="", bg=BG, fg=DIM, anchor="w")
+    who.pack(fill="x")
     detail = tk.Text(right, bg=BG, fg=FG, wrap="word", borderwidth=0, highlightthickness=0, height=12,
                      font=("Segoe UI", 10))
     detail.pack(fill="both", expand=True, pady=(6, 6))
@@ -360,30 +367,59 @@ def run_app(smoke=False):
     def say(text):
         q.put(("log", text))
 
+    rows = []                                # the list's rows: a firmware, or None for a section heading
+
     def items():
         fws = cat["data"]["firmwares"]
-        return sorted(fws, key=lambda f: (not f.get("favorite"), MADE_ORDER.index(made(f)), f["name"].lower()))
+        return sorted(fws, key=lambda f: (CATEGORIES.index(category(f)), not f.get("favorite"), f["name"].lower()))
 
     def fill_list():
-        sel = lst.curselection()
+        cur = selected()
         lst.delete(0, "end")
-        for i, fw in enumerate(items()):
+        rows.clear()
+        last = None
+        for fw in items():
+            if category(fw) != last:
+                last = category(fw)
+                if rows:
+                    lst.insert("end", "")
+                    rows.append(None)
+                    lst.itemconfig("end", selectbackground=PANEL)
+                lst.insert("end", last.upper())
+                rows.append(None)
+                lst.itemconfig("end", fg=DIM, selectbackground=PANEL, selectforeground=DIM)
             lst.insert("end", f"{'★ ' if fw.get('favorite') else '   '}{fw['name']}  {fw['version']}")
-            if MADE_FG[made(fw)]:
-                lst.itemconfig(i, fg=MADE_FG[made(fw)])
-        lst.selection_set(sel[0] if sel else 0)
+            rows.append(fw)
+            if made(fw) != "downloaded":
+                lst.itemconfig("end", fg=OWN_FG)
+        at = next((i for i, r in enumerate(rows) if r is not None and cur is not None and r["id"] == cur["id"]),
+                  next(i for i, r in enumerate(rows) if r is not None))
+        lst.selection_set(at)
+        lst.see(at - 1 if at else 0)         # its heading too
         show()
 
     def selected():
         s = lst.curselection()
-        return items()[s[0]] if s else None
+        return rows[s[0]] if s and s[0] < len(rows) else None
+
+    def on_select(_=None):
+        s = lst.curselection()
+        if s and rows[s[0]] is None:         # a heading: on to the firmware below it
+            nxt = next((i for i in range(s[0] + 1, len(rows)) if rows[i] is not None), None)
+            lst.selection_clear(0, "end")
+            if nxt is not None:
+                lst.selection_set(nxt)
+                lst.see(nxt)
+        show()
 
     def show(_=None):
         fw = selected()
         if not fw:
             return
         title.config(text=f"{fw['name']}  {fw['version']}")
-        sub.config(text=f"{fw.get('kind', '')}   ·   {MADE_LABEL[made(fw)]}")
+        sub.config(text=fw.get("kind", ""))
+        who.config(text=f"{category(fw)}   ·   {MADE_LABEL[made(fw)]}",
+                   fg=OWN_FG if made(fw) != "downloaded" else DIM)
         detail.config(state="normal")
         detail.delete("1.0", "end")
         detail.insert("end", fw["about"] + "\n\nHow to use it\n" + fw["how"]
@@ -484,7 +520,7 @@ def run_app(smoke=False):
         backups[:] = list_backups()
         combo.config(values=[b[0] for b in backups])
 
-    lst.bind("<<ListboxSelect>>", show)
+    lst.bind("<<ListboxSelect>>", on_select)
     combo.bind("<<ComboboxSelected>>", lambda _: set_buttons())
     b_install.config(command=on_install)
     b_mine.config(command=on_mine)

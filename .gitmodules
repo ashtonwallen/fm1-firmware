@@ -40,3 +40,18 @@
 [submodule "patch-bay/base"]
 	path = patch-bay/base
 	url = https://github.com/charlesvestal/fm1-base
+[submodule "bossa-lounge/base"]
+	path = bossa-lounge/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "deep-house/base"]
+	path = deep-house/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "felt-piano/base"]
+	path = felt-piano/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "dub-desk/base"]
+	path = dub-desk/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "chip-tracker/base"]
+	path = chip-tracker/base
+	url = https://github.com/charlesvestal/fm1-base
