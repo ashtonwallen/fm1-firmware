@@ -81,7 +81,8 @@ class Device:
         code, out = mf(*args, timeout=timeout)
         if out:
             self.say(out)
-        if code != 0 or (need and need not in out):
+        needs = (need,) if isinstance(need, str) else need
+        if code != 0 or (needs and not any(n in out for n in needs)):
             raise StepFailed(f"{label} did not finish as expected (exit code {code}).")
         return out
 
@@ -126,11 +127,11 @@ class Device:
 
     def write_firmware(self, fwsc):
         return self.step("Write the firmware", "firmware", fwsc, "--yes",
-                         need="everything written is verified", timeout=300)
+                         need=("everything written is verified", "flash already holds this"), timeout=300)
 
     def write_restore(self, bin_path):
         return self.step("Write the backup back", "restore", bin_path, "--keep-bootloader", "--yes",
-                         need="verified", timeout=300)
+                         need=("verified", "flash already holds this"), timeout=300)
 
     def restart(self):
         self.step("Restart", "restart", timeout=60)
