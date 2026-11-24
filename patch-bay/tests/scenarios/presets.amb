@@ -1,0 +1,125 @@
+# every preset makes sound by itself, in its own key and tempo, and stays musical
+master 4096
+wait 300
+expect preset 0
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p0.png
+turn PRESET 1
+expect preset 1
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p1.png
+turn PRESET 1
+expect preset 2
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p2.png
+turn PRESET 1
+expect preset 3
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p3.png
+turn PRESET 1
+expect preset 4
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p4.png
+turn PRESET 1
+expect preset 5
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p5.png
+turn PRESET 1
+expect preset 6
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p6.png
+turn PRESET 1
+expect preset 7
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p7.png
+turn PRESET 1
+expect preset 8
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p8.png
+turn PRESET 1
+expect preset 9
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p9.png
+turn PRESET 1
+expect preset 10
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p10.png
+turn PRESET 1
+expect preset 11
+expect musical 1
+wait 4000
+peakreset
+wait 8000
+expect level >15
+expect peak_db_max -1
+expect peak_db_min -24
+shot p11.png
+# and round to the first
+turn PRESET 1
+expect preset 0

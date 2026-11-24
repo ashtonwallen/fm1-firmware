@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new track
+wait 300
+listen
+wait 300
+where
+wait 300
+said Radio page: Swing 45, Dust 35, Tempo 80, Mood Mellow. Style Study, playing
+tap ENV
+wait 400
+said Mix page
+spin K1 -3
+wait 300
+said Keys 67
+tap EDIT
+wait 300
+said NEXT TRACK
+wait 6000
+said Track 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY STYLE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said PAUSED
+where
+wait 300
+said Style Study, paused
+speakdump

@@ -1,0 +1,18 @@
+# a long run: 45 minutes on the default preset, then 20 on the loudest ones; the peak stays clear of clipping and
+# new pieces keep coming
+wait 2000
+peakreset
+wait 2700000
+expect peak_db_max -2
+expect peak_db_min -30
+expect pieces >4
+expect iramachanges >2
+shot long.png
+turn PRESET 5
+peakreset
+wait 600000
+expect peak_db_max -1.5
+turn PRESET -1
+peakreset
+wait 600000
+expect peak_db_max -1.5

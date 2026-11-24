@@ -1,0 +1,30 @@
+# saving by itself, rarely: a setting once the knobs rest and 5 minutes have passed since the last save; the
+# evolved loops at most hourly; each in a quiet moment (the last sixteenth of a bar faded)
+master 4096
+wait 300
+spin K3 5
+expect dirty 1
+wait 8000
+expect store_writes 0
+autosave_skip 6
+wait 6000
+expect store_writes 1
+expect dirty 0
+# a setting again: not within 5 minutes of the last save
+spin K2 50
+wait 7000
+expect store_writes 1
+autosave_skip 6
+wait 7000
+expect store_writes 2
+# mutations alone: not within the hour
+wait 30000
+expect muts >2
+expect store_writes 2
+autosave_skip 61
+wait 6000
+expect store_writes 3
+# the save's quiet moment is short: the music goes on
+peakreset
+wait 2000
+expect peak_db_min -30

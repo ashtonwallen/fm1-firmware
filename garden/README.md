@@ -31,6 +31,14 @@ Every plant has a name (Lantern Rose, Moss Bell) and parents. Ledger page lists 
 
 Fuller garden: brighter, denser bells, quieter pad. Sparse garden: more pad and reverb, slower chords.
 
+## Presets
+
+LFO steps through thirteen sound palettes, SEL steps back: Cottage (as 1.0), Zen, Moonlight, Greenhouse, Wildflower,
+Herb, Rain Garden, Orchard Wall, Winter Bed, Kitchen Garden, Rose Arbour, Fern Hollow, Sundial. Name shows on screen.
+Each recolours the garden: key, mode, tempo, space, and AMB-1 Drift 1.1's strings, lead, air and shimmer. Plants,
+phrases, gardener and ledger stay as they are. Kept with the settings. Pad colour stays yours (Sound page: Colour, now
+with Strings). Details: `docs/presets.md`.
+
 ## Controls
 
 | | |
@@ -41,6 +49,7 @@ Fuller garden: brighter, denser bells, quieter pad. Sparse garden: more pad and 
 | HOME · ENV · GLO · SEQ | Pages: Garden, Sound, Setup, Ledger. SELECT steps through |
 | KNOB 1–4 | Garden: Tempo, Growth, Bells, Pad. Sound: Bass, Echo, Reverb, Colour. Setup: Root, Tune, MIDI out, Lights |
 | ALGORITHM | Mode (the scale) |
+| LFO · SEL | Next · last preset |
 | PRESETS | Scroll the ledger |
 | OCT− / OCT+ | Bells' octave |
 | SAVE | Save. Hold 3 s: new garden |
@@ -51,11 +60,11 @@ USB audio as AMB-1: no level setting of its own.
 
 ## Build
 
-See `CLAUDE.md`. `./build.sh --release 1.0` in WSL makes `app/build/garden-1.0.fwsc`.
+See `CLAUDE.md`. `./build.sh --release 1.1` in WSL makes `app/build/garden-1.1.fwsc`.
 
 ## Credits
 
 Engine (pad, FM bells, bass, echo, tape loop, plate reverb), UI helpers and build: [AMB-1](https://github.com/charlesvestal/fm1-amb)
-by Charles Vestal. Platform: [fm1-base](https://github.com/charlesvestal/fm1-base) and
+by Charles Vestal. Strings, lead, air and shimmer from AMB-1 Drift 1.1. Platform: [fm1-base](https://github.com/charlesvestal/fm1-base) and
 [felucca-bsp](https://github.com/hugelton/felucca-bsp), from Felucca by Leo Kuroshita (Hügelton Instruments).
 MPL-2.0. See `LICENSING.md`.

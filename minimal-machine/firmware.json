@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "minimal",
+  "name": "MINIMAL MACHINE",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless minimal techno from phasing loops",
+  "description": "MINIMAL MACHINE turns the M-VAVE FM-1 into endless minimal techno. Six short loops (a deep kick, soft hats, a rim or clap, a dub chord stab through a ping-pong echo, a sub bass and a small bleep) each run at their own length, so they phase against each other slowly. Every few bars one step or one sound mutates; it evolves without ever jumping. Twelve presets, four knobs that matter: Density, Drift, Filter, Echo.",
+  "tags": ["generative", "drum-machine", "groovebox", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/minimal-machine",
+  "screenshot": "docs/img/screen-machine.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

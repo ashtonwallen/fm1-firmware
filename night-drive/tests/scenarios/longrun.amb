@@ -1,0 +1,15 @@
+# a long drive at full MASTER: the limiter holds the peaks (never clipping), the sections and keys move on and the
+# music never stops; then at the middle of MASTER, a quieter peak still
+master 4096
+spin K4 60
+wait 1200000
+expect peak_db_max -4
+expect peak_db_min -12
+expect keychanges >1
+expect sixteenths >8000
+expect playing 1
+peakreset
+master 2048
+wait 600000
+expect peak_db_max -5
+expect peak_db_min -24

@@ -1,0 +1,47 @@
+# what is kept: the presets' knobs, the setup, the preset playing, the odometer. A setting is saved 5 s after it
+# rests, at most every 5 minutes, at a quiet moment; the odometer at most once an hour
+wait 300
+spin K1 5
+turn PRESET 1
+spin K2 7
+expect preset 1
+expect bright 67
+expect dirty 1
+wait 16000
+expect dirty 1
+expect store_writes 0
+wait 300000
+wait 190000
+expect dirty 0
+expect store_writes 1
+# another change soon after: it waits out the 5 minutes since the last save
+tap GLO
+spin K1 -10
+expect drums 60
+wait 60000
+expect dirty 1
+expect store_writes 1
+wait 250000
+wait 190000
+expect dirty 0
+expect store_writes 2
+reboot
+wait 300
+expect preset 1
+expect bright 67
+expect drums 60
+expect playing 1
+turn PRESET -1
+expect speed 105
+# the odometer: driven miles, saved within the hour (nothing else changed)
+tap SAVE
+expect store_writes 3
+odo 500
+wait 3000000
+expect store_writes 3
+wait 800000
+expect store_writes 4
+expect odo >520
+reboot
+wait 300
+expect odo >520

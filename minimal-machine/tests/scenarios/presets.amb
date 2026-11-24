@@ -1,0 +1,101 @@
+# every preset makes sound by itself: PRESETS steps through all twelve, each heard for a few bars
+master 4096
+wait 300
+expect preset 0
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p00.png
+turn PRESET 1
+expect preset 1
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p01.png
+turn PRESET 1
+expect preset 2
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p02.png
+turn PRESET 1
+expect preset 3
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p03.png
+turn PRESET 1
+expect preset 4
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p04.png
+turn PRESET 1
+expect preset 5
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p05.png
+turn PRESET 1
+expect preset 6
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p06.png
+turn PRESET 1
+expect preset 7
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p07.png
+turn PRESET 1
+expect preset 8
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p08.png
+turn PRESET 1
+expect preset 9
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p09.png
+turn PRESET 1
+expect preset 10
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p10.png
+turn PRESET 1
+expect preset 11
+peakreset
+wait 4000
+expect peak_db_min -30
+expect peak_db_max -1
+shot p11.png
+# round again to the first; each preset's own tempo and key come with it
+turn PRESET 1
+expect preset 0
+expect par12 118
+expect par13 5
+turn PRESET 1
+expect par12 126
+expect par13 9
+# OCT- and OCT+ step through them too
+tap OCT-
+expect preset 0
+tap OCT-
+expect preset 11
+tap OCT+
+expect preset 0

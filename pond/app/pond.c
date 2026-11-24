@@ -193,12 +193,77 @@ static void pd_event(int fish, const char *t, int keep)
     }
 }
 
+/* ------------------------------------------------------------ presets --- */
+/* PRESETS (1.1): a palette for the pond, over the player's Mix and the pond's own shaping. The key moved, the season's
+ * mode a step brighter or darker (or pentatonic), the tempo scaled, the pad's colour, AMB-1 Drift 1.1's strings, lead,
+ * air and shimmer, and the space. Only the sound changes: the fish, their notes (steps of the scale), friends, the
+ * day and the journal stay as they are. Mill Pond (0) is the pond as 1.0 sang it. Saved with the settings. */
+#define PR_PENT 9                        /* mode: the pentatonic of the season's mode (major or minor) */
+typedef struct {
+    const char *name;
+    int8_t key;                          /* semitones the key moves (from the player's Root) */
+    int8_t mode;                         /* +1 a step brighter, -1 darker, PR_PENT pentatonic, 0 the season's */
+    uint8_t tempo;                       /* percent of the player's tempo */
+    int8_t pt;                           /* the pad's colour: -1 the pond's (Voices by night), 0 Rhodes, 1 Voices, 2 Strings */
+    int8_t tex;                          /* the air's texture (0 rain, 1 wind, 2 sea, 3 vinyl); its level is in d */
+    int8_t d[P_NPARAMS];                 /* added to the values */
+} preset_t;
+static const preset_t PRESETS[NPRESETS] = {
+    {"Mill Pond", 0, 0, 100, -1, 0, {0}},
+    {"Koi Garden", 5, PR_PENT, 95, 0, -1, {[P_PLUCK] = 45, [P_PLTONE] = 50, [P_BTONE] = 15, [P_BELLS] = 5,
+                                           [P_REVERB] = -5, [P_SWING] = 10}},
+    {"Lily Night", 0, -1, 85, 1, -1, {[P_LEAD] = 35, [P_LDTONE] = 40, [P_SHIMMER] = 30, [P_BRIGHT] = -10,
+                                      [P_REVERB] = 10, [P_BELLS] = -5}},
+    {"Mountain Tarn", -2, -1, 80, 2, 1, {[P_TEXLVL] = 35, [P_TEXMOD] = 20, [P_LEAD] = 35, [P_LDTONE] = -35,
+                                         [P_LDOCT] = -1, [P_REVERB] = 15, [P_SIZE] = 5, [P_BELLS] = -10}},
+    {"Rain Pond", 0, 0, 95, -1, 0, {[P_TEXLVL] = 45, [P_TEXMOD] = 10, [P_PLUCK] = 25, [P_PLTONE] = -10,
+                                    [P_BRIGHT] = -5, [P_ECHO] = 10}},
+    {"Frozen Edge", 1, -1, 75, 2, 1, {[P_SHIMMER] = 45, [P_BTONE] = 30, [P_BOCT] = 1, [P_PULSE] = -100,
+                                      [P_TEXLVL] = 25, [P_TEXMOD] = 30, [P_BRIGHT] = -15, [P_REVERB] = 10}},
+    {"Lotus Temple", -3, PR_PENT, 80, 1, -1, {[P_LEAD] = 30, [P_LDTONE] = 45, [P_REVERB] = 15, [P_SIZE] = 5,
+                                              [P_BELLS] = -5, [P_SHIMMER] = 20, [P_PULSE] = -50}},
+    {"Willow Bank", 0, 1, 100, 0, 1, {[P_PLUCK] = 40, [P_PLTONE] = -15, [P_TEXLVL] = 15, [P_PULSE] = -10,
+                                      [P_ECHO] = 5}},
+    {"Dragonfly Noon", 2, 1, 115, 0, -1, {[P_PLUCK] = 40, [P_PLTONE] = 45, [P_BRIGHT] = 15, [P_PULSE] = 15,
+                                          [P_HATS] = 15, [P_SWING] = 20, [P_REVERB] = -10, [P_BELLS] = 5}},
+    {"Bog Mist", -4, -1, 85, 1, 1, {[P_TEXLVL] = 20, [P_TEXMOD] = 30, [P_ECHO] = 20, [P_BRIGHT] = -20,
+                                    [P_LEAD] = 30, [P_LDTONE] = -40, [P_LDOCT] = -1, [P_BELLS] = -10}},
+    {"Moon Pool", 0, 0, 85, 2, -1, {[P_SHIMMER] = 40, [P_LEAD] = 30, [P_LDTONE] = 45, [P_LDOCT] = 1,
+                                    [P_BELLS] = -10, [P_REVERB] = 10}},
+    {"Spring Thaw", 0, 1, 105, -1, 0, {[P_TEXLVL] = 22, [P_PLUCK] = 35, [P_PLTONE] = 20, [P_BRIGHT] = 10,
+                                       [P_DENSITY] = 10}},
+    {"Old Well", -5, -1, 90, 0, 3, {[P_TEXLVL] = 30, [P_ECHO] = 15, [P_BASS] = 10, [P_BRIGHT] = -10,
+                                    [P_REVERB] = -5, [P_PLUCK] = 25, [P_PLTONE] = -10, [P_PLOCT] = -1}},
+};
+static const preset_t *preset(void) { return &PRESETS[proj.preset < NPRESETS ? proj.preset : 0]; }
+const char *pd_preset_name(int i) { return PRESETS[(unsigned)i < NPRESETS ? i : 0].name; }
+
+static int mode_shift(int m, int s)      /* the modes, brightest first: Lydian, Ionian, Mixolydian, Dorian, Aeolian, Phrygian */
+{
+    static const uint8_t ORDER[6] = {MODE_LYDIAN, MODE_IONIAN, MODE_MIXOLYDIAN, MODE_DORIAN, MODE_AEOLIAN, MODE_PHRYGIAN};
+    int r;
+    if (!s)
+        return m;
+    if (m == MODE_PENT_MAJ)
+        m = MODE_IONIAN;
+    else if (m == MODE_PENT_MIN)
+        m = MODE_AEOLIAN;
+    for (r = 0; r < 6 && ORDER[r] != m; r++)
+        ;
+    if (s == PR_PENT)
+        return r <= 2 ? MODE_PENT_MAJ : MODE_PENT_MIN;
+    r -= s;
+    return ORDER[r < 0 ? 0 : r > 5 ? 5 : r];
+}
+int pd_root(void) { return ((proj.par[P_ROOT] + preset()->key) % 12 + 12) % 12; }   /* the key, as the preset moves it */
+static int pd_mode(void) { return mode_shift(SEASON_MODE[pd_season()], preset()->mode); }
+
 /* ------------------------------------------------------------ music --- */
-static uint32_t season_pool(void) { return EN_MODE_POOL[SEASON_MODE[pd_season()]]; }
+static uint32_t season_pool(void) { return EN_MODE_POOL[pd_mode()]; }
 
 static int scale_note(int base, int deg)        /* a step of the season's scale from the root at or below base */
 {
-    int st[12], n = en_scale(season_pool(), st), root = proj.par[P_ROOT], b, note;
+    int st[12], n = en_scale(season_pool(), st), root = pd_root(), b, note;
     b = base - ((base - root) % 12 + 12) % 12;
     note = b + st[deg % n] + 12 * (deg / n) + 12 * proj.par[P_BOCT];
     while (note > 100)
@@ -280,7 +345,7 @@ static void chord_choose(int must_a, int must_b)
     }
     pd.chord_deg = best;
     if (!pd.ff)
-        en_chord_root_to(proj.par[P_ROOT] + st[best]);
+        en_chord_root_to(pd_root() + st[best]);
     pd.chord_t = 18.0f + 40.0f * (1.0f - pd.act) + 10.0f * pd_frand();
 }
 
@@ -882,14 +947,16 @@ static void send(int p, int v)
         en_set(p, v);
     }
 }
-/* the engine's settings: the player's (proj.par), shaped by the pond */
+/* the engine's settings: the player's (proj.par), shaped by the pond, coloured by the preset */
 void pd_sound(void)
 {
+    const preset_t *pr = preset();
     float a = pd.act, light = pd_light();
     int p, tod = pd_tod(), frogs = pd_season() != SEA_WINTER && light < 0.3f;
     uint32_t pool = season_pool(), now = plat_ms();
     for (p = 0; p < P_NPARAMS; p++) {
-        int v = proj.par[p];
+        const en_param_t *pi = en_param_info(p);
+        int v = p < P_NSAVED ? proj.par[p] : pi->def;
         switch (p) {
         case P_BELLS: v = (int)((float)v * (0.75f + 0.3f * a)); break;
         case P_PAD: v = (int)((float)v * (1.0f - 0.15f * a)); break;
@@ -900,16 +967,21 @@ void pd_sound(void)
         case P_HITS: v = 15 + (int)(20.0f * a); break;
         case P_DRIFT: v = 100; break;            /* the pond moves the chord */
         case P_MOTION: v = 35; break;
-        case P_PADTONE: v = tod == TOD_NIGHT || tod == TOD_DUSK; break;   /* Voices by night */
-        case P_MODE: v = SEASON_MODE[pd_season()]; break;
+        case P_PADTONE: v = pr->pt >= 0 ? pr->pt : tod == TOD_NIGHT || tod == TOD_DUSK; break;   /* Voices by night */
+        case P_MODE: v = pd_mode(); break;
+        case P_ROOT: v = pd_root(); break;
+        case P_TEMPO: v = v * pr->tempo / 100; break;
+        case P_TEXTURE: v = pr->tex >= 0 ? pr->tex : v; break;
         case P_SWELL: v = 55 + (int)(25.0f * (1.0f - a)); break;
         default: break;
         }
-        send(p, v);
+        if (p != P_ROOT && p != P_MODE && p != P_PADTONE && p != P_TEXTURE)
+            v += pr->d[p];
+        send(p, v < pi->lo ? pi->lo : v > pi->hi ? pi->hi : v);
     }
     for (p = 0; p < 12; p++)                     /* the notes food added */
         if ((int32_t)(pd.food_until[p] - now) > 0)
-            pool |= 1u << ((p - proj.par[P_ROOT] + 12) % 12);
+            pool |= 1u << ((p - pd_root() + 12) % 12);
     if (pool != pd.pool_sent || !pd.started) {
         pd.pool_sent = (uint16_t)pool;
         en_pool(pool);

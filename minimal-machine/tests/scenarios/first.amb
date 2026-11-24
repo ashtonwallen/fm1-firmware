@@ -1,0 +1,26 @@
+# a first look and listen: it plays from power-on, by itself; the pages
+wav first.wav
+wait 200
+expect playing 1
+expect preset 0
+wait 4000
+shot machine.png
+expect sixteenths >20
+expect hits0 4
+wait 30000
+shot machine30.png
+wavstop
+expect peak_db_max -1
+expect peak_db_min -30
+tap ENV
+wait 100
+shot mix.png
+tap FX
+wait 100
+shot space.png
+tap GLO
+wait 100
+shot setup.png
+tap HOME
+wait 100
+expect view 0

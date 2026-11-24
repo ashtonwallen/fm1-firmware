@@ -3,7 +3,8 @@
  * Copyright (C) 2026 ashtonwallen (GARDEN) */
 /* GARDEN project: one flash object (OBJ_PROJ): the settings and the whole garden (plots, plants, lineage, the
  * gardener, the event lines). Anything else in the store (another firmware's, an older format, damage) gives the
- * defaults and a new garden. Part of the unity build, after app.h. */
+ * defaults and a new garden. Part of the unity build, after app.h. Format 2 (1.1) adds the preset in a byte 1.0
+ * kept spare: 1.0's project (format 1) loads whole, as Cottage. */
 project_t proj;
 
 /* the player's settings at the start: AMB-1's "Garden" piece, the garden's own layers (no loops of its own, a
@@ -11,7 +12,7 @@ project_t proj;
 static void settings_defaults(void)
 {
     int i;
-    for (i = 0; i < P_NPARAMS; i++)
+    for (i = 0; i < P_NSAVED; i++)
         proj.par[i] = en_param_info(i)->def;
     proj.par[P_TEMPO] = 72;
     proj.par[P_PAD] = 50;
@@ -74,9 +75,9 @@ static int world_ok(const world_t *w)
 static int project_valid(void)
 {
     int i;
-    if (proj.magic != PROJ_MAGIC || proj.format != PROJ_FORMAT || !pool_ok(proj.pool))
+    if (proj.magic != PROJ_MAGIC || proj.format != PROJ_FORMAT || !pool_ok(proj.pool) || proj.preset >= NPRESETS)
         return 0;
-    for (i = 0; i < P_NPARAMS; i++) {
+    for (i = 0; i < P_NSAVED; i++) {
         const en_param_t *p = en_param_info(i);
         if (proj.par[i] < p->lo || proj.par[i] > p->hi)
             return 0;
@@ -91,6 +92,10 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {
+        proj.format = PROJ_FORMAT;               /* 1.0's: the same layout; the preset's byte was spare (0) */
+        proj.preset = 0;
+    }
     if (n == (int)sizeof proj && project_valid())
         return 0;
     project_defaults();
@@ -104,9 +109,6 @@ int project_save(void)
 
 void project_apply(void)
 {
-    int i;
-    for (i = 0; i < P_NPARAMS; i++)
-        en_set(i, proj.par[i]);
-    en_pool(proj.pool);
+    garden_sound_all();                          /* the settings as the preset colours them, the scale */
     garden_resync();
 }

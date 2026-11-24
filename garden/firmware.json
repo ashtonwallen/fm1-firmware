@@ -5,7 +5,7 @@
   "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
   "license": "MPL-2.0",
   "tagline": "A melody garden that plays itself, tended by a gardener",
-  "description": "GARDEN turns the FM-1 into a melody garden. Press a key and a seed goes in at that pitch. Over minutes it sprouts, grows a phrase in the garden's scale, flowers with bells, goes to seed on the plots around it, withers and leaves compost that hums. A gardener with a name and a mood waters, prunes and plants favourites. Bees cross flowers into hybrids, a rabbit nibbles sprouts, rain speeds everything up and frost takes the weak. Every plant has a name and parents, all kept across power-offs. It plays itself from power-on, on AMB-1's pad, bells, echo and plate reverb.",
+  "description": "GARDEN turns the FM-1 into a melody garden. Press a key and a seed goes in at that pitch. Over minutes it sprouts, grows a phrase in the garden's scale, flowers with bells, goes to seed on the plots around it, withers and leaves compost that hums. A named gardener with a mood waters, prunes and plants favourites. Bees cross flowers into hybrids, a rabbit nibbles sprouts, rain speeds everything up and frost takes the weak. Every plant has a name and parents, all kept across power-offs. Plays itself from power-on, on AMB-1's pad, bells, echo and plate reverb. Thirteen presets recolour the sound.",
   "tags": ["ambient", "generative", "game", "experimental"],
   "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
   "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/garden",

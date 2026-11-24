@@ -217,11 +217,9 @@ void tune_name(uint16_t seed, int kind, char *out, int n)
 /* a tune's key and mode, from its seed: folk keys, folk modes (a lament: Aeolian) */
 static void tune_key(uint16_t seed, int type, uint8_t *root, uint8_t *mode)
 {
-    static const uint8_t MODES[10] = {MODE_IONIAN, MODE_IONIAN, MODE_IONIAN, MODE_DORIAN, MODE_DORIAN,
-                                      MODE_DORIAN, MODE_MIXOLYDIAN, MODE_MIXOLYDIAN, MODE_AEOLIAN, MODE_AEOLIAN};
     static const uint8_t KEYS[4][4] = {{2, 7, 9, 0}, {2, 4, 9, 11}, {2, 9, 7, 2}, {4, 9, 11, 2}};
     uint32_t h = (uint32_t)seed * 40503u;
-    int m = MODES[(h >> 3) % 10u];
+    int m = preset_mode((h >> 3) % 10u);         /* the preset's folk modes (1.0's: 3 Ionian, 3 Dorian, 2, 2) */
     if (type == T_LAMENT)
         m = MODE_AEOLIAN;
     *mode = (uint8_t)m;
@@ -286,9 +284,11 @@ static void band(void)                           /* who plays now, to the engine
             if ((ws.type == T_SONG || ws.kind == K_AIR) && k != li)
                 level = level * 2 / 3;            /* under a song or an air: softly */
         }
-        en_inst(k, level, n ? sk / n : 50);
+        en_inst(k, preset_inst(k, level), n ? sk / n : 50);
     }
 }
+
+void world_restyle(void) { band(); }
 
 static int players(void)
 {
@@ -539,8 +539,14 @@ static int pick_leader(int song)
 static int pick_kind(int ph, int leader)
 {
     static const uint8_t W4[4][4] = {{10, 20, 35, 35}, {45, 35, 12, 8}, {10, 25, 30, 35}, {0, 0, 100, 0}};
-    int r = wr(100), k;
-    const uint8_t *w = W4[ph < PH_CLOSING ? ph : 3];
+    int r, k, w[4], sum = 0;
+    for (k = 0; k < 4; k++)
+        w[k] = W4[ph < PH_CLOSING ? ph : 3][k];
+    if (ph < PH_CLOSING)                         /* the preset's kinds (the closing waltz stays) */
+        preset_kinds(w);
+    for (k = 0; k < 4; k++)
+        sum += w[k];
+    r = wr(sum > 0 ? sum : 100);
     if (leader >= 0 && leader < NCH && W->ch[leader].inst == I_HARP)
         return chance(60) ? K_AIR : K_WALTZ;     /* the harp leads the slow ones */
     if (leader >= 0 && leader < NCH && W->ch[leader].mood < -30 && chance(50))
@@ -578,6 +584,10 @@ static void start_tune(int leader, int type)
         ws.fav = 1;
         if (L->inst == I_HARP && (ws.kind == K_REEL || ws.kind == K_JIG))
             ws.kind = K_AIR;
+        if (preset_kind_pct(ws.kind) < 60 && chance(70)) {   /* not tonight's style: something else */
+            ws.kind = (uint8_t)pick_kind(ph, leader);
+            ws.fav = 0;
+        }
     } else {
         ws.kind = (uint8_t)pick_kind(ph, leader);
         ws.seed = (uint16_t)(wrnd() & 0x3FFFu);
@@ -602,6 +612,7 @@ static void start_tune(int leader, int type)
         tempo -= tempo / 12;
     if (L)
         tempo += (skill_now(leader) - 60) / 10;
+    tempo = preset_tempo(tempo);
     tune_name(ws.seed, ws.kind, ws.tune_name, (int)sizeof ws.tune_name);
     if (type == T_LAST)
         fill(ws.tune_name, (int)sizeof ws.tune_name, "The Parting Glass", 0, 0, 0);
@@ -778,7 +789,7 @@ static void next_tune(void)                      /* the gap is over: who starts 
             return;
         }
     }
-    if (ph >= PH_BUSY && ws.since_song >= 3 && chance(20)) {
+    if (ph >= PH_BUSY && ws.since_song >= 3 && chance(preset_songs())) {
         L = pick_leader(1);
         if (L >= 0) {
             W->songs++;

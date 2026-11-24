@@ -135,12 +135,92 @@ static void ev_push(void)
     garden_log_seq++;
 }
 
+/* ------------------------------------------------------------- presets --- */
+/* PRESETS (1.1): a palette for the garden, over the player's knobs and the garden's own bending. The key moved, the
+ * mode a step brighter or darker (or pentatonic; a custom scale stays as it is), the tempo scaled, AMB-1 Drift 1.1's
+ * strings, lead, air and shimmer, and the space. The pad's colour stays the player's (Sound page: Colour, which now
+ * has Strings too). Only the sound changes: every plant, its pitch and phrase (steps of the scale), the gardener,
+ * the day and the ledger stay as they are. Cottage (0) is the garden as 1.0 played it. Saved with the settings. */
+#define PR_PENT 9                        /* mode: the pentatonic of the player's mode (major or minor) */
+typedef struct {
+    const char *name;
+    int8_t key;                          /* semitones the key moves (from the player's Root) */
+    int8_t mode;                         /* +1 a step brighter, -1 darker, PR_PENT pentatonic, 0 the player's */
+    uint8_t tempo;                       /* percent of the player's tempo */
+    int8_t tex;                          /* the air's texture (0 rain, 1 wind, 2 sea, 3 vinyl); its level is in d */
+    int8_t d[P_NPARAMS];                 /* added to the values */
+} preset_t;
+static const preset_t PRESETS[NPRESETS] = {
+    {"Cottage", 0, 0, 100, 0, {0}},
+    {"Zen", 0, PR_PENT, 80, 1, {[P_LEAD] = 25, [P_LDTONE] = 40, [P_SHIMMER] = 25, [P_REVERB] = 15, [P_BELLS] = -5,
+                                [P_BTONE] = 15, [P_TEXLVL] = 12, [P_TEXMOD] = -20}},
+    {"Moonlight", -2, -1, 80, -1, {[P_SHIMMER] = 35, [P_LEAD] = 30, [P_LDTONE] = 45, [P_LDOCT] = 1, [P_BRIGHT] = -15,
+                                   [P_REVERB] = 10, [P_PAD] = 10}},
+    {"Greenhouse", 2, 1, 105, 0, {[P_TEXLVL] = 15, [P_PLUCK] = 35, [P_PLTONE] = 50, [P_BRIGHT] = 10, [P_ECHO] = 10}},
+    {"Wildflower", 0, 1, 110, -1, {[P_PLUCK] = 45, [P_PLTONE] = -10, [P_PLDENS] = 10, [P_BRIGHT] = 10, [P_BELLS] = 5}},
+    {"Herb", 5, 0, 95, 1, {[P_PLUCK] = 25, [P_PLTONE] = -10, [P_TEXLVL] = 15, [P_ECHO] = 5}},
+    {"Rain Garden", 0, 0, 95, 0, {[P_TEXLVL] = 45, [P_TEXMOD] = 10, [P_PLUCK] = 20, [P_BRIGHT] = -10, [P_ECHO] = 15}},
+    {"Orchard Wall", 0, 0, 90, -1, {[P_PLUCK] = 35, [P_PLTONE] = -15, [P_LEAD] = 25, [P_LDTONE] = -35, [P_LDOCT] = -1,
+                                    [P_BASS] = 10}},
+    {"Winter Bed", -2, -1, 75, 1, {[P_TEXLVL] = 30, [P_TEXMOD] = 30, [P_SHIMMER] = 30, [P_BTONE] = 25,
+                                   [P_BRIGHT] = -15, [P_REVERB] = 10}},
+    {"Kitchen Garden", 3, 0, 95, 3, {[P_TEXLVL] = 25, [P_ECHO] = 10, [P_BASS] = 5, [P_PLUCK] = 25, [P_PLTONE] = 45}},
+    {"Rose Arbour", 0, 1, 90, -1, {[P_LEAD] = 30, [P_LDTONE] = -30, [P_SHIMMER] = 15, [P_REVERB] = 10,
+                                   [P_SWELL] = 10}},
+    {"Fern Hollow", -3, -1, 90, 0, {[P_TEXLVL] = 20, [P_TEXMOD] = 20, [P_LEAD] = 30, [P_LDTONE] = 40, [P_LDOCT] = -1,
+                                    [P_BRIGHT] = -10, [P_REVERB] = 10}},
+    {"Sundial", 0, PR_PENT, 115, -1, {[P_PLUCK] = 45, [P_PLTONE] = 50, [P_BRIGHT] = 15, [P_REVERB] = -10,
+                                      [P_ECHO] = -5}},
+};
+static const preset_t *preset(void) { return &PRESETS[proj.preset < NPRESETS ? proj.preset : 0]; }
+static const char *preset_name(int i) { return PRESETS[(unsigned)i < NPRESETS ? i : 0].name; }
+
+static int mode_shift(int m, int s)      /* the modes, brightest first: Lydian, Ionian, Mixolydian, Dorian, Aeolian, Phrygian */
+{
+    static const uint8_t ORDER[6] = {MODE_LYDIAN, MODE_IONIAN, MODE_MIXOLYDIAN, MODE_DORIAN, MODE_AEOLIAN, MODE_PHRYGIAN};
+    int r;
+    if (!s)
+        return m;
+    if (m == MODE_PENT_MAJ)
+        m = MODE_IONIAN;
+    else if (m == MODE_PENT_MIN)
+        m = MODE_AEOLIAN;
+    for (r = 0; r < 6 && ORDER[r] != m; r++)
+        ;
+    if (s == PR_PENT)
+        return r <= 2 ? MODE_PENT_MAJ : MODE_PENT_MIN;
+    r -= s;
+    return ORDER[r < 0 ? 0 : r > 5 ? 5 : r];
+}
+static int g_root(void) { return ((proj.par[P_ROOT] + preset()->key) % 12 + 12) % 12; }   /* the key heard */
+static int g_custom(void) { return proj.pool != EN_MODE_POOL[proj.par[P_MODE] % EN_NMODES]; }
+static int g_mode(void) { return g_custom() ? proj.par[P_MODE] : mode_shift(proj.par[P_MODE], preset()->mode); }
+static uint32_t g_pool(void) { return g_custom() ? proj.pool : EN_MODE_POOL[g_mode()]; }   /* the scale heard */
+
+/* a value as the engine gets it: the player's (or, for 1.1's sounds, the engine's default), the preset's on it */
+static int pv(int p)
+{
+    const preset_t *pr = preset();
+    const en_param_t *pi = en_param_info(p);
+    int v = p < P_NSAVED ? proj.par[p] : pi->def;
+    if (p == P_ROOT)
+        return g_root();
+    if (p == P_MODE)
+        return g_mode();
+    if (p == P_TEXTURE)
+        return pr->tex >= 0 ? pr->tex : v;
+    if (p == P_TEMPO)
+        v = v * pr->tempo / 100;
+    v += pr->d[p];
+    return v < pi->lo ? pi->lo : v > pi->hi ? pi->hi : v;
+}
+
 /* ------------------------------------------------------------- the scale --- */
 static uint8_t sc[80];                   /* every note of the scale, MIDI 24..119, ascending */
 static int scn;
 static void scale_build(void)
 {
-    uint32_t r = (uint32_t)proj.par[P_ROOT], p = proj.pool, ab = ((p << r) | (p >> (12u - r))) & 0xFFFu;
+    uint32_t r = (uint32_t)g_root(), p = g_pool(), ab = ((p << r) | (p >> (12u - r))) & 0xFFFu;
     int n;
     scn = 0;
     for (n = 24; n < 120 && scn < 80; n++)
@@ -382,17 +462,33 @@ static void bend(int p, int v)           /* a parameter the garden bends: sent w
 static void music_apply(void)            /* how full the garden is, the weather and the hour: the sound */
 {
     int f = fullness100(), wx = W.weather, nt = night();
-    bend(P_PAD, proj.par[P_PAD] * (100 - f * 3 / 10) / 100);
-    bend(P_BRIGHT, proj.par[P_BRIGHT] - 20 + f * 45 / 100 - (nt ? 12 : 0) - (wx == W_FROST ? 15 : 0) +
+    bend(P_PAD, pv(P_PAD) * (100 - f * 3 / 10) / 100);
+    bend(P_BRIGHT, pv(P_BRIGHT) - 20 + f * 45 / 100 - (nt ? 12 : 0) - (wx == W_FROST ? 15 : 0) +
                        (wx == W_SUN ? 6 : 0));
-    bend(P_BTONE, proj.par[P_BTONE] - 15 + f * 25 / 100 + (wx == W_FROST ? 30 : 0));
-    bend(P_REVERB, proj.par[P_REVERB] + (100 - f) * 15 / 100 + (wx == W_FROST ? 10 : 0));
-    bend(P_DRIFT, proj.par[P_DRIFT] + (100 - f) * 25 / 100);
-    bend(P_PULSE, wx == W_RAIN ? 24 + proj.par[P_PULSE] : proj.par[P_PULSE]);
-    bend(P_HITS, wx == W_RAIN ? 75 : proj.par[P_HITS]);
-    bend(P_HATS, wx == W_RAIN ? 90 : proj.par[P_HATS]);
-    bend(P_SWELL, proj.par[P_SWELL] + (nt ? 15 : 0));
+    bend(P_BTONE, pv(P_BTONE) - 15 + f * 25 / 100 + (wx == W_FROST ? 30 : 0));
+    bend(P_REVERB, pv(P_REVERB) + (100 - f) * 15 / 100 + (wx == W_FROST ? 10 : 0));
+    bend(P_DRIFT, pv(P_DRIFT) + (100 - f) * 25 / 100);
+    bend(P_PULSE, wx == W_RAIN ? 24 + pv(P_PULSE) : pv(P_PULSE));
+    bend(P_HITS, wx == W_RAIN ? 75 : pv(P_HITS));
+    bend(P_HATS, wx == W_RAIN ? 90 : pv(P_HATS));
+    bend(P_SWELL, pv(P_SWELL) + (nt ? 15 : 0));
     bend(P_DENSITY, 0);
+}
+
+void garden_sound_all(void)              /* every setting to the engine as the preset colours it, and the scale */
+{
+    int i;
+    for (i = 0; i < P_NPARAMS; i++)
+        en_set(i, pv(i));
+    en_pool(g_pool());
+    garden_bend_again();
+}
+
+void garden_preset(int i)                /* another preset: the sound changes, the garden stays */
+{
+    proj.preset = (uint8_t)((i % NPRESETS + NPRESETS) % NPRESETS);
+    garden_sound_all();
+    garden_resync();                     /* (the scale may have moved: every plot's notes again) */
 }
 
 void garden_resync(void)

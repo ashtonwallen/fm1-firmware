@@ -47,6 +47,9 @@ enum {
     P_ECHO, P_REVERB, P_ROOM, P_TONE,                 /* the room */
     P_TUNE, P_MIDI,                                   /* setup */
     P_TEMPO, P_ROOT, P_MODE,                          /* the tune's: set by the world before en_tune */
+    P_TEXTURE, P_TEXLVL, P_TEXMOD, P_SHIMMER,         /* 1.1, from AMB-1 Drift 1.1: the air outside (rain, wind,
+                                                       * sea, the fire's crackle), its level and sway; shimmer.
+                                                       * The preset's (app/project.c), not saved; 0: none */
     P_NPARAMS
 };
 typedef struct {

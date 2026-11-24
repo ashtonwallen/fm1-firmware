@@ -1,0 +1,262 @@
+# PRESETS (1.1): thirteen palettes for the coast. Each makes sound, none clips; switching keeps the world (the time,
+# the weather, the day, the log); the preset is kept as a setting; 1.0's project (format 1) loads whole, as Harbour
+wait 300
+tap PLAY
+expect setting 0
+expect preset 0
+settime 12 0
+weather fog 600
+expect fogs 1
+expect logn 1
+wait 1000
+# Harbour
+expect preset 0
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Fjord
+turn PRESET 1
+expect preset 1
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Tropical Atoll
+turn PRESET 1
+expect preset 2
+shot preset.png
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Winter Coast
+turn PRESET 1
+expect preset 3
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Misty Isles
+turn PRESET 1
+expect preset 4
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Lighthouse Choir
+turn PRESET 1
+expect preset 5
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Sea Glass
+turn PRESET 1
+expect preset 6
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Gale Warning
+turn PRESET 1
+expect preset 7
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Night Ferry
+turn PRESET 1
+expect preset 8
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Saltmarsh
+turn PRESET 1
+expect preset 9
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Long Light
+turn PRESET 1
+expect preset 10
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Chapel Bay
+turn PRESET 1
+expect preset 11
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# Kelp Forest
+turn PRESET 1
+expect preset 12
+wait 5000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -30
+expect wx 1
+expect fogs 1
+expect logn 1
+expect day 1
+expect min >719
+expect min <745
+# the strings, the lead, the air: there in the palettes that ask for them (Kelp Forest: the strings pad, a lead)
+expect par22 2
+expect tgt34 >30
+# round again, and back
+turn PRESET 1
+expect preset 0
+expect tgt34 0
+turn PRESET -1
+expect preset 12
+turn PRESET -10
+expect preset 2
+expect tgt30 >40
+tap GLO
+shot setup.png
+tap HOME
+# kept as a setting (5 minutes after the last save at most), with the world
+wait 310000
+expect dirty 0
+reboot
+wait 300
+expect preset 2
+expect fogs 1
+tap PLAY
+# 1.0's project: the world whole, the sound Harbour
+weather wind 300
+expect logtype 3
+turn PRESET 3
+expect preset 5
+storev1
+reboot
+wait 300
+expect format 2
+expect preset 0
+expect fogs 1
+expect logtype 3
+expect day 1
+expect sea 5
+tap PLAY
+peakreset
+wait 20000
+expect peak_db_min -30
+# and it saves as format 2
+turn PRESET 1
+tap SAVE
+reboot
+wait 300
+expect format 2
+expect preset 1
+expect logtype 3
+tap PLAY
+# long runs at the loud ends: Gale Warning in a storm, Lighthouse Choir through the night (shimmer), never clipping
+turn PRESET 6
+expect preset 7
+weather storm 600
+wait 5000
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -30
+weather calm 600
+settime 23 0
+turn PRESET -2
+expect preset 5
+wait 5000
+peakreset
+wait 600000
+expect peak_db_max -0.3
+expect peak_db_min -40
+expect fogs 1

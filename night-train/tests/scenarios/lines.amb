@@ -1,0 +1,165 @@
+# the lines (1.1): FX steps through the twelve lines, Setup's K4 picks any. Each changes the sound (its pad colour,
+# strings, lead, air, shimmer, mode, tempo), each makes sound and none clips; the journey goes on untouched; the line
+# is saved; 1.0's project (format 1) comes back whole, on the first line, Night Line
+wait 2000
+ff 120
+expect line 0
+expect format 2
+expect station 19
+expect nlog 132
+# standing: the world holds still while every line goes by, and none of them touches it
+tap PLAY
+wait 300
+expect playing 0
+tap FX
+wait 200
+expect line 1
+shot line-name.png
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+tap FX
+expect line 11
+tap FX
+expect line 0
+expect station 19
+expect nlog 132
+expect aboard0 1
+tap PLAY
+wait 300
+expect playing 1
+# every line makes sound, none clips: a minute each, the last half measured
+wav lines.wav
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect line 1
+expect par22 2
+expect par35 45
+expect par39 1
+expect par42 55
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par31 >20
+expect par39 2
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par22 1
+expect par20 2
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par22 0
+expect par39 3
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par20 6
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par39 3
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par22 2
+expect par39 0
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par20 6
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par42 70
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect par20 1
+expect peak_db_min -30
+expect peak_db_max -0.5
+tap FX
+wait 30000
+peakreset
+wait 30000
+expect line 11
+expect par20 7
+expect peak_db_min -30
+expect peak_db_max -0.5
+wavstop
+# twenty minutes on Aurora Line (the most shimmer, the glass lead): it never runs away
+tap GLO
+spin K4 -2
+expect line 9
+peakreset
+wait 1200000
+expect peak_db_max -0.5
+expect peak_db_min -24
+spin K4 2
+tap HOME
+expect line 11
+# the window and the setup page on a line
+shot window-last-train.png
+tap GLO
+wait 300
+shot setup-line.png
+spin K4 -8
+expect line 3
+expect dirty 1
+tap HOME
+# the line is saved
+tap SAVE
+reboot
+wait 300
+expect line 3
+expect station >19
+# 1.0's project: format 1, carried over whole on the first line
+storev1
+reboot
+wait 300
+expect format 2
+expect line 0
+expect station >19
+expect nlog >132
+# another firmware's project: defaults, a new journey on the first line
+storeold
+reboot
+wait 300
+expect line 0
+expect station 0

@@ -1,0 +1,104 @@
+# every preset makes sound: each one in turn, 25 s, its peak above -30 dBFS and below -3; a screenshot of each
+wait 300
+expect preset 0
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p00.png
+peakreset
+turn PRESET 1
+expect preset 1
+expect section 0
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p01.png
+peakreset
+turn PRESET 1
+expect preset 2
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p02.png
+peakreset
+turn PRESET 1
+expect preset 3
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p03.png
+peakreset
+turn PRESET 1
+expect preset 4
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p04.png
+peakreset
+turn PRESET 1
+expect preset 5
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p05.png
+peakreset
+turn PRESET 1
+expect preset 6
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p06.png
+peakreset
+turn PRESET 1
+expect preset 7
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p07.png
+peakreset
+turn PRESET 1
+expect preset 8
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p08.png
+peakreset
+turn PRESET 1
+expect preset 9
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p09.png
+peakreset
+turn PRESET 1
+expect preset 10
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p10.png
+peakreset
+turn PRESET 1
+expect preset 11
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p11.png
+peakreset
+turn PRESET 1
+expect preset 12
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p12.png
+peakreset
+turn PRESET 1
+expect preset 13
+wait 25000
+expect peak_db_min -30
+expect peak_db_max -3
+shot p13.png
+# and round again
+turn PRESET 1
+expect preset 0
+turn PRESET -1
+expect preset 13

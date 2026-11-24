@@ -10,6 +10,7 @@
  *   OCT- / OCT+    the bells' octave               ALGORITHM   the mode (the scale)
  *   HOME ENV GLO SEQ   the pages: Garden, Sound, Setup, Ledger (SELECT steps through them; HOME + SELECT: tempo)
  *   PRESETS        scrolls the Ledger              KNOB 1-4   the page's four values
+ *   LFO / SEL      the garden's sound (1.1): the next / the last preset, named on the screen; the garden stays
  *   SAVE           saves (it also saves by itself, rarely: see autosave); held 3 s: a new garden */
 #include "fastmath.h"
 
@@ -129,18 +130,18 @@ int ui_dirty(void) { return ui.dirty != 0; }
 
 static uint32_t pool_abs(void)
 {
-    uint32_t p = proj.pool, r = (uint32_t)proj.par[P_ROOT];
+    uint32_t p = g_pool(), r = (uint32_t)g_root();
     return ((p << r) | (p >> (12u - r))) & 0xFFFu;
 }
 static const char *mode_name(void)
 {
-    return proj.pool == EN_MODE_POOL[proj.par[P_MODE]] ? EN_MODE_NAME[proj.par[P_MODE]] : "Custom";
+    return g_custom() ? "Custom" : EN_MODE_NAME[g_mode()];   /* (as the preset colours it) */
 }
 
 /* ------------------------------------------------------------ values --- */
 static int knob_get(int k)
 {
-    if (k < P_NPARAMS)
+    if (k < P_NSAVED)
         return proj.par[k];
     if (k == K_LEDS)
         return proj.leds;
@@ -152,7 +153,7 @@ static int knob_get(int k)
 }
 static void knob_range(int k, int *lo, int *hi)
 {
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         *lo = en_param_info(k)->lo;
         *hi = en_param_info(k)->hi;
     } else {
@@ -163,8 +164,8 @@ static void knob_range(int k, int *lo, int *hi)
 static void knob_text(int k, char *b)
 {
     int v = knob_get(k);
-    if (k < P_NPARAMS)
-        en_param_text(k, v, b);
+    if (k < P_NSAVED)
+        en_param_text(k, k == P_ROOT ? g_root() : v, b);   /* (the key as the preset moves it) */
     else if (k == K_LEDS)
         cat_s(b, v == 2 ? "Keys" : v ? "On" : "Off");
     else if (k == K_GROWTH)
@@ -189,9 +190,9 @@ static void knob_set(int k, int v)
         ui.scroll = (uint8_t)v;
         return;
     }
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         proj.par[k] = (int16_t)v;
-        en_set(k, v);
+        en_set(k, pv(k));
         if (k == P_ROOT)
             garden_resync();
         else
@@ -247,10 +248,10 @@ static void set_mode(int m)
     m = (m % EN_NMODES + EN_NMODES) % EN_NMODES;
     proj.par[P_MODE] = (int16_t)m;
     proj.pool = EN_MODE_POOL[m];
-    en_set(P_MODE, m);
-    en_pool(proj.pool);
+    en_set(P_MODE, pv(P_MODE));
+    en_pool(g_pool());
     garden_resync();
-    say("MODE", EN_MODE_NAME[m]);
+    say("MODE", mode_name());
     mark_dirty();
 }
 
@@ -260,6 +261,14 @@ static void set_view(int v)
     ui.touched = -1;
     ui.touch_until = 0;
     ui.sig[1] = ui.sig[2] = 0;           /* the bands drawn anew */
+}
+
+static void preset_step(int dir)                /* LFO / SEL: the next or the last preset, named */
+{
+    garden_preset((int)proj.preset + (dir > 0 ? 1 : -1));
+    mark_dirty();
+    say("PRESET", preset_name(proj.preset));
+    ui.msg_until = plat_ms() + 2500u;
 }
 
 static void autosave_now(void);
@@ -305,6 +314,7 @@ static void button(int b)
             say("BELL OCTAVE", t);
         }
         break;
+    case B_LFO: case B_SEL: preset_step(b == B_LFO ? 1 : -1); break;
     case B_SAVE:
         autosave_now();
         if (!ui.dirty && !garden_changed)
@@ -343,7 +353,7 @@ static void help_tick(uint32_t btn, uint32_t keys)
     if (!btn || (btn & (btn - 1u)) || keys)
         return;
     for (i = 0; i < NB; i++)
-        if (btn == 1u << i && i != B_PLAY && i != B_SEL && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
+        if (btn == 1u << i && i != B_PLAY && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
             (int32_t)(ui.turn_t - ui.down_t[i]) <= 0) {
             ui.help = (uint8_t)(i + 1);
             ui.btn_used |= btn;
@@ -1026,6 +1036,8 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_ENV: L("SOUND"); L("BASS, ECHO, REVERB, COLOUR"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); break;
     case B_SEQ: L("THE LEDGER"); L("EVERY PLANT AND ITS PARENTS"); L("KNOB 1 OR PRESETS: SCROLL"); break;
+    case B_LFO: L("THE NEXT PRESET"); L("THE GARDEN'S SOUND"); L("THE PLANTS STAY AS THEY ARE"); L("SEL: THE LAST ONE"); break;
+    case B_SEL: L("THE LAST PRESET"); L("THE GARDEN'S SOUND"); L("LFO: THE NEXT ONE"); break;
     case B_EDIT: L("THE GARDENER WATERS"); L(" EVERYTHING"); break;
     case B_ARP: L("A SEED AT A RANDOM NOTE"); break;
     case B_REC: L("FREEZE: TIME STOPS,"); L(" THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
@@ -1110,10 +1122,17 @@ static void draw_knob_strip(void)
     int now_touch = plat_ms() < ui.touch_until, i;
     cv_begin(240, BOT_H, K_BG);
     {
-        char t[12];
+        char t[40];
         int k;
         int32_t xd = 237 - NVIEWS * 6, xt;
-        caps(t, VIEW_NAME[ui.view], sizeof t);
+        caps(t, VIEW_NAME[ui.view], 12);
+        if (ui.view == V_SOUND || ui.view == V_GARDEN) {   /* and the preset (1.1) */
+            char q[24], *e = t;
+            caps(q, preset_name(proj.preset), sizeof q);
+            while (*e)
+                e++;
+            cat_s(cat_s(e, ": "), q);
+        }
         xt = xd - 5 - text_w(&FONT_XS, t);
         cv_rect(4, 7, xt - 9, 1, K_LINE);
         cv_text(xt, 1, &FONT_XS, t, K_ACC);
@@ -1166,6 +1185,7 @@ static void draw_bottom(void)
         h = hash(hash(2166136261u, ui.view | (uint32_t)ui.touched << 8 | 0x100000u), plat_ms() < ui.touch_until);
         for (i = 0; i < 4; i++)
             h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
+        h = hash(h, proj.preset);                /* (named on the rule; it moves the Root shown) */
         if (h != ui.sig[2]) {
             ui.sig[2] = h;
             draw_knob_strip();
@@ -1395,6 +1415,8 @@ static void sp_page(int all)
     sp_cat(", ");
     sp_cat(weather_word());
     sp_cat(sp_tp.playing ? ", growing" : ", resting");
+    sp_cat(". Preset ");
+    sp_cat(preset_name(proj.preset));
     if (ui.dirty)
         sp_cat(", not saved yet");
     if (batt_words(batt())) {
@@ -1411,7 +1433,7 @@ static void sp_garden(void)
     sp_cat(live == 1 ? " plant, " : " plants, ");
     sp_int((uint32_t)fl);
     sp_cat(" in flower. Scale ");
-    sp_cat(EN_NOTE_NAME[proj.par[P_ROOT]]);
+    sp_cat(EN_NOTE_NAME[g_root()]);
     sp_cat(" ");
     sp_cat(mode_name());
     if (proj.w.log[0][0]) {
@@ -1542,6 +1564,11 @@ static void speak_dump(void)
     ui.help = keep_help;
     for (i = 0; i < G_NLOG; i++)
         sp_print("EVENT", proj.w.log[i]);
+    for (i = 0; i < NPRESETS; i++) {              /* LFO / SEL: each preset named */
+        char t[48];
+        msg_text("PRESET", preset_name(i), t);
+        sp_print("MSG", t);
+    }
 }
 #endif
 

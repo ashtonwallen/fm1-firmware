@@ -20,7 +20,8 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x3152544Eu           /* "NTR1": AMB-1's and AMB-1 Drift's projects ("ENO1") give the defaults */
-#define PROJ_FORMAT 1u
+#define PROJ_NLINES 12u                  /* ui.c NLINES */
+#define PROJ_FORMAT 2u                   /* 2 (1.1): the line; a format 1 project (1.0) is carried over */
 
 typedef struct {
     uint32_t magic, format;
@@ -31,7 +32,7 @@ typedef struct {
     int8_t tune;                         /* cents, -50..50 */
     int8_t tone;                         /* darker .. brighter, -50..50 */
     int8_t space;                        /* drier .. wetter, -50..50 */
-    uint8_t rsv0;
+    uint8_t line;                        /* the line (1.1): ui.c LINES[], 0 Night Line (1.0's sound) */
     uint8_t rsv[8];                      /* room to grow */
     world_t w;                           /* the journey */
 } project_t;

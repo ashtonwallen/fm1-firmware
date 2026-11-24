@@ -8,6 +8,7 @@
  *   EDIT           set the clock (any knob: 15 minutes a detent; PLAY, EDIT or HOME: done; 20 s alone: done)
  *   HOME           the coast        SEQ   Abel's log (KNOB 1 or ALGORITHM scrolls)        GLO   setup
  *   SELECT         the pages, in turn
+ *   PRESETS        the sound's palette (1.1: Harbour, Fjord ...); the world goes on as it was
  *   KNOB 1-4       on setup: Mode (Clock / Cycle), Cycle (a day every 1..12 h), Sea (its level), Lights
  *   SAVE           saves now (the world saves by itself: settings a few seconds after a change, the world after
  *                  something notable, every 10 minutes at most, and the time every 15 minutes)
@@ -165,6 +166,17 @@ static void set_view(int v)
     ui.log_off = 0;
 }
 
+static void preset_turn(int32_t e)             /* PRESETS: the next palette (or the last), named on the screen */
+{
+    preset_set((int)proj.preset + (e > 0 ? 1 : -1));
+    ui.dirty = 1;                                /* kept as a setting */
+    ui.dirty_t = plat_ms();
+    if (ui.view == V_LOG)
+        set_view(V_SCENE);                       /* (its name shows on the coast) */
+    say("PRESET", preset_name(proj.preset));
+    ui.msg_until = plat_ms() + 2500u;
+}
+
 static void play_toggle(void)
 {
     if (en_playing) {
@@ -230,9 +242,9 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("THE COAST"); L("THE TIME, THE DAY, THE KEEPER"); break;
+    case B_HOME: L("THE COAST"); L("THE TIME, THE DAY, THE KEEPER"); L("PRESETS: THE SOUND"); break;
     case B_SEQ: L("ABEL'S LOG"); L("KNOB 1 SCROLLS"); break;
-    case B_GLO: L("SETUP"); L("MODE, CYCLE, SEA, LIGHTS"); break;
+    case B_GLO: L("SETUP"); L("MODE, CYCLE, SEA, LIGHTS"); L("PRESETS: THE SOUND"); break;
     case B_EDIT: L("SET THE CLOCK"); L("ANY KNOB: 15 MINUTES"); L("PLAY: DONE"); break;
     case B_SAVE: L("SAVES THE WORLD NOW"); L("IT ALSO SAVES BY ITSELF"); break;
     case B_OCTDN: case B_OCTUP: L("WITH OCT- AND OCT+"); L("HELD 5 S: UPDATE MODE"); break;
@@ -290,7 +302,9 @@ static void input(void)
             set_turn(e);
             continue;
         }
-        if (i == EN_SELECT) {
+        if (i == EN_PRESET) {
+            preset_turn(e);
+        } else if (i == EN_SELECT) {
             int v = (int)ui.view + (e > 0 ? 1 : -1);
             set_view((v + NVIEWS) % NVIEWS);
         } else if (ui.view == V_LOG && (i == EN_K1 || i == EN_ALGO)) {
@@ -955,11 +969,13 @@ static void draw_setup(void)
             setup_text(k, setup_get(k), t);
             text_r(230, y, &FONT_B, t, RGB(255, 196, 110));
         }
-        cv_text(10, 180, &FONT_XS, proj.clock ? "Cycle: a whole day every few hours." :
+        cv_rect(10, 168, 220, 1, RGB(50, 56, 76));
+        cv_text(10, 178, &FONT_XS, "PRESETS", K_DIM);
+        text_r(230, 176, &FONT_B, preset_name(proj.preset), RGB(255, 196, 110));
+        cv_text(10, 200, &FONT_XS, proj.clock ? "Cycle: a whole day every few hours." :
                                                 "Clock: the real time, set at power-on.", K_DIM);
-        cv_text(10, 198, &FONT_XS, "EDIT sets the clock. PLAY rests.", K_DIM);
-        if (ui.dirty)
-            cv_text(10, 216, &FONT_XS, "(saves in a moment)", K_DIM);
+        cv_text(10, 218, &FONT_XS, ui.dirty ? "EDIT sets the clock. (Saves in a moment.)" :
+                                              "EDIT sets the clock. PLAY rests.", K_DIM);
         cv_oy = 0;
         cv_blit(0, (uint32_t)(120 * band));
     }
@@ -983,7 +999,8 @@ static void draw(void)
     if (ui.view == V_LOG || ui.view == V_SETUP) {  /* still pages: only when they change */
         h = hash(hash(hash(2166136261u, ui.view | (uint32_t)ui.log_off << 8 | (uint32_t)ui.dirty << 16),
                       proj.log_at | (uint32_t)proj.log_n << 8 | proj.day << 16),
-                 (uint32_t)setup_get(0) | (uint32_t)setup_get(1) << 4 | (uint32_t)setup_get(2) << 8 | (uint32_t)setup_get(3) << 12);
+                 (uint32_t)setup_get(0) | (uint32_t)setup_get(1) << 4 | (uint32_t)setup_get(2) << 8 | (uint32_t)setup_get(3) << 12 |
+                     (uint32_t)proj.preset << 16);
         if (h == ui.sig)
             return;
         ui.sig = h;
@@ -1119,6 +1136,8 @@ static void sp_coast(void)                     /* "06:45, Dawn. Fog, tide rising
         sp_cat(", feels ");
         sp_cat(keeper_mood());
     }
+    sp_cat(". Preset ");
+    sp_cat(preset_name(proj.preset));
     if (!en_playing)
         sp_cat(". Resting");
 }
@@ -1146,6 +1165,8 @@ static void sp_page(void)
                 sp_cat(", ");
             sp_setting(k);
         }
+        sp_cat(", Preset ");
+        sp_cat(preset_name(proj.preset));
         return;
     }
     sp_cat("Log page. Day ");
@@ -1304,6 +1325,10 @@ static void speak_dump(void)
         }
     for (x = 0; x < (int)(sizeof MSG / sizeof MSG[0]); x++) {
         msg_text(MSG[x][0], MSG[x][1], t);
+        sp_print("MSG", t);
+    }
+    for (x = 0; x < NPRESETS; x++) {              /* PRESETS, each named */
+        msg_text("PRESET", preset_name(x), t);
         sp_print("MSG", t);
     }
     proj = keep;

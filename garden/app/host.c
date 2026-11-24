@@ -7,9 +7,11 @@
  * Checks: playing frozen view pool dirty sixteenths pad_level parN battery growth (the engine and the settings);
  * living stageN (plants in stage N: 1 seed .. 7 compost) born died hybrids nibbles frosts rains wild yours (counts)
  * gardener (name index) mood day weather seconds tended rung (plot notes rung) saves logseq fav plotN (plot N's stage)
- * lineage (plants with a parent).
+ * lineage (plants with a parent); 1.1: preset, format (the project's), pvN (what the engine gets for P_* N, the
+ * preset's colour on it).
  * Commands: battery N; weather N (the weather now, W_*); foreign (AMB-1 Drift's project in the store, as another
- * firmware left it); junk (a damaged project of ours: a byte changed); age N (every plant N quarter-seconds older). */
+ * firmware left it); junk (a damaged project of ours: a byte changed); age N (every plant N quarter-seconds older);
+ * storev1 (the project as it is, saved as 1.0 saved it: format 1, the preset's byte spare; and snap). */
 
 static world_t snap_w;
 int app_expect(const char *what, int *got)
@@ -17,6 +19,12 @@ int app_expect(const char *what, int *got)
     int g, i;
     if (!strcmp(what, "same"))
         g = !memcmp(&snap_w, &proj.w, sizeof snap_w);
+    else if (!strcmp(what, "preset"))
+        g = proj.preset;
+    else if (!strcmp(what, "format"))
+        g = (int)proj.format;
+    else if (!strncmp(what, "pv", 2))
+        g = pv(atoi(what + 2) % P_NPARAMS);
     else if (!strcmp(what, "playing"))
         g = en_playing;
     else if (!strcmp(what, "frozen"))
@@ -81,7 +89,7 @@ int app_expect(const char *what, int *got)
         for (g = 0, i = 0; i < G_NPLOT; i++)
             g += proj.w.p[i].stage != ST_EMPTY && proj.w.p[i].pa_var != NO_PARENT;
     } else if (!strncmp(what, "par", 3))
-        g = proj.par[atoi(what + 3)];
+        g = proj.par[atoi(what + 3) % P_NSAVED];
     else
         return 0;
     *got = g;
@@ -123,6 +131,14 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         a.adj = 0, a.var = 9;                    /* Lantern Foxglove */
         bee_line(&a, &a);
         ev_push();
+        return 1;
+    }
+    if (!strcmp(cmd, "storev1")) {               /* 1.0's project: format 1, no preset (the byte was spare, 0) */
+        project_t o = proj;
+        o.format = 1u;
+        o.preset = 0;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
+        snap_w = proj.w;
         return 1;
     }
     if (!strcmp(cmd, "snap")) {                  /* the garden remembered (expect same: it is as it was) */

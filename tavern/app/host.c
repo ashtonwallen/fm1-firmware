@@ -11,7 +11,9 @@
  * Commands: battery N; timewarp N (the tavern's clock N times as fast; the music as it is); minute N (the clock
  * set); moodN V (a character's mood set); storeamb (AMB-1 Drift's project in the store: another firmware's);
  * storejunk (this firmware's magic and format, the rest nonsense); endtune (the tune ends after this pass); hold N
- * (the next gap between tunes N ms). Checks also: root (the tune's key, 0 C .. 11 B). */
+ * (the next gap between tunes N ms). Checks also: root (the tune's key, 0 C .. 11 B).
+ * 1.1: checks preset, format, effN (the engine's setting N as the preset makes it);
+ * storev1 (the project now, saved as 1.0 saved it: format 1, no preset). */
 
 int app_expect(const char *what, int *got)
 {
@@ -71,7 +73,14 @@ int app_expect(const char *what, int *got)
         const char *b = strchr(what + 4, '_');
         g = b ? w->aff[atoi(what + 4) % NCH][atoi(b + 1) % NCH] : 0;
     } else if (!strncmp(what, "par", 3))
-        g = proj.par[atoi(what + 3) % P_NPARAMS];
+        g = proj.par[atoi(what + 3) % P_NSAVED];
+    else if (!strncmp(what, "eff", 3)) {
+        int p = atoi(what + 3) % P_NPARAMS;
+        g = preset_par(p, p < P_NSAVED ? proj.par[p] : 0);
+    } else if (!strcmp(what, "preset"))
+        g = proj.preset;
+    else if (!strcmp(what, "format"))
+        g = (int)proj.format;
     else
         return 0;
     *got = g;
@@ -103,6 +112,14 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
     }
     if (!strncmp(cmd, "mood", 4)) {
         proj.world.ch[atoi(cmd + 4) % NCH].mood = (int8_t)atoi(a);
+        return 1;
+    }
+    if (!strcmp(cmd, "storev1")) {               /* 1.0's project: format 1, its spare byte (now the preset) 0 */
+        static project_t o;
+        o = proj;
+        o.format = 1u;
+        o.preset = 0;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;
     }
     if (!strcmp(cmd, "storeamb")) {              /* AMB-1 Drift's project (magic "ENO1", format 5, its size) */

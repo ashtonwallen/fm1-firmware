@@ -1,0 +1,13 @@
+# NIGHT DRIVE's words for the screen reader (fm1-reader): the screen's text <TAB> what to say. "#" a number, "*" a
+# word left out. tools/gen_words.py makes web/words/<id>.json (keep every one). Without them the reader says the screen's text,
+# which NIGHT DRIVE writes out in full for it (keys as "F sharp minor"). The words files are served from the repo:
+# url: https://raw.githubusercontent.com/ashtonwallen/fm1-firmware/main/night-drive/app/web/words/
+i VI III VII	one, six, three, seven
+i VII VI VII	one, seven, six, seven
+VI VII i i	six, seven, one, one
+i VI iv VII	one, six, four, seven
+i iv VI V	one, four, six, five
+VI iv i VII	six, four, one, seven
+i v VI VII	one, five, six, seven
+iv VI VII i	four, six, seven, one
+# mi	# miles

@@ -1,0 +1,22 @@
+# the battery at the header's right: three bars, red at one or none, a bolt on USB power, nothing until it is read;
+# a screen reader hears it at the end of the page's summary
+wait 300
+battery 3
+wait 100
+expect battery 3
+shot full.png
+battery 1
+wait 100
+shot one.png
+battery 4
+wait 100
+shot usb.png
+battery -1
+wait 100
+shot unread.png
+listen
+where
+battery 2
+listen
+where
+said Battery two thirds

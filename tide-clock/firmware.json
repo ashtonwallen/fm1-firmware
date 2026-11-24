@@ -5,7 +5,7 @@
   "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
   "license": "MPL-2.0",
   "tagline": "Ambient day on a small coast: tide, lighthouse, keeper",
-  "description": "Tide Clock plays an ambient piece that follows the time of day. Near-silent low drones before dawn, brighter and busier through the morning, full at midday, warm in the evening, dark and slow at night. A small coast on the screen keeps time with it: the sky, the sun and moon, two tides a day, fishing boats, gulls, weather, and a lighthouse keeper who lights the lamp at dusk, worries in storms and keeps a log of the days. Clock mode follows the real time (set it at power-on); Cycle mode runs a whole day every few hours.",
+  "description": "Tide Clock plays an ambient piece that follows the time of day. Near-silent low drones before dawn, brighter and busier through the morning, full at midday, warm in the evening, dark and slow at night. A small coast on the screen keeps time with it: the sky, the sun and moon, two tides a day, boats, gulls, weather, and a lighthouse keeper who lights the lamp at dusk, worries in storms and keeps a log of the days. Clock mode follows the real time (set it at power-on); Cycle mode runs a whole day every few hours. Thirteen presets recolour the sound.",
   "tags": ["ambient", "generative", "game"],
   "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
   "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/tide-clock",

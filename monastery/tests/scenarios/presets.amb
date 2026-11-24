@@ -1,0 +1,174 @@
+# the presets (1.1): PRESETS turns through twelve. Each changes the chapel's sound (the space, the drone, the bell,
+# the voices, Drift 1.1's strings, lead, air and shimmer, the finals); each makes sound and none clips; the brothers,
+# the day and the chronicle are untouched; the preset is saved; 1.0's project (format 1) comes back whole, on the
+# first preset, Abbey Chapel
+wait 2000
+days 12
+expect preset 0
+expect format 2
+expect eff10 82
+expect eff39 0
+expect day 13
+expect vowed1 0
+expect chron 4
+# resting: the world holds still while every preset goes by
+tap PLAY
+wait 300
+expect playing 0
+turn PRESET 1
+wait 200
+expect preset 1
+shot preset-name.png
+turn PRESET 11
+expect preset 0
+turn PRESET -1
+expect preset 11
+turn PRESET 1
+expect preset 0
+expect day 13
+expect vowed1 0
+expect chron 4
+tap PLAY
+wait 300
+# every preset sings, none clips: from an office's bell, a minute and a half each, the last minute measured
+wav presets.wav
+turn PRESET 1
+expect preset 1
+office 2
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 2
+office 3
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 3
+office 4
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 4
+office 5
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 5
+office 6
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 6
+office 7
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 7
+office 1
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 8
+office 2
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 9
+office 3
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 10
+office 4
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 11
+office 5
+wait 30000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+wavstop
+expect eff36 0
+expect eff39 60
+expect eff1 71
+shot easter-vigil.png
+# the values the presets set
+turn PRESET -10
+expect preset 1
+expect eff39 50
+expect eff32 30
+turn PRESET 1
+expect eff10 47
+expect eff28 35
+turn PRESET 2
+expect eff36 1
+expect eff37 55
+expect eff2 41
+tap FX
+wait 300
+shot space-page.png
+tap HOME
+# twenty minutes in the Cathedral (the most shimmer, the long plate): it never runs away
+turn PRESET -3
+expect preset 1
+peakreset
+wait 1200000
+expect peak_db_max -1
+expect peak_db_min -30
+# the preset is saved
+turn PRESET 4
+expect preset 5
+tap SAVE
+reboot
+wait 300
+expect preset 5
+expect day 13
+expect chron >3
+# 1.0's project: format 1, carried over whole on the first preset
+storev1
+reboot
+wait 300
+expect format 2
+expect preset 0
+expect day 13
+expect vowed1 0
+expect chron >3
+# another firmware's project: the defaults, day 1, the first preset
+storeamb
+reboot
+wait 300
+expect preset 0
+expect day 1

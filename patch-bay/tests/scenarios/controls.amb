@@ -1,0 +1,104 @@
+# the controls: the cursor and its jack, plugging and pulling by hand, the knobs, the key, the scale, the presets,
+# play and pause, a help card
+wait 500
+expect sel 8
+turn SELECT 3
+expect sel 11
+shot cursor.png
+# VCF's jacks: IN, CUT, OUT; the cursor on CUT (LFO 2 SINE in Berlin School)
+turn ALGO 1
+expect jack 9
+expect cab9 10
+# pull it out: held from LFO 2's sine; plugged into FM's index instead
+tap EDIT
+wait 100
+expect hold 27
+expect cab9 -1
+expect dirty 1
+turn SELECT -2
+expect sel 9
+turn ALGO 1
+expect jack 7
+wait 400
+shot holding.png
+tap EDIT
+wait 100
+expect hold -1
+expect cab7 10
+expect legal 1
+# an output to an audio input does not fit: CLOCK BEAT into VCF IN
+tap SEQ
+tap SEQ
+expect sel 0
+tap EDIT
+expect hold 17
+turn SELECT 11
+expect sel 11
+tap EDIT
+expect hold 17
+expect cab8 14
+tap HOME
+expect hold -1
+# a loop is refused: VCA OUT into VCF IN (VCF feeds VCA in Berlin School)
+turn SELECT 1
+expect sel 12
+turn ALGO 2
+expect jack 36
+tap EDIT
+turn SELECT -1
+expect sel 11
+expect jack 8
+tap EDIT
+expect cab8 14
+expect hold 36
+tap HOME
+# the hand pauses the patcher
+expect moves 0
+# the knobs: K4 the cursor's module (VCF cutoff), K2 tempo, K3 space, K1 auto
+spin K4 -10
+expect par11 20
+spin K2 8
+expect tempo 120
+spin K3 -5
+expect space 30
+spin K1 -6
+expect autor 0
+wait 100
+shot knobs.png
+spin K1 4
+expect autor 4
+# the key from the keys (key 4 is A), the scale from OCT+
+tapkey 2
+expect root 7
+tap OCT+
+expect scale 6
+# presets
+turn PRESET 3
+expect preset 3
+expect musical 1
+wait 3000
+expect level >5
+turn PRESET -4
+expect preset 11
+# play and pause
+tap PLAY
+wait 2500
+expect playing 0
+tap PLAY
+wait 200
+expect playing 1
+# the lights
+tap GLO
+expect leds 2
+# a help card: EDIT held
+press EDIT
+wait 1200
+shot help.png
+release EDIT
+expect hold -1
+# REC: a move now
+tap REC
+wait 100
+expect moves 1
+wait 3000
+expect musical 1

@@ -1,0 +1,47 @@
+# the screen reader (fm1-reader, announce.c): a reader listens, and each page, knob, help card and button is said
+# once, in the screen's own text (the words file says it in full); each new loop is said as it starts recording
+wait 12000
+listen
+wait 100
+said Tape page: Decay 4 minutes, Length 6 seconds, Layers 2, Wow 40. Preset Cassette, D Ionian, tape running. Battery full
+listen
+where
+said Loop 1
+tap ENV
+wait 300
+said Tone page: Stock Cassette, Tone 55, Hiss 40, Space 45
+spin K1 1
+wait 300
+said Stock Reel
+spin K1 -1
+tap GLO
+wait 300
+said Setup page: Root D, Mode Ionian, Tune 0, Lights On
+spin K4 1
+wait 300
+said Lights Keys
+tap HOME
+wait 300
+spin K1 60
+wait 300
+said Decay 39 seconds
+tap REC
+wait 1000
+said Recording loop 2: 
+tap EDIT
+wait 100
+said HOLD ON
+tap PLAY
+wait 100
+said TAPE STOPPED
+tap PLAY
+spin PRESET 1
+wait 200
+said PRESET Reel to Reel, F Ionian
+press ARP
+wait 1200
+said ARP button. THE PHRASE. VOICE, PHRASE, DENSITY, OCTAVE
+release ARP
+tap OCT+
+wait 100
+said KEYS OCTAVE +1

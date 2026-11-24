@@ -12,6 +12,7 @@
  *   HOME ENV ARP   the pages: the tavern, the regulars, memorable nights
  *   FX LFO GLO     the knobs: mix, room, setup (SELECT steps through all six)
  *   KNOB 1-4       the page's four values (on the tavern: the mix)
+ *   PRESETS        the preset (1.1): the session's style (project.c PRESET[]); the regulars and the night go on
  *   SAVE           saves (it also saves by itself, rarely, between tunes) */
 #include "fastmath.h"
 
@@ -137,7 +138,7 @@ int ui_dirty(void) { return ui.dirty != 0 || ws.dirty; }
 /* ------------------------------------------------------------ values --- */
 static int knob_get(int k)
 {
-    if (k < P_NPARAMS)
+    if (k < P_NSAVED)
         return proj.par[k];
     if (k == K_LEDS)
         return proj.leds;
@@ -149,7 +150,7 @@ static int knob_get(int k)
 }
 static void knob_range(int k, int *lo, int *hi)
 {
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         *lo = en_param_info(k)->lo;
         *hi = en_param_info(k)->hi;
     } else {
@@ -161,7 +162,7 @@ static void knob_text(int k, char *b)
 {
     static const char *const NIGHT[6] = {"20 min", "30 min", "45 min", "1 hour", "90 min", "2 hours"};
     int v = knob_get(k);
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         en_param_text(k, v, b);
     } else if (k == K_LEDS) {
         cat_s(b, v == 2 ? "Keys" : v ? "On" : "Off");
@@ -183,9 +184,9 @@ static void knob_set(int k, int v)
     v = v < lo ? lo : v > hi ? hi : v;
     if (v == knob_get(k))
         return;
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         proj.par[k] = (int16_t)v;
-        en_set(k, v);
+        en_set(k, preset_par(k, v));
     } else if (k == K_LEDS) {
         proj.leds = (uint8_t)v;
     } else if (k == K_NIGHT) {
@@ -213,6 +214,19 @@ static int32_t accel(int role, int32_t s, int range)
         m = 3u;
     return s * (int32_t)m;
 }
+static void caps(char *d, const char *s, int n);
+static void preset_step(int d)          /* PRESETS: the next or the last preset, round (from the next tune on: the
+                                         * kinds, modes, tempo, songs; now: the room, the band's balance, the air) */
+{
+    char t[24];
+    proj.preset = (uint8_t)((proj.preset + NPRESET + d) % NPRESET);
+    project_apply();
+    world_restyle();
+    mark_dirty();
+    caps(t, preset_name(proj.preset), sizeof t);
+    say("PRESET", t);
+}
+
 static void turn(int role, int k, int32_t e)
 {
     int lo, hi;
@@ -335,7 +349,10 @@ static void input(void)
         ui.turn_t = plat_ms();
     }
     (void)plat_enc(EN_ALGO);
-    (void)plat_enc(EN_PRESET);
+    if ((e = plat_enc(EN_PRESET)) != 0) {
+        preset_step(e > 0 ? 1 : -1);
+        ui.act_t = ui.turn_t = plat_ms();
+    }
     for (i = 0; i < 4; i++)
         if ((e = plat_enc(EN_K1 + (int)i)) != 0) {
             if (!knob_view(ui.view))
@@ -1030,11 +1047,11 @@ static int help_lines(int b, const char *l[HELP_LINES])
     int n = 0;
 #define L(t) (l[n++] = (t))
     switch (b) {
-    case B_HOME: L("THE TAVERN"); L("WHO'S IN, WHO LEADS,"); L(" WHAT THEY PLAY"); break;
+    case B_HOME: L("THE TAVERN"); L("WHO'S IN, WHO LEADS,"); L(" WHAT THEY PLAY"); L("PRESETS: THE STYLE"); break;
     case B_ENV: L("THE REGULARS"); L("MOOD, GLASS, WHERE"); L(" THEY ARE"); break;
     case B_ARP: L("MEMORABLE NIGHTS"); break;
     case B_FX: L("THE MIX"); L("MELODY, BACKING,"); L(" BODHRAN, ECHO"); break;
-    case B_LFO: L("THE ROOM"); L("REVERB, ROOM, TONE,"); L(" NIGHT LENGTH"); break;
+    case B_LFO: L("THE ROOM"); L("REVERB, ROOM, TONE,"); L(" NIGHT LENGTH"); L("PRESETS: THE STYLE"); break;
     case B_GLO: L("SETUP"); L("TUNE, MIDI OUT, LIGHTS"); break;
     case B_EDIT: L("CALL FOR A TUNE"); L("BETWEEN TUNES: NOW"); break;
     case B_REC: L("A ROUND FOR THE HOUSE"); L("ONCE AN HOUR"); break;
@@ -1102,7 +1119,7 @@ static void draw_knobs(void)
     int now_touch = plat_ms() < ui.touch_until;
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
-    h = hash(h, (uint32_t)now_touch);
+    h = hash(h, (uint32_t)now_touch | (uint32_t)proj.preset << 8);
     if (h == ui.sig[2])
         return;
     ui.sig[2] = h;
@@ -1113,7 +1130,13 @@ static void draw_knobs(void)
         int32_t xd = 237 - NVIEWS * 6, xt;
         caps(t, VIEW_NAME[ui.view], sizeof t);
         xt = xd - 5 - text_w(&FONT_XS, t);
-        cv_rect(4, 5, xt - 9, 1, K_LINE);
+        {                                        /* the preset, at the left of the rule */
+            char pn[24];
+            int32_t xp;
+            caps(pn, preset_name(proj.preset), sizeof pn);
+            xp = cv_text(6, -1, &FONT_XS, pn, K_DIM) + 6;
+            cv_rect(xp, 5, xt - 9 - xp, 1, K_LINE);
+        }
         cv_text(xt, -1, &FONT_XS, t, K_ACC);
         for (k = 0; k < NVIEWS; k++)
             cv_round(xd + k * 6, 3, 4, 4, 2, k == ui.view ? K_ACC : K_LINE);
@@ -1272,6 +1295,8 @@ static void sp_where(void)                       /* "9:40 PM, night 3. Old Tom p
     }
     if (!en_playing)
         sp_cat(". Paused");
+    sp_cat(". Preset ");
+    sp_cat(preset_name(proj.preset));
 }
 static void sp_help(void)
 {
@@ -1363,7 +1388,7 @@ static void speak_dump(void)
             int k = VIEW_KNOB[v][i];
             knob_range(k, &lo, &hi);
             for (x = lo; x <= hi && k != K_CPU; x++) {
-                if (k < P_NPARAMS)
+                if (k < P_NSAVED)
                     proj.par[k] = (int16_t)x;
                 else if (k == K_LEDS)
                     proj.leds = (uint8_t)x;
@@ -1388,6 +1413,12 @@ static void speak_dump(void)
     ui.help = keep_help;
     sp_where();
     sp_print("WHERE", sp_buf);
+    for (i = 0; i < NPRESET; i++) {              /* PRESETS: its message */
+        char n[24], t[48];
+        caps(n, preset_name(i), sizeof n);
+        cat_s(cat_s(t, "PRESET "), n);
+        sp_print("MSG", t);
+    }
 }
 #endif
 

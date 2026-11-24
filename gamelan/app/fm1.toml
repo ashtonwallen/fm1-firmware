@@ -1,0 +1,23 @@
+# GAMELAN's build settings (fm1-base's tools/build.py: ./build.sh)
+name = "GAMELAN"               # the build's files: gamelan.fwsc, gamelan-X.Y.fwsc
+id_prefix = "FM-1_92"          # package identity: dev FM-1_9200, releases FM-1_92XXYYZZ
+usb_manufacturer = "GAMELAN"
+usb_product = "GAMELAN FM-1"
+ble = false                    # no radio
+usb_audio_in = true            # the music recordable over USB, at MASTER's level
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/gam.c"]             # the engine, at -O2
+# the site
+tagline = "Endless generated gamelan, gong to gong"
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/gamelan"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "GAMELAN turns the M-VAVE FM-1 into an endless gamelan in a Javanese and Balinese-inspired style. It makes new pieces by itself: a gong cycle marked by gong, kempul, kenong and ketuk, a core melody on metallophones, bonang and interlocking kotekan around it, and a soft kendang that leads the tempo through irama changes to each ending. Slendro and pelog tunings in cents, paired instruments beating against each other (ombak), warm modal metal sounds. The screen draws the cycle as a mandala. 14 presets."
+tags = ["ambient", "generative"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/img/screen-gamelan.png"

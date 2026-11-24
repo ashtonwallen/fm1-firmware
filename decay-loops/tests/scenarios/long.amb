@@ -1,0 +1,23 @@
+# a long run: loops come and go for twenty minutes (several layers, the decay quick), the peaks stay in bounds, the
+# tape never runs over
+spin PRESET 6
+wait 300
+spin K1 20
+spin K3 2
+master 2800
+wav long.wav
+peakreset
+wait 600000
+expect loops >8
+expect tape <101
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot long10.png
+wavstop
+peakreset
+spin PRESET 7
+# (from Brass Memory, seven on: Night Wire)
+wait 600000
+expect peak_db_max -0.5
+expect peak_db_min -30
+shot long20.png

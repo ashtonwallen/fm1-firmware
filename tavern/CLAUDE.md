@@ -21,13 +21,22 @@ From Git Bash: `MSYS_NO_PATHCONV=1 wsl.exe -d Ubuntu -- bash -lc 'cd /mnt/d/Proj
 - Engine `app/dsp/amb.c` / `amb.h` (name kept from AMB-1): tune generator (`en_tune_make`, modes, AABB, second
   endings), the instruments (fiddle, whistle, voice, harp/lute FM plucks, box, bass, bodhran), the session (who plays
   at what level, joining on bar lines, the ending), AMB-1's plate reverb and tape echo. Tested by `tests/host/amb_test.c`.
+  AMB-1 Drift 1.1's air (rain, wind, sea, fire) and shimmer are ported in: params `P_TEXTURE`..`P_SHIMMER` after
+  `P_MODE`, not saved (`P_NSAVED` in `app.h` is the first of them).
+- Presets (1.1): `app/project.c` `PRESET[]` (12, `NPRESET` in `app.h`, int16 values). `preset_par()` maps a knob's
+  value to the engine's (room offsets) and gives the air and shimmer; `preset_kinds/kind_pct/mode/tempo/songs/inst`
+  steer the world (`pick_kind`, `tune_key`, tempo, singers' chance, `band()`). PRESETS turns them (`preset_step` in
+  `ui.c`: `project_apply`, `world_restyle`). Preset 0 is 1.0's sound and draws the same random numbers.
 - The tavern `app/world.c` / `world.h`: regulars (`REG[]`), landlord Hugh, the visitor, the night's clock and phases,
   events and the log, memorable nights, tune names. Runs on the main loop and sends the engine `en_tune`/`en_inst`.
 - Screen `app/ui.c`: pages Tavern, Regulars, Nights, Mix, Room, Setup; autosave (`keep_due`, for flash wear: the
   world at most hourly, settings at most every 5 min, once on an empty battery; only between tunes once the room is
   quiet).
-- Saved state `project_t` in `app/app.h` (magic "TAV1", format 1, must stay at most 3840 bytes: a typedef checks it).
-  Anything else in the store (another firmware's project) loads as defaults (`app/project.c`).
-- Host checks and commands (`expect present`, `timewarp N`, `hold N`, `endtune`, `storeamb`...) at the top of `app/host.c`.
+- Saved state `project_t` in `app/app.h` (magic "TAV1", format 2, must stay at most 3840 bytes: a typedef checks it).
+  `par[P_NSAVED]` keeps 1.0's layout; the preset is 1.0's spare byte. Format 1 loads whole on preset 0. Anything else
+  in the store (another firmware's project) loads as defaults (`app/project.c`).
+- Host checks and commands (`expect present`, `preset`, `format`, `effN` the engine's value under the preset,
+  `timewarp N`, `hold N`, `endtune`, `storeamb`, `storev1`...) at the top of `app/host.c`. `tests/scenarios/presets.amb`:
+  every preset plays, peaks, the regulars and night kept, format 1.
 - USB name "TAVERN FM-1" in `app/fm1.toml`: keep "FM-1" in it so M-Flasher finds the unit. Repo and install URLs
   there are placeholders (nothing is published).

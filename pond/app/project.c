@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal; POND changes (C) 2026 ashtonwallen */
 /* POND project: one flash object (OBJ_PROJ): the settings and the pond. Anything else there (another firmware's
- * project, a damaged one, none) gives the defaults and a new pond. Part of the unity build, after app.h. */
+ * project, a damaged one, none) gives the defaults and a new pond. Part of the unity build, after app.h.
+ * Format 2 (1.1) adds the preset in a byte 1.0 kept spare: 1.0's project (format 1) loads whole, as Mill Pond. */
 project_t proj;
 
 typedef char proj_fits[sizeof(project_t) <= PLAT_STORE_MAX ? 1 : -1];
@@ -22,7 +23,7 @@ void project_defaults(void)
     memset(&proj, 0, sizeof proj);
     proj.magic = PROJ_MAGIC;
     proj.format = PROJ_FORMAT;
-    for (i = 0; i < P_NPARAMS; i++)
+    for (i = 0; i < P_NSAVED; i++)
         proj.par[i] = en_param_info((int)i)->def;
     for (i = 0; i < sizeof POND_RECIPE / sizeof POND_RECIPE[0]; i++)
         proj.par[POND_RECIPE[i].p] = POND_RECIPE[i].v;
@@ -36,7 +37,7 @@ void project_defaults(void)
 static int pars_ok(const int16_t *par)
 {
     int i;
-    for (i = 0; i < P_NPARAMS; i++) {
+    for (i = 0; i < P_NSAVED; i++) {
         const en_param_t *p = en_param_info(i);
         if (par[i] < p->lo || par[i] > p->hi)
             return 0;
@@ -63,7 +64,7 @@ static int world_ok(const world_t *w)
 
 static int project_valid(void)
 {
-    return proj.magic == PROJ_MAGIC && proj.format == PROJ_FORMAT && pars_ok(proj.par) && proj.leds <= 2 &&
+    return proj.magic == PROJ_MAGIC && proj.format == PROJ_FORMAT && pars_ok(proj.par) && proj.preset < NPRESETS && proj.leds <= 2 &&
            proj.busy <= 100 && proj.daylen < 5 && proj.cap >= 3 && proj.cap <= PD_NFISH && world_ok(&proj.w);
 }
 
@@ -72,6 +73,10 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {
+        proj.format = PROJ_FORMAT;               /* 1.0's: the same layout; the preset's byte was spare (0) */
+        proj.preset = 0;
+    }
     if (n == (int)sizeof proj && project_valid()) {
         pd_resume();
         return 0;

@@ -35,8 +35,15 @@ The device has no libc string functions beyond memset/memcpy/memcmp (no strlen, 
   setup pages), help cards, screen reader.
 - `app/dsp/amb.c`: AMB-1's engine. Ours: `PIECES[]` are the eight landscapes (order = `LS_*`), params `P_RAIL`,
   `P_RAIN`, `P_RUMBLE`, `en_chime`, `en_bell` (the NIGHT TRAIN section: rail clicks on the grid, rumble, rain).
-- `app/project.c`, `app/app.h`: one store object, magic "NTR1", format 1 (settings + `world_t`, ~1.4 KB of 3840).
+  AMB-1 Drift 1.1's sounds are ported in (strings, lead, air, shimmer, the Strings pad: params `P_PLUCK`..`P_SHIMMER`
+  after `P_RUMBLE`, all off in the landscapes' recipes).
+- Lines (1.1): `ui.c` `LINES[]` (12, `NLINES` = `PROJ_NLINES` in `app.h`), applied by `line_apply` in
+  `music_targets` over the landscape's recipe: pad colour, mode, tempo %, levels %, Drift 1.1's sounds, space, clack.
+  Night Line (0) changes nothing (1.0's sound). FX steps, Setup K4 picks; `music_tick` swaps the discrete parts at
+  once (`mus_line`). The world is never touched.
+- `app/project.c`, `app/app.h`: one store object, magic "NTR1", format 2 (settings + `world_t`, ~1.4 KB of 3840).
+  Format 2 (1.1) puts the line in 1.0's spare byte; a format 1 project loads whole on line 0.
 - `app/host.c`: simulator checks and commands (`ff MIN` runs the world alone, `land N`, `tunnel`, `bridge`,
-  `rain N`, `express`, `storeold`, `story`).
-- Tests: `tests/host/amb_test.c` (engine), `tests/host/world_test.c` (30 h of journey), `tests/scenarios/*.amb`.
+  `rain N`, `express`, `storeold`, `storev1` (1.0's format), `story`; checks `line`, `format`).
+- Tests: `tests/host/amb_test.c` (engine), `tests/host/world_test.c` (30 h of journey), `tests/scenarios/*.amb` (`lines.amb`: every line sounds, peaks, the world kept, format 1).
 - USB name "NIGHT TRAIN FM-1" in `app/fm1.toml`: keep "FM-1" in it so M-Flasher finds the unit.

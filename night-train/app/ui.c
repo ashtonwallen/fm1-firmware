@@ -6,7 +6,8 @@
  *   HOME           the window: the landscape going by, the next station, who sits where
  *   SEQ            the journal: everything that happened on board (KNOB 1 or ALGORITHM scrolls)
  *   ENV            the passengers: the six regulars, where they are, their stories
- *   GLO            setup: tune, MIDI out, lights; the journey so far
+ *   GLO            setup: tune, MIDI out, lights, the line; the journey so far
+ *   FX             the next line (1.1): the train's sound palette (LINES[]); the journey goes on as it was
  *   SELECT         steps through the pages
  *   KNOB 1-4       on the window: Stretch (minutes between stations), Clack (the wheels), Tone, Space
  *   PRESETS        express: on to the next station
@@ -25,15 +26,15 @@
 enum { V_WINDOW, V_LOG, V_PASS, V_SETUP, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Window", "Journal", "Passengers", "Setup"};
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_SEQ, B_ENV, B_GLO};
-enum { K_STRETCH, K_CLACK, K_TONE, K_SPACE, K_TUNE, K_MIDI, K_LEDS, K_SCROLL, K_NONE };
+enum { K_STRETCH, K_CLACK, K_TONE, K_SPACE, K_TUNE, K_MIDI, K_LEDS, K_LINE, K_SCROLL, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {K_STRETCH, K_CLACK, K_TONE, K_SPACE},
     {K_SCROLL, K_NONE, K_NONE, K_NONE},
     {K_NONE, K_NONE, K_NONE, K_NONE},
-    {K_TUNE, K_MIDI, K_LEDS, K_NONE},
+    {K_TUNE, K_MIDI, K_LEDS, K_LINE},
 };
 static const char *const KNOB_NAME[K_NONE + 1] = {"Stretch", "Clack", "Tone", "Space", "Tune", "MIDI out", "Lights",
-                                                  "Scroll", ""};
+                                                  "Line", "Scroll", ""};
 
 /* the night's colours */
 #define N_BG RGB(18, 17, 26)
@@ -168,10 +169,74 @@ int ui_dirty(void) { return ui.dirty != 0; }
  * rest of the discrete settings change at the station (music_swap). */
 static int16_t mus_cur[P_NPARAMS];
 static uint32_t mus_t;
+
+/* the lines (1.1): the train's sound palette, over every landscape. A line keeps the landscapes' own recipes and
+ * changes their instruments (the pad's colour, Drift 1.1's strings, lead, air and shimmer), leans the key's mode, the
+ * tempo, the space and the wheels. The journey is the same whichever line it runs on: only the sound changes.
+ * Night Line, the first, is 1.0's sound (no change); a project saved by 1.0 runs on it.
+ *   PT pad colour (-1 the landscape's, 0 Rhodes, 1 Voices, 2 Strings); Md mode (-1 the landscape's); Tm tempo %;
+ *   Pad Bel Bas Pul levels %; BT bell tone (-1 the landscape's); Str Den STo SO strings; Led LTo Oft LO lead;
+ *   Tx texture (0 rain, 1 wind, 2 sea, 3 vinyl) and Air its level, Sw sway; Sh shimmer; Rv Ec Br reverb, echo,
+ *   brightness added; Ck the wheels' clack and the rumble % */
+enum { L_PT, L_MODE, L_TEMPO, L_PAD, L_BELLS, L_BASS, L_PULSE, L_BTONE, L_STR, L_SDEN, L_STONE, L_SOCT, L_LEAD, L_LTONE,
+       L_LOFT, L_LOCT, L_TEX, L_AIR, L_SWAY, L_SHIM, L_REV, L_ECHO, L_BRIGHT, L_CLACK, L_N };
+#define NLINES 12
+_Static_assert(NLINES == PROJ_NLINES, "the project knows how many lines there are");
+static const struct {
+    const char *name;
+    int16_t v[L_N];
+} LINES[NLINES] = {
+    /*                   PT  Md  Tm  Pad Bel Bas Pul  BT  Str Den STo SO  Led LTo Oft LO  Tx Air Sw  Sh  Rv  Ec  Br  Ck */
+    {"Night Line",     {-1, -1, 100, 100, 100, 100, 100, -1,  0, 40, 30, 0,  0, 50, 35, 0,  0,  0, 50,  0,  0,  0,  0, 100}},
+    {"Alpine Sleeper", { 2,  3,  85, 100,  70, 90,  40, 20,  0, 40, 30, 0, 45, 85, 35, 1,  1, 45, 60, 55, 10,  0,  5,  80}},
+    {"Coastal Line",   {-1,  4,  95, 90,  70, 100,  60, -1, 60, 45, 20, 0,  0, 50, 35, 0,  2, 60, 70, 15,  5, 15, -5,  90}},
+    {"Desert Express", { 1,  2,  90, 90,  55, 110,  50, 70, 45, 35, 80, 0, 45, 10, 40, -1, 1, 40, 80,  0, -5,  5, 10, 100}},
+    {"City Loop",      { 0,  1, 110, 90, 100, 110, 150, 80, 30, 50, 70, 1,  0, 50, 35, 0,  3, 40, 40,  0,-15,  0, 10, 110}},
+    {"Snow Route",     { 1,  6,  80, 100,  60, 70,  0, 30, 45, 30, 85, 1, 40, 95, 30, 1,  1, 30, 30, 60, 10,  0, 10,  60}},
+    {"Old Steam",      { 0,  4,  85, 90,  80, 110, 80, 40, 40, 40, 10, 0,  0, 50, 35, 0,  3, 70, 50,  0,  0,  5,-20, 140}},
+    {"Rain Mail",      { 2,  5,  90, 100,  50, 100, 40, 20, 35, 30, 20, 0, 50, 15, 30, 0,  0, 60, 60, 20,  5, 10,-10,  90}},
+    {"Lantern Local",  { 0,  6, 100, 90,  80, 90, 60, 90, 55, 50, 90, 0,  0, 50, 35, 0,  3, 25, 30,  0,  0,  5,  5, 100}},
+    {"Aurora Line",    { 1,  3,  80, 100,  60, 80,  0, 10, 35, 30, 40, 1, 45, 80, 35, 1,  1, 35, 70, 70, 15,  0,  0,  60}},
+    {"Border Night",   { 2,  1,  95, 90,  50, 110, 50, -1, 50, 40, 15, -1, 50, 20, 35, -1, 1, 45, 75, 10,  0,  5,-10, 100}},
+    {"Last Train",     { 1,  7,  75, 100,  50, 90,  0, 20, 30, 25, 60, 0, 40, 60, 25, 0,  0, 40, 40, 35, 15, 10,-15,  70}},
+};
+static const char *line_name(int i) { return LINES[(unsigned)i < NLINES ? i : 0].name; }
+static int pct(int v, int p) { return (v * p + 50) / 100; }
+static void line_apply(int16_t *t, int f_run)  /* the line over the landscape's recipe (f_run 0..100: how hard it runs) */
+{
+    const int16_t *L = LINES[proj.line < NLINES ? proj.line : 0].v;
+    if (L[L_PT] >= 0)
+        t[P_PADTONE] = L[L_PT];
+    if (L[L_MODE] >= 0)
+        t[P_MODE] = L[L_MODE];
+    if (L[L_BTONE] >= 0)
+        t[P_BTONE] = L[L_BTONE];
+    t[P_TEMPO] = (int16_t)pct(t[P_TEMPO], L[L_TEMPO]);
+    t[P_PAD] = (int16_t)pct(t[P_PAD], L[L_PAD]);
+    t[P_BELLS] = (int16_t)pct(t[P_BELLS], L[L_BELLS]);
+    t[P_BASS] = (int16_t)pct(t[P_BASS], L[L_BASS]);
+    t[P_PULSE] = (int16_t)pct(t[P_PULSE], L[L_PULSE]);
+    t[P_PLUCK] = (int16_t)pct(L[L_STR], 40 + 60 * f_run / 100);   /* the strings rest at the station */
+    t[P_PLDENS] = L[L_SDEN];
+    t[P_PLTONE] = L[L_STONE];
+    t[P_PLOCT] = L[L_SOCT];
+    t[P_LEAD] = L[L_LEAD];
+    t[P_LDTONE] = L[L_LTONE];
+    t[P_LDDENS] = L[L_LOFT];
+    t[P_LDOCT] = L[L_LOCT];
+    t[P_TEXTURE] = L[L_TEX];
+    t[P_TEXLVL] = L[L_AIR];
+    t[P_TEXMOD] = L[L_SWAY];
+    t[P_SHIMMER] = L[L_SHIM];
+    t[P_REVERB] = (int16_t)(t[P_REVERB] + L[L_REV]);
+    t[P_ECHO] = (int16_t)(t[P_ECHO] + L[L_ECHO]);
+    t[P_BRIGHT] = (int16_t)(t[P_BRIGHT] + L[L_BRIGHT]);
+    t[P_RUMBLE] = (int16_t)pct(t[P_RUMBLE], L[L_CLACK]);
+}
 static int mus_discrete(int p)
 {
     return p == P_ETIME || p == P_ROOT || p == P_MODE || p == P_BOCT || p == P_PADTONE || p == P_BASSOCT || p == P_TUNE ||
-           p == P_MIDI;
+           p == P_MIDI || p == P_TEXTURE || p == P_PLOCT || p == P_LDOCT;
 }
 static int clampi(int v, int p)
 {
@@ -191,6 +256,7 @@ static void music_targets(int16_t *t)
     int tn = world_in_tunnel(w), br = world_on_bridge(w), p, theo = w->theo_play > 0;
     en_piece(w->land, t, &pool);
     f = w->phase == PH_DWELL ? 0.0f : w->phase == PH_SIGNAL ? 0.25f * s : 0.25f + 0.75f * s;
+    line_apply(t, (int)(f * 100.0f));
     t[P_ROOT] = (int16_t)((t[P_ROOT] + w->key) % 12);
     t[P_PAD] = (int16_t)((float)t[P_PAD] * (tn ? 0.75f : 1.0f));
     t[P_BELLS] = (int16_t)((float)t[P_BELLS] * (0.3f + 0.7f * f) * (tn ? 0.55f : 1.0f) + (theo ? 25.0f : 0.0f));
@@ -198,7 +264,8 @@ static void music_targets(int16_t *t)
     t[P_BASS] = (int16_t)((float)t[P_BASS] * (0.35f + 0.65f * f));
     t[P_PULSE] = (int16_t)((float)t[P_PULSE] * f * f);
     t[P_TEMPO] = (int16_t)(34.0f + (float)(t[P_TEMPO] - 34) * s);
-    t[P_RAIL] = (int16_t)((float)proj.clack * fm_minf(1.0f, s * 1.6f) * (br ? 1.25f : 1.0f) * (s > 0.02f ? 1.0f : 0.0f));
+    t[P_TEXLVL] = (int16_t)((float)t[P_TEXLVL] * (tn ? 0.3f : 1.0f));   /* the air is outside */
+    t[P_RAIL] = (int16_t)((float)pct(proj.clack, LINES[proj.line < NLINES ? proj.line : 0].v[L_CLACK]) * fm_minf(1.0f, s * 1.6f) * (br ? 1.25f : 1.0f) * (s > 0.02f ? 1.0f : 0.0f));
     t[P_RUMBLE] = (int16_t)(s > 0.02f ? (float)t[P_RUMBLE] * (0.35f + 0.65f * s) + (tn ? 35.0f : 0.0f) + (br ? 15.0f : 0.0f) : 0.0f);
     t[P_RAIN] = (int16_t)(w->rain && !tn ? (w->land == LS_SNOW || w->land == LS_MOUNTAIN ? 25 : 60) : 0);
     t[P_BRIGHT] = (int16_t)(t[P_BRIGHT] + proj.tone - (tn ? 25 : 0));
@@ -214,11 +281,14 @@ static uint32_t music_pool(void)
     int16_t t[P_NPARAMS];
     uint16_t pool;
     en_piece(proj.w.land, t, &pool);
-    return pool;
+    line_apply(t, 100);
+    return EN_MODE_POOL[t[P_MODE] % EN_NMODES];
 }
+static uint8_t mus_line;                     /* the line the music is on */
 static void music_apply_all(void)            /* boot, load: everything at once */
 {
     int p;
+    mus_line = proj.line;
     music_targets(mus_cur);
     for (p = 0; p < P_NPARAMS; p++)
         en_set(p, mus_cur[p]);
@@ -244,6 +314,10 @@ static void music_tick(uint32_t now)         /* ten times a second, a step towar
     if (now - mus_t < 100u)
         return;
     mus_t = now;
+    if (mus_line != proj.line) {             /* a new line: its colours at once, on a new chord; levels slide */
+        mus_line = proj.line;
+        music_swap();
+    }
     music_targets(t);
     for (p = 0; p < P_NPARAMS; p++) {
         int d = t[p] - mus_cur[p];
@@ -278,6 +352,7 @@ static int knob_get(int k)
     case K_TUNE: return proj.tune;
     case K_MIDI: return proj.midi;
     case K_LEDS: return proj.leds;
+    case K_LINE: return proj.line;
     case K_SCROLL: return ui.scroll;
     default: return 0;
     }
@@ -292,6 +367,7 @@ static void knob_range(int k, int *lo, int *hi)
     case K_TONE: case K_SPACE: case K_TUNE: *lo = -50; *hi = 50; break;
     case K_MIDI: *hi = 1; break;
     case K_LEDS: *hi = 2; break;
+    case K_LINE: *hi = NLINES - 1; break;
     case K_SCROLL: *hi = nlog_kept() > 0 ? nlog_kept() - 1 : 0; break;
     default: break;
     }
@@ -305,6 +381,7 @@ static void knob_text(int k, char *b)
     case K_TONE: case K_SPACE: case K_TUNE: itoa_s(v, b); break;
     case K_MIDI: cat_s(b, v ? "On" : "Off"); break;
     case K_LEDS: cat_s(b, v == 2 ? "Keys" : v ? "On" : "Off"); break;
+    case K_LINE: cat_s(b, line_name(v)); break;
     case K_SCROLL: itoa_u((uint32_t)v, b); break;
     default: b[0] = 0; break;
     }
@@ -324,6 +401,7 @@ static void knob_set(int k, int v)
     case K_TUNE: proj.tune = (int8_t)v; break;
     case K_MIDI: proj.midi = (uint8_t)v; break;
     case K_LEDS: proj.leds = (uint8_t)v; break;
+    case K_LINE: proj.line = (uint8_t)v; break;   /* the music follows (music_tick) */
     case K_SCROLL: ui.scroll = (uint16_t)v; return;
     default: return;
     }
@@ -365,6 +443,7 @@ static void turn(int role, int k, int32_t e)
 }
 
 /* ------------------------------------------------------------ buttons --- */
+static void caps(char *d, const char *s, int n);
 static void set_view(int v)
 {
     ui.view = (uint8_t)v;
@@ -390,6 +469,13 @@ static void button(int b)
             return;
         }
     switch (b) {
+    case B_FX: {                             /* the next line */
+        char t[24];
+        knob_set(K_LINE, (proj.line + 1) % NLINES);
+        caps(t, line_name(proj.line), sizeof t);
+        say("LINE", t);
+        break;
+    }
     case B_EDIT:
         en_next();
         say("NEXT CHORD", en_playing ? "ON THE BAR" : 0);
@@ -520,7 +606,8 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_HOME: L("THE WINDOW"); L("K1 STRETCH, K2 CLACK,"); L(" K3 TONE, K4 SPACE"); break;
     case B_SEQ: L("THE JOURNAL"); L("WHAT HAPPENED ON BOARD"); L("KNOB 1 OR ALGO: SCROLL"); break;
     case B_ENV: L("THE PASSENGERS"); L("WHO RIDES, AND THEIR"); L(" STORIES SO FAR"); break;
-    case B_GLO: L("SETUP"); L("TUNE, MIDI OUT, LIGHTS"); L("THE JOURNEY SO FAR"); break;
+    case B_GLO: L("SETUP"); L("TUNE, MIDI OUT, LIGHTS,"); L(" K4 THE LINE"); L("THE JOURNEY SO FAR"); break;
+    case B_FX: L("THE NEXT LINE:"); L(" THE TRAIN'S SOUND"); L("THE JOURNEY GOES ON"); L("SETUP K4: ANY LINE"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L(" ON THE NEXT BAR"); break;
     case B_REC: L("FREEZE: THE CHORD HOLDS"); L(" AND THE REVERB RINGS ON"); L("AGAIN: THAW"); break;
     case B_SAVE: L("SAVES THE JOURNEY"); L("IT ALSO SAVES ITSELF"); L(" AT STATIONS"); break;
@@ -1423,13 +1510,19 @@ static void draw_setup(int32_t oy)
     const world_t *w = &proj.w;
     char t[40], v[16];
     int i;
-    static const uint8_t SK[7] = {K_TUNE, K_MIDI, K_LEDS, K_STRETCH, K_CLACK, K_TONE, K_SPACE};
+    static const uint8_t SK[8] = {K_TUNE, K_MIDI, K_LEDS, K_LINE, K_STRETCH, K_CLACK, K_TONE, K_SPACE};
+    static const char *const KL[4] = {"K1", "K2", "K3", "K4"};
     if (oy == 0)
-        page_title("SETUP", "KNOBS 1-3");
-    for (i = 0; i < 7; i++) {                /* the settings: the first three on the knobs here */
+        page_title("SETUP", "KNOBS 1-4");
+    for (i = 0; i < 8; i++) {                /* the settings: the first four on the knobs here */
         int32_t y = 26 + i * 16 - oy;
+        if (SK[i] == K_LINE) {               /* the line: its name across the column */
+            cv_text(8, y, &FONT_XS, KL[i], N_DIM);
+            cv_text(28, y, &FONT_XS, line_name(proj.line), N_ACC);
+            continue;
+        }
         knob_text(SK[i], v);
-        cv_text(8, y, &FONT_XS, i < 3 ? (i == 0 ? "K1" : i == 1 ? "K2" : "K3") : "", N_DIM);
+        cv_text(8, y, &FONT_XS, i < 4 ? KL[i] : "", N_DIM);
         cv_text(28, y, &FONT_XS, KNOB_NAME[SK[i]], N_TEXT);
         cv_text(120 - text_w(&FONT_XS, v), y, &FONT_XS, v, N_ACC);
     }
@@ -1450,8 +1543,8 @@ static void draw_setup(int32_t oy)
         cv_text(132, y + 108, &FONT_XS, t, N_DIM);
         if (batt_words(batt()))
             cv_text(132, y + 124, &FONT_XS, batt_words(batt()), N_DIM);
-        cv_text(8, y + 146, &FONT_XS, "Hold a button for its card. PRESETS: express.", N_DIM);
-        cv_text(8, y + 162, &FONT_XS, "Window knobs: stretch, clack, tone, space.", N_DIM);
+        cv_text(8, y + 154, &FONT_XS, "Hold a button for its card. PRESETS: express.", N_DIM);
+        cv_text(8, y + 170, &FONT_XS, "FX: the next line, the train's sound.", N_DIM);
     }
 }
 
@@ -1583,7 +1676,7 @@ static void sp_page(int all)
         }
         break;
     default:
-        for (i = 0; i < 3; i++) {
+        for (i = 0; i < 4; i++) {
             if (i)
                 sp_cat(", ");
             sp_knob(VIEW_KNOB[V_SETUP][i]);
@@ -1754,6 +1847,12 @@ static void speak_dump(void)
     ui.help = keep_help;
     for (i = 0; i < (int)(sizeof MSG / sizeof MSG[0]); i++) {
         msg_text(MSG[i][0], MSG[i][1], t);
+        sp_print("MSG", t);
+    }
+    for (i = 0; i < NLINES; i++) {            /* FX: the next line */
+        char n[24];
+        caps(n, line_name(i), sizeof n);
+        msg_text("LINE", n, t);
         sp_print("MSG", t);
     }
     for (i = 0; i < (int)(sizeof WARN / sizeof WARN[0]); i++) {

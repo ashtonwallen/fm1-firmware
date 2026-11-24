@@ -1,0 +1,54 @@
+# saving: SAVE keeps everything over a reboot; a setting saves itself once the knobs rest (at most every 5 min);
+# another firmware's project, or a short one, gives the defaults
+wait 300
+turn PRESET 2
+expect preset 2
+spin K2 -4
+expect tempo 80
+turn SELECT 3
+spin K4 7
+expect par11 37
+turn ALGO 1
+tap EDIT
+expect cab9 -1
+tap HOME
+tap SAVE
+wait 200
+expect dirty 0
+reboot
+wait 300
+expect preset 2
+expect tempo 80
+expect par11 37
+expect cab9 -1
+expect cab8 15
+expect playing 1
+expect sel 11
+# a setting by itself: nothing written in the first 5 minutes, then once it rests
+spin K3 3
+expect dirty 1
+wait 20000
+expect store_writes 1
+wait 290000
+expect dirty 0
+expect store_writes 2
+reboot
+wait 300
+expect space 48
+# AMB-1 Drift's project in the store: the defaults (the first preset)
+storeforeign
+reboot
+wait 300
+expect preset 0
+expect tempo 112
+expect cables 15
+expect playing 1
+wait 3000
+expect level >10
+# ours, cut short: the defaults too
+turn PRESET 5
+tap SAVE
+storeshort
+reboot
+wait 300
+expect preset 0

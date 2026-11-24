@@ -1,0 +1,21 @@
+# a first look and listen: it plays from power-on, by itself; the auto-patcher moves the patch
+wav first.wav
+wait 300
+expect playing 1
+expect preset 0
+expect musical 1
+wait 5000
+shot first.png
+expect level >20
+expect eighths >10
+automove
+wait 900
+shot moving.png
+wait 2000
+shot landed.png
+expect moves >0
+expect musical 1
+wait 20000
+wavstop
+expect peak_db_max -1
+expect peak_db_min -24

@@ -1,0 +1,28 @@
+# another firmware's saved data where ours goes (AMB-1 Drift's), or ours in a format this build does not know:
+# the defaults come up, and it plays
+storeamb
+reboot
+wait 3000
+expect preset 0
+expect par0 45
+expect par4 0
+expect keyoct 0
+expect playing 1
+expect rec 1
+peakreset
+wait 20000
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 3
+spin K1 5
+tap SAVE
+wait 200
+storeold
+reboot
+wait 3000
+expect preset 0
+expect par0 45
+expect slot3p0 65
+peakreset
+wait 20000
+expect peak_db_min -30

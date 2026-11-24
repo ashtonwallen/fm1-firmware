@@ -13,3 +13,4 @@ flasher/CLAUDE.md
 
 __pycache__/
 *.tmp
+.claude-briefs/

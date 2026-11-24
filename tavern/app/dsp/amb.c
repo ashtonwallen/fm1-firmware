@@ -28,6 +28,7 @@ static const en_param_t PARAMS[P_NPARAMS] = {
     {"Echo", 0, 100, 15},  {"Reverb", 0, 100, 55},  {"Room", 0, 100, 55},   {"Tone", 0, 100, 50},
     {"Tune", -50, 50, 0},  {"MIDI out", 0, 1, 1},
     {"Tempo", 30, 140, 72}, {"Root", 0, 11, 2},     {"Mode", 0, EN_NMODES - 1, 1},
+    {"Texture", 0, 3, 0},   {"Air", 0, 100, 0},     {"Sway", 0, 100, 50},  {"Shimmer", 0, 100, 0},
 };
 const en_param_t *en_param_info(int i) { return (i >= 0 && i < P_NPARAMS) ? &PARAMS[i] : &PARAMS[0]; }
 
@@ -54,7 +55,10 @@ void en_param_text(int i, int v, char *b)
     const char *s = 0;
     if (i == P_MIDI)
         s = v ? "On" : "Off";
-    else if (i == P_MODE)
+    else if (i == P_TEXTURE) {
+        static const char *const TEX[4] = {"Rain", "Wind", "Sea", "Fire"};
+        s = TEX[(unsigned)v < 4u ? v : 0];
+    } else if (i == P_MODE)
         s = EN_MODE_NAME[(unsigned)v < EN_NMODES ? v : 0];
     else if (i == P_ROOT)
         s = EN_NOTE_NAME[(unsigned)v < 12u ? v : 0];
@@ -1210,6 +1214,64 @@ static void notes_off(void)
     mel_note = -1;
 }
 
+/* ---------------------------------------------- AMB-1 Drift 1.1's air and shimmer --- */
+/* Ported from AMB-1 Drift 1.1 (the strings and the lead are not: the band has its own). Their own random numbers;
+ * nothing at all runs while they are at 0. Vinyl's crackle is the fire here. */
+static uint32_t rng2 = 0x2545F491u;
+static uint32_t rnd2(void)
+{
+    uint32_t x = rng2;
+    x = x ^ (x << 13);
+    x = x ^ (x >> 17);
+    rng2 = x ^ (x << 5);
+    return rng2;
+}
+static float frand2(void) { return (float)(rnd2() >> 8) * (1.0f / 16777216.0f); }
+
+/* AIR: rain, wind, sea or vinyl, from noise. Two noises (left, right) through one state-variable filter each
+ * (its band-pass and low-pass mixed by type), a slow sway (Sway: how far), and for rain and vinyl, drops: an
+ * impulse now and then into a ringing band-pass (a drop's "plip", a record's tick).
+ *   rain   a soft hiss around 3 kHz and drops (1.8 .. 5 kHz), thicker and thinner
+ *   wind   a band of noise (300 Hz .. 1.4 kHz) that gusts: louder and higher together
+ *   sea    low-passed noise in waves (about 9 and 10 s, left and right): it swells, brightens, falls back
+ *   vinyl  a faint high hiss and crackle */
+#define NPING 8
+static float ping_c[2][NPING][4];               /* the drops' filters: rain, vinyl */
+static struct {
+    float s[2][2], c[2][4], g, gi, mb, ml, ph[2], gust, gust_t, d0, d1, dg, pl, pr, fade;
+    uint32_t nz, rate, acc, gust_left;
+    uint8_t type, dset, pc, ping;
+} air;
+static float air_vol, air_sway;
+
+/* SHIMMER: the plate's output an octave up (a delay read at twice the speed by two heads half a window apart,
+ * each faded in and out by a triangle so the jumps are never heard), darkened and thinned, back into the plate:
+ * each time round a further octave, quieter, and heard beside the plate. The feedback is kept low (a plate this
+ * long has a large gain of its own: higher, and the loop runs away). 8 KB; nothing while it is at 0 */
+#define SH_N 2048
+#define SH_MIX 0.35f                             /* the octave beside the plate, at Shimmer 100 */
+#define SH_FB 0.6f                               /* back into it: times (1 - the plate's decay) */
+#define SH_W 1600.0f                             /* the window: 36 ms */
+static float sh_buf[SH_N];
+static int sh_w;
+static float sh_d = SH_W, sh_lp, sh_hp, sh_out, sh_g;
+
+static void air_init(void)
+{
+    int i;
+    static const float RAIN_F[NPING] = {1800.0f, 2200.0f, 2600.0f, 3000.0f, 3400.0f, 3900.0f, 4400.0f, 5000.0f};
+    air.g = 0.0f;
+    air.fade = 0.0f;
+    air.nz = 12345u;
+    for (i = 0; i < NPING; i++) {
+        svf_coefs(ping_c[0][i], RAIN_F[i], 0.035f);
+        svf_coefs(ping_c[1][i], 2500.0f + 450.0f * (float)i, 0.7f);
+    }
+    for (i = 0; i < SH_N; i++)
+        sh_buf[i] = 0.0f;
+    sh_lp = sh_hp = sh_out = 0.0f;
+}
+
 static void apply(int p, int v)
 {
     const en_param_t *pi = &PARAMS[p];
@@ -1227,6 +1289,16 @@ static void apply(int p, int v)
         echo_fb = 0.3f + 0.3f * (float)v * 0.01f;
         break;
     case P_TONE: tone = (float)v * 0.01f; break;
+    case P_TEXTURE:
+        if (air.type != (uint8_t)v) {            /* another texture: it comes in anew, over 2 s */
+            air.type = (uint8_t)v;
+            air.fade = 0.0f;
+            air.acc = 64u;
+        }
+        break;
+    case P_TEXLVL: air_vol = (float)(v * v) * 0.0001f * 0.5f; break;
+    case P_TEXMOD: air_sway = (float)v * 0.01f; break;
+    case P_SHIMMER: sh_g = (float)v * 0.01f; break;
     case P_TUNE: tunefac = fm_exp2f((float)v * (1.0f / 1200.0f)); break;
     case P_TEMPO:
         tempo_set();
@@ -1262,6 +1334,7 @@ static void quiet(void)
         lead[i].amp = lead[i].gate = 0.0f, lead[i].pend = -1;
     bass.amp = 0.0f;
     bass.wait = 0;
+    air.g = 0.0f;
     notes_off();
 }
 
@@ -1271,6 +1344,7 @@ void en_init(void)
     for (i = 0; i <= SN; i++)
         sint[i] = fm_sinf((float)i * (FM_TWO_PI / (float)SN));
     plate_init();
+    air_init();
     for (i = 0; i < TAPE_N; i++)
         tape[i] = 0;
     for (i = 0; i < PLEX_N; i++)
@@ -1383,6 +1457,9 @@ static void drain(void)
             rng ^= (uint32_t)(b & 0xFFFF) * 2654435761u;
             if (!rng)
                 rng = 1u;
+            rng2 ^= (uint32_t)(b & 0xFFFF) * 2246822519u;
+            if (!rng2)
+                rng2 = 1u;
             break;
         case C_CLOCK:
             en_ext = 1;
@@ -1707,10 +1784,174 @@ static void render_drums(uint32_t n)
     }
 }
 
+/* ---------------------------------------------- Drift 1.1: air, shimmer --- */
+static void air_control(uint32_t n)
+{
+    float sw = air_sway, g = 0.0f, w0, w1;
+    if (air_vol <= 0.0f && air.g < 1e-6f)
+        return;                                  /* (nothing at all while the air is at 0) */
+    air.fade = fm_minf(air.fade + (float)n * (1.0f / (2.0f * EN_SR)), 1.0f);   /* a new texture: in over 2 s */
+    if (air.gust_left <= n) {                    /* the wind's next gust (or lull) */
+        air.gust_t = frand2();
+        air.gust_left = (uint32_t)((2.0f + 6.0f * frand2()) * EN_SR);
+    } else {
+        air.gust_left -= n;
+    }
+    air.gust += (air.gust_t - air.gust) * fm_minf((float)n * (1.0f / (2.5f * EN_SR)), 1.0f);
+    air.ph[0] += (float)n * (1.0f / (9.0f * EN_SR));     /* the sea's waves */
+    air.ph[1] += (float)n * (1.0f / (10.3f * EN_SR));
+    if (air.ph[0] >= 1.0f)
+        air.ph[0] -= 1.0f;
+    if (air.ph[1] >= 1.0f)
+        air.ph[1] -= 1.0f;
+    air.acc += n;
+    if (air.acc < 64u)
+        return;
+    {
+        float gu = 0.5f + sw * (air.gust - 0.5f);    /* the sway: how far the gusts and waves go */
+        air.acc = 0;
+        switch (air.type) {
+        case 0:                                  /* rain */
+            svf_coefs(air.c[0], 3000.0f + 800.0f * sw * (air.gust - 0.5f), 1.4f);
+            svf_coefs(air.c[1], 3400.0f - 800.0f * sw * (air.gust - 0.5f), 1.4f);
+            air.mb = 1.0f;
+            air.ml = 0.12f;
+            g = 0.32f;
+            air.rate = (uint32_t)((14.0f + 40.0f * gu) * (16777216.0f / EN_SR));   /* drops a second */
+            air.dset = 0;
+            air.dg = 2.5f;
+            break;
+        case 1:                                  /* wind */
+            svf_coefs(air.c[0], 300.0f * fm_exp2f(2.2f * gu), 0.4f);
+            svf_coefs(air.c[1], 340.0f * fm_exp2f(2.0f * gu), 0.45f);
+            air.mb = 1.0f;
+            air.ml = 0.25f;
+            g = 0.25f + 0.75f * gu;
+            air.rate = 0;
+            break;
+        case 2:                                  /* sea */
+            w0 = 0.5f - 0.5f * sine(air.ph[0] + 0.25f);
+            w1 = 0.5f - 0.5f * sine(air.ph[1] + 0.25f);
+            w0 = 1.0f - (0.3f + 0.6f * sw) * (1.0f - w0 * w0);
+            w1 = 1.0f - (0.3f + 0.6f * sw) * (1.0f - w1 * w1);
+            svf_coefs(air.c[0], 220.0f * fm_exp2f(3.4f * w0), 0.9f);
+            svf_coefs(air.c[1], 220.0f * fm_exp2f(3.4f * w1), 0.9f);
+            air.mb = 0.3f;
+            air.ml = 1.0f;
+            g = 0.6f * (w0 + w1);
+            air.rate = 0;
+            break;
+        default:                                 /* vinyl */
+            svf_coefs(air.c[0], 6000.0f, 1.6f);
+            svf_coefs(air.c[1], 6200.0f, 1.6f);
+            air.mb = 0.25f;
+            air.ml = 0.0f;
+            g = 0.3f;
+            air.rate = (uint32_t)((5.0f + 25.0f * gu) * (16777216.0f / EN_SR));
+            air.dset = 1;
+            air.dg = 5.0f;
+            break;
+        }
+        air.gi = (g * air.fade * air_vol - air.g) * (1.0f / 64.0f);   /* to its new gain over 64 samples */
+        air.pc = 64;
+    }
+}
+
+static void render_air(uint32_t n)
+{
+    uint32_t j;
+    float a0 = air.s[0][0], a1 = air.s[0][1], b0 = air.s[1][0], b1 = air.s[1][1], d0 = air.d0, d1 = air.d1, g = air.g;
+    const float *cl = air.c[0], *cr = air.c[1], *pc = ping_c[air.dset][air.ping];
+    const float dg = air.dg * air_vol * air.fade;
+    if (air_vol <= 0.0f && g < 1e-6f)
+        return;
+    for (j = 0; j < n; j++) {
+        float nl, nr, v1, v2, v3, l, r, imp = 0.0f, p;
+        air.nz = air.nz * 1664525u + 1013904223u;
+        nl = (float)(int32_t)air.nz * (1.0f / 2147483648.0f);
+        if ((air.nz >> 8) < air.rate) {          /* a drop, or a tick: its pitch and place from the noise */
+            air.ping = (uint8_t)(air.nz & 7u);
+            pc = ping_c[air.dset][air.ping];
+            imp = 0.4f + 0.6f * (float)(air.nz >> 3 & 15u) * (1.0f / 15.0f);
+            air.pl = (float)(air.nz >> 7 & 7u) * (1.0f / 7.0f);
+            air.pr = 1.0f - air.pl;
+        }
+        air.nz = air.nz * 1664525u + 1013904223u;
+        nr = (float)(int32_t)air.nz * (1.0f / 2147483648.0f);
+        v3 = nl - a1;                            /* left */
+        v1 = cl[0] * a0 + cl[1] * v3;
+        v2 = a1 + cl[1] * a0 + cl[2] * v3;
+        a0 = 2.0f * v1 - a0;
+        a1 = 2.0f * v2 - a1;
+        l = air.mb * v1 + air.ml * v2;
+        v3 = nr - b1;                            /* right */
+        v1 = cr[0] * b0 + cr[1] * v3;
+        v2 = b1 + cr[1] * b0 + cr[2] * v3;
+        b0 = 2.0f * v1 - b0;
+        b1 = 2.0f * v2 - b1;
+        r = air.mb * v1 + air.ml * v2;
+        v3 = imp - d1;                           /* the drop's ring */
+        v1 = pc[0] * d0 + pc[1] * v3;
+        v2 = d1 + pc[1] * d0 + pc[2] * v3;
+        d0 = 2.0f * v1 - d0;
+        d1 = 2.0f * v2 - d1;
+        p = v1 * dg;
+        if (air.pc) {
+            g += air.gi;
+            air.pc--;
+        }
+        l = l * g + p * air.pl;
+        r = r * g + p * air.pr;
+        mixl[j] += l;
+        mixr[j] += r;
+        rsend[j] += (l + r) * 0.12f;
+    }
+    air.s[0][0] = fm_flush(a0);
+    air.s[0][1] = fm_flush(a1);
+    air.s[1][0] = fm_flush(b0);
+    air.s[1][1] = fm_flush(b1);
+    air.d0 = fm_flush(d0);
+    air.d1 = fm_flush(d1);
+    air.g = g < 1e-6f ? 0.0f : g;
+}
+
+static inline float sh_tap(float d)
+{
+    int k = (int)d, i0 = sh_w - k, i1 = i0 - 1;
+    float f = d - (float)k, a, b;
+    if (i0 < 0)
+        i0 += SH_N;
+    if (i1 < 0)
+        i1 += SH_N;
+    a = sh_buf[i0];
+    b = sh_buf[i1];
+    return a + (b - a) * f;
+}
+
+static inline void shimmer(float x)             /* a sample of the plate in; sh_out: the octave up, for the next */
+{
+    float d2, w1, y;
+    sh_buf[sh_w] = x;
+    sh_d -= 1.0f;                                /* the heads gain a sample a sample: twice the speed */
+    if (sh_d < 1.0f)
+        sh_d += SH_W;
+    d2 = sh_d > 0.5f * SH_W ? sh_d - 0.5f * SH_W : sh_d + 0.5f * SH_W;
+    w1 = sh_d * (2.0f / SH_W) - 1.0f;            /* the first head's triangle: 0 at its jump, 1 halfway */
+    w1 = 1.0f - (w1 < 0.0f ? -w1 : w1);
+    y = w1 * sh_tap(sh_d) + (1.0f - w1) * sh_tap(d2);
+    sh_lp += 0.45f * (y - sh_lp);                /* darker, thinner */
+    sh_hp += 0.03f * (sh_lp - sh_hp);
+    sh_out = fm_clampf(sh_lp - sh_hp, -2.0f, 2.0f);
+    if (++sh_w >= SH_N)
+        sh_w = 0;
+}
+
 static void render_chunk(int32_t *out, uint32_t n, float gain)
 {
     uint32_t j;
     const float rg = rev_send * rev_in_gain, eg = echo_send;
+    const float shg = sh_g * rev_in_gain;       /* shimmer (Drift 1.1) */
+    const float shf = shg * SH_FB * (1.0f - pl_decay);   /* less fed back as the plate grows long: never runs away */
     float pk2 = 0.0f;
     for (j = 0; j < n; j++)
         mixl[j] = mixr[j] = rsend[j] = esend[j] = 0.0f;
@@ -1719,10 +1960,19 @@ static void render_chunk(int32_t *out, uint32_t n, float gain)
     render_plucks(n);
     render_bass(n);
     render_drums(n);
+    render_air(n);                               /* (nothing while at 0) */
     for (j = 0; j < n; j++) {
-        float wl, wr, l, r, el, er, xl, xr;
+        float wl, wr, l, r, el, er, xl, xr, rin;
         echoes(esend[j] * eg, &el, &er, &xl, &xr);
-        reverb((rsend[j] * rg + (el + er + xl + xr) * 0.3f * rev_send) * 0.8f, &wl, &wr);
+        rin = (rsend[j] * rg + (el + er + xl + xr) * 0.3f * rev_send) * 0.8f;
+        if (shg > 0.0f)                          /* a little back into the plate: each time round an octave up */
+            rin += sh_out * shf;
+        reverb(rin, &wl, &wr);
+        if (shg > 0.0f) {                        /* and the octave heard with the plate */
+            shimmer(wl + wr);
+            wl += sh_out * shg * SH_MIX;
+            wr += sh_out * shg * SH_MIX;
+        }
         l = (mixl[j] + 0.6f * el + 0.25f * xl + 1.2f * wl) * 0.4f * gain;
         r = (mixr[j] + 0.6f * er + 0.25f * xr + 1.2f * wr) * 0.4f * gain;
         l = fm_tanhf(l);
@@ -1740,6 +1990,7 @@ static void control(uint32_t n)                 /* once a chunk: the slow things
     float k = 1.0f - fm_minf((float)n * (1.0f / (0.25f * EN_SR)), 1.0f);
     mods_step(n);
     heads_step(n);
+    air_control(n);                              /* Drift 1.1's (nothing while at 0) */
     pl_decay += (pl_decay_t - pl_decay) * 0.002f;
     pl_dd2 = fm_clampf(pl_decay + 0.15f, 0.25f, 0.5f);
     for (i = 0; i < EN_NINST; i++)

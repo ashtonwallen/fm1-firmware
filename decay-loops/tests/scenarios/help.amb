@@ -1,0 +1,27 @@
+# help cards: a button held alone shows what it does; letting go does nothing else
+wait 2000
+press REC
+wait 1200
+shot help_rec.png
+release REC
+wait 300
+expect loops 1
+press EDIT
+wait 1200
+shot help_edit.png
+release EDIT
+expect frozen 0
+press HOME
+wait 1200
+shot help_home.png
+release HOME
+press SAVE
+wait 1000
+shot help_save.png
+release SAVE
+expect store_writes 0
+# a button with no job here has no card
+press LFO
+wait 1200
+release LFO
+expect view 0

@@ -1,0 +1,229 @@
+# PRESETS (1.1, LFO next / SEL last): thirteen palettes for the garden. Switching keeps the garden exactly (every
+# plant, phrase, the gardener, the ledger); each makes sound, none clips; the preset is kept as a setting; 1.0's
+# project (format 1) loads whole, as Cottage
+wait 300
+tapkey 5
+tapkey 12
+tapkey 20
+wait 300000
+expect living >2
+expect preset 0
+# frozen (time stops): every preset in turn, and round again; the garden as it was
+tap REC
+wait 500
+snap
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+tap LFO
+expect preset 12
+expect same 1
+tap LFO
+expect preset 0
+tap SEL
+expect preset 12
+expect same 1
+tap LFO
+tap REC
+expect frozen 0
+expect preset 0
+# Cottage
+expect preset 0
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Zen
+tap LFO
+expect preset 1
+# Zen: the player's Dorian made pentatonic (minor), a glass lead, the shimmer
+expect pv20 7
+expect pv32 >20
+expect pv39 >20
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Moonlight
+tap LFO
+expect preset 2
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Greenhouse
+tap LFO
+expect preset 3
+# Greenhouse: D to E, a step brighter (Mixolydian), the kalimba, a mist of rain
+expect pv19 4
+expect pv20 4
+expect pv28 >30
+expect pv36 0
+wait 300
+shot preset.png
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Wildflower
+tap LFO
+expect preset 4
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Herb
+tap LFO
+expect preset 5
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Rain Garden
+tap LFO
+expect preset 6
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Orchard Wall
+tap LFO
+expect preset 7
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Winter Bed
+tap LFO
+expect preset 8
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Kitchen Garden
+tap LFO
+expect preset 9
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Rose Arbour
+tap LFO
+expect preset 10
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Fern Hollow
+tap LFO
+expect preset 11
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+# Sundial
+tap LFO
+expect preset 12
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect living >0
+expect day >0
+tap SEL
+expect preset 11
+tap ENV
+wait 300
+shot sound.png
+tap HOME
+press LFO
+wait 1200
+shot help.png
+release LFO
+expect preset 11
+# kept as a setting (5 minutes after the last save at most)
+wait 310000
+expect dirty 0
+reboot
+wait 300
+expect preset 11
+# 1.0's project: the garden whole, the sound Cottage
+tap LFO
+expect preset 12
+storev1
+reboot
+expect same 1
+expect format 2
+expect preset 0
+wait 300
+expect playing 1
+peakreset
+wait 20000
+expect peak_db_min -35
+# a long run at the loud end (Moonlight's shimmer and lead, then Sundial's kalimba), never clipping
+tap LFO
+tap LFO
+expect preset 2
+peakreset
+wait 600000
+expect peak_db_max -0.5
+expect peak_db_min -40
+tap SEL
+tap SEL
+tap SEL
+expect preset 12
+peakreset
+wait 600000
+expect peak_db_max -0.5
+expect peak_db_min -40
+# another firmware's data: a new garden, Cottage
+foreign
+reboot
+wait 300
+expect preset 0
+expect day 1

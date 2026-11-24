@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "gamelan",
+  "name": "GAMELAN",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless generated gamelan, gong to gong",
+  "description": "GAMELAN turns the M-VAVE FM-1 into an endless gamelan in a Javanese and Balinese-inspired style. It makes new pieces by itself: a gong cycle marked by gong, kempul, kenong and ketuk, a core melody on metallophones, bonang and interlocking kotekan around it, and a soft kendang that leads the tempo through irama changes to each ending. Slendro and pelog tunings in cents, paired instruments beating against each other (ombak), warm modal metal sounds. The screen draws the cycle as a mandala. 14 presets.",
+  "tags": ["ambient", "generative"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/gamelan",
+  "screenshot": "docs/img/screen-gamelan.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

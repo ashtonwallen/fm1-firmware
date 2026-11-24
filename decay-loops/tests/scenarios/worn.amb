@@ -1,0 +1,18 @@
+# the tape wearing: Night Wire (fast decay, four layers), its decay at the quickest, for four minutes
+spin PRESET 13
+wait 300
+expect preset 13
+spin K1 60
+expect par0 100
+wav worn.wav
+wait 60000
+shot worn60.png
+wait 60000
+shot worn120.png
+expect layers >1
+wait 120000
+shot worn240.png
+wavstop
+expect loops >2
+expect peak_db_max -0.5
+expect peak_db_min -30

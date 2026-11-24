@@ -1,0 +1,94 @@
+# the controls: PLAY stops and starts the tape, REC records a new loop now, EDIT holds the wear, OCT- / OCT+ the keys'
+# octave, ALGO the mode, the knobs their values, SAVE held the preset back to its recipe
+wait 12000
+expect playing 1
+expect speed >97
+tap PLAY
+wait 2500
+expect playing 0
+expect speed 0
+shot stopped.png
+peakreset
+wait 2000
+expect peak_db_max -40
+tap PLAY
+wait 3000
+expect playing 1
+expect speed >97
+peakreset
+wait 3000
+expect peak_db_min -30
+# REC: a new loop at once (the keys go onto it)
+expect loops 1
+tap REC
+wait 600
+expect rec 1
+expect loops 2
+tapkey 12
+tapkey 16
+wait 8000
+shot rec.png
+# EDIT: hold, the wear stops
+tap EDIT
+wait 200
+expect frozen 1
+shot hold.png
+tap EDIT
+wait 200
+expect frozen 0
+# the keys' octave
+tap OCT+
+expect keyoct 1
+tap OCT+
+tap OCT+
+expect keyoct 2
+tap OCT-
+tap OCT-
+tap OCT-
+expect keyoct -1
+tap OCT+
+expect keyoct 0
+# MIDI notes play as the keys do
+midi 90 3C 64
+wait 400
+midi 80 3C 00
+# ALGO: the mode; the knobs
+spin ALGO 1
+expect par13 1
+spin ALGO -1
+expect par13 0
+spin K1 -10
+expect par0 35
+spin K2 2
+expect par1 8
+spin K3 1
+expect par2 3
+spin K3 9
+expect par2 4
+tap ENV
+spin K1 1
+expect par4 1
+spin K1 -5
+expect par4 0
+tap ARP
+spin K4 -1
+expect par11 -1
+tap GLO
+spin K3 7
+expect par14 7
+spin K4 1
+expect leds 2
+expect dirty 1
+# SAVE held: the preset back to its recipe (Tune is global: it stays)
+press SAVE
+wait 1700
+release SAVE
+expect par0 45
+expect par1 6
+expect par11 0
+expect par14 7
+wait 3000
+peakreset
+wait 10000
+expect peak_db_min -30
+expect peak_db_max -0.5

@@ -1,0 +1,25 @@
+# the screen reader: everything when it starts listening; the cursor's module and jack; a knob; a move; a card
+wait 300
+listen
+wait 300
+said Preset Berlin School, A Minor, tempo 112, playing
+turn SELECT 3
+wait 600
+said Filter Cutoff 285 hertz
+turn ALGO 2
+wait 400
+said Filter out, to Amplifier in
+spin K2 2
+wait 400
+said Tempo 114
+tap REC
+wait 2500
+said MOVE
+press SAVE
+wait 1000
+said SAVE button. SAVES THE PATCH
+release SAVE
+where
+wait 300
+said Preset Berlin School
+speakdump

@@ -1,0 +1,22 @@
+# the battery at the header's right: three bars, red at one or none, a bolt on USB power, nothing until it is read
+wait 300
+expect battery 3
+shot full.png
+battery 1
+wait 100
+shot one.png
+battery 4
+wait 100
+shot usb.png
+battery -1
+wait 100
+shot unread.png
+listen
+battery 2
+where
+said Battery two thirds
+battery -1
+where
+unsaid Battery
+battery off
+expect battery 3

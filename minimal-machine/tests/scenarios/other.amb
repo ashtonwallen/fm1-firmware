@@ -1,0 +1,22 @@
+# another firmware's saved data (or a damaged one) where ours lives gives the defaults
+wait 300
+store_other
+reboot
+wait 300
+expect preset 0
+expect par0 50
+expect par12 118
+expect gen_ok 0
+expect playing 1
+store_garbage
+reboot
+wait 300
+expect preset 0
+expect par0 50
+expect leds 1
+expect mute 0
+expect held 0
+wait 3000
+peakreset
+wait 3000
+expect peak_db_min -40

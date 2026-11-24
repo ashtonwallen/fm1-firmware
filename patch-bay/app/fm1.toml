@@ -1,0 +1,23 @@
+# PATCH BAY's build settings (fm1-base's tools/build.py: ./build.sh). Built on AMB-1 by Charles Vestal.
+name = "PATCHBAY"              # the build's files: patchbay.fwsc, patchbay-X.Y.fwsc
+id_prefix = "FM-1_93"          # package identity: dev FM-1_9300, releases FM-1_93XXYYZZ
+usb_manufacturer = "Patch Bay"
+usb_product = "PATCH BAY FM-1"
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/patch.c"]           # the instrument, at -O2
+# the site
+tagline = "Self-patching virtual modular synth"
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/patch-bay"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "Patch Bay turns the FM-1 into a small modular synth that patches itself. Sixteen modules sit on the screen as little panels with jacks: clock, sequencer, random, quantizer, two LFOs, two envelopes, VCO, FM pair, noise, filter, VCA, delay, mixer and reverb. Coloured cables sag between them. Every so often one cable lifts, flies to another jack and plugs in, and the music turns into a new patch: always in key, levels kept even, never harsh. Take over any time: pick a module and a jack, plug and unplug, turn the module's knob. Twelve starting patches, from Berlin School to Drone Cathedral."
+tags = ["synth", "generative", "ambient"]
+screenshot = "docs/img/screen.png"
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"

@@ -1,9 +1,9 @@
-# the screen reader (fm1-reader, announce.c): WHERE is the office, the hour, the day and who sings, then the page;
-# events are said as they happen; a knob as it turns; a page once it settles
+# the screen reader (fm1-reader, announce.c): WHERE is the office, the hour, the day, who sings and the preset, then the
+# page; events are said as they happen; a knob as it turns; a page once it settles; a preset as it changes
 wait 200
 listen
 wait 100
-said Lauds, 05:30, day 1, singing. Day 1
+said Lauds, 05:30, day 1, singing. Preset Abbey Chapel. Day 1
 tap ARP
 wait 300
 said Brothers page: Abbot Benedict
@@ -22,4 +22,9 @@ wait 100
 said Br. Ambrose stood to sing
 where
 said Lauds
+turn PRESET 1
+said PRESET CATHEDRAL
+where
+said Preset Cathedral
+turn PRESET -1
 speakdump

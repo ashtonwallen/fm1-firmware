@@ -1,0 +1,15 @@
+# first power-on: it drives at once, from the intro, in Midnight; the screen is the road; it makes sound by itself
+wav first.wav
+wait 300
+expect playing 1
+expect preset 0
+expect section 0
+expect view 0
+shot intro.png
+wait 20000
+expect sixteenths >40
+shot drive.png
+wait 40000
+wavstop
+expect peak_db_max -3
+expect peak_db_min -30

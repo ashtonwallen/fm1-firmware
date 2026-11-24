@@ -20,7 +20,9 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x4E445247u           /* "GRDN" */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                  /* 2 (1.1): the preset; format 1 (1.0) loads with Cottage */
+#define P_NSAVED P_PLUCK                 /* the player's settings kept: AMB-1's (1.1's new sounds come from the preset) */
+#define NPRESETS 13                      /* the garden's sound palettes (garden.c PRESETS) */
 
 /* ---------------------------------------------------------------- the garden (app/garden.c) */
 #define G_NPLOT EN_NPLOT                 /* twelve plots: 0..5 the back row, 6..11 the front, left to right */
@@ -67,11 +69,12 @@ typedef struct {
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* the player's settings (amb.h P_*); the garden bends some as it plays */
+    int16_t par[P_NSAVED];               /* the player's settings (amb.h P_*); the garden bends some as it plays */
     uint16_t pool;                       /* the scale, relative to the root (bit 0 = the root) */
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     uint8_t growth;                      /* 0..G_NGROWTH-1 */
-    uint8_t rsv[12];
+    uint8_t preset;                      /* the sound's palette (1.1, garden.c PRESETS; 0 Cottage, as 1.0) */
+    uint8_t rsv[11];
     world_t w;
 } project_t;
 
@@ -89,6 +92,8 @@ void garden_frame(void);                 /* each frame: the walkers, the music k
 int garden_plant_key(int pitch);         /* a key: a seed at that pitch; the plot, or -1 none free */
 void garden_water_all(void);
 void garden_resync(void);                /* the scale changed: every plot's notes again */
+void garden_sound_all(void);             /* every setting to the engine, as the preset colours it (1.1) */
+void garden_preset(int i);               /* PRESETS (1.1): the sound's palette; the garden stays */
 void garden_bend_again(void);            /* a setting changed: the bent parameters again */
 int garden_living(void);
 int garden_count(int stage);

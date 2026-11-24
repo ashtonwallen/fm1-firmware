@@ -77,6 +77,8 @@ static const struct {
     {"Compline", 20, 0, MODE_AEOLIAN, 52, 26, 2, 1000, 3, 30, 0, 66},
 };
 static const uint8_t RECITE[EN_NMODES] = {4, 4, 5, 4, 4, 4, 3, 3};     /* the reciting tone: a degree above the final */
+static int of_final(int o) { return preset_final(OFFICE[o].final); }   /* the office's final and mode, by the preset */
+static int of_mode(int o) { return preset_mode(OFFICE[o].mode); }
 static const uint16_t DAY_MIN_TAB[WD_NDAY] = {30, 60, 120, 240, 480};
 
 /* ---- the chronicle's events */
@@ -373,8 +375,8 @@ static int deg_semi(int d)               /* a degree from the final, in semitone
 
 static int pace_ms(void)
 {
-    int p = OFFICE[proj.world.office].pace;
-    return p * 100 / (proj.pace ? proj.pace : 100);
+    int p = OFFICE[proj.world.office].pace, k = preset_pace(proj.pace ? proj.pace : 100);
+    return p * 100 / (k > 0 ? k : 100);
 }
 
 static void ph_note(phrase_t *p, int deg, int dur, int vow)
@@ -397,7 +399,7 @@ static int vow_rand(void)
 /* the line, by kind */
 static void ph_build(phrase_t *p, int kind)
 {
-    int pace = pace_ms(), r = RECITE[OFFICE[proj.world.office].mode], i, k, cur;
+    int pace = pace_ms(), r = RECITE[of_mode(proj.world.office)], i, k, cur;
     p->n = 0;
     p->at[0] = 0;
     p->kind = (uint8_t)kind;
@@ -490,7 +492,7 @@ static void ph_build(phrase_t *p, int kind)
 /* his octave for this line: the one where it fits his range best */
 static int fit_octave(const phrase_t *p, int m)
 {
-    int lo = 127, hi = 0, i, best = 0, bo = 1 << 20, o, f = OFFICE[proj.world.office].final;
+    int lo = 127, hi = 0, i, best = 0, bo = 1 << 20, o, f = of_final(proj.world.office);
     for (i = 0; i < p->n; i++)
         if (p->deg[i] != REST) {
             int n = f + deg_semi(p->deg[i]);
@@ -627,7 +629,7 @@ static void ph_start(int kind, int32_t t0)
         for (j = 0; j < p->nsing; j++)
             if (MONK_RANGE[p->who[j]] == RG_BASS) {
                 p->shift[j] = (int8_t)(fit_octave(p, p->who[j]) + 12 - 7);
-                if (OFFICE[proj.world.office].final + p->shift[j] < RANGE_LO[RG_BASS])
+                if (of_final(proj.world.office) + p->shift[j] < RANGE_LO[RG_BASS])
                     p->shift[j] = (int8_t)(p->shift[j] + 12);
                 break;
             }
@@ -673,7 +675,7 @@ static void ph_start(int kind, int32_t t0)
         }
         if (g >= 0 && b >= 0) {
             if (wchance(8 + proj.world.rivalry / 4)) {
-                int i, r = RECITE[OFFICE[proj.world.office].mode], first = -1;
+                int i, r = RECITE[of_mode(proj.world.office)], first = -1;
                 for (i = 0; i < p->n; i++)
                     if (p->deg[i] == r) {
                         first = i;
@@ -731,9 +733,10 @@ static void office_begin(void)
         wr.ph[i].used = 0;
     for (i = 0; i < NMONK; i++)
         wr.asleep[i] = 0;
-    nsteps7 = en_scale(EN_MODE_POOL[OFFICE[o].mode], steps7);
+    nsteps7 = en_scale(EN_MODE_POOL[of_mode(o)], steps7);
     wr.drone = -1;
     en_drone(-1);
+    world_key();
 }
 
 static void office_end(void)            /* the office sung: the abbot's verdict on the novice */
@@ -787,7 +790,7 @@ static void chant_step(void)
         if (!wr.tolls_left && wr.t >= wr.next_toll + 1200) {
             wr.phase = PH_CHANT;
             wr.next_start = wr.t + 400;
-            wr.drone = (int8_t)(OFFICE[o].final > 52 ? OFFICE[o].final - 12 : OFFICE[o].final);
+            wr.drone = (int8_t)(of_final(o) > 52 ? of_final(o) - 12 : of_final(o));
             en_drone(wr.drone);
         }
         return;
@@ -884,7 +887,7 @@ static void chant_step(void)
 /* what each voice sings at office time t */
 static void voices_step(void)
 {
-    const int f = OFFICE[proj.world.office].final, r = RECITE[OFFICE[proj.world.office].mode];
+    const int f = of_final(proj.world.office), r = RECITE[of_mode(proj.world.office)];
     int s, k, j, flat_now = 0;
     wr.clash_now = 0;
     for (s = 0; s < EN_NPAD; s++) {
@@ -961,9 +964,9 @@ static void voices_step(void)
         if (m >= 0 && wr.s_monk[s] != m + 1) {
             int pan = (MONK_ROW[m] ? 30 : -30) + (MONK_POS[m] * 2 - 3) * 18;
             wr.s_monk[s] = (uint8_t)(m + 1);
-            en_voice(s, VF_FORMANT, MONK_FORMANT[m]);
+            en_voice(s, VF_FORMANT, preset_formant(MONK_FORMANT[m]));
             en_voice(s, VF_PAN, pan);
-            en_voice(s, VF_VIB, MONK_VIB[m] + (m == MK_ELDER && mk(m)->health < 60 ? 20 : 0));
+            en_voice(s, VF_VIB, preset_vib(MONK_VIB[m] + (m == MK_ELDER && mk(m)->health < 60 ? 20 : 0)));
             en_voice(s, VF_GLIDE, m == MK_ELDER ? 2 : is_novice(m) ? 4 : 3);
             if (wr.s_level[s] <= 0)      /* from silence: no glide from the last singer's note */
                 en_voice(s, VF_GLIDE, 100);
@@ -1050,6 +1053,28 @@ void world_nudge(int i)
     }
     wr.ask[i] = 1;
     event(EV_NUDGE, i, 0);
+}
+
+/* the preset's key: the office's final (moved) and mode, as the engine's root and scale, for Drift 1.1's strings and
+ * lead (the choir and the drone are sung by hand, from world.c) */
+void world_key(void)
+{
+    en_set(P_ROOT, of_final(proj.world.office) % 12);
+    en_pool(EN_MODE_POOL[of_mode(proj.world.office)]);
+}
+
+/* a new preset: the scale and the drone move now; each voice takes its new size and vibrato */
+void world_preset(void)
+{
+    int s;
+    nsteps7 = en_scale(EN_MODE_POOL[of_mode(proj.world.office)], steps7);
+    world_key();
+    if (wr.drone >= 0) {
+        wr.drone = (int8_t)(of_final(proj.world.office) > 52 ? of_final(proj.world.office) - 12 : of_final(proj.world.office));
+        en_drone(wr.drone);
+    }
+    for (s = 0; s < EN_NPAD; s++)
+        wr.s_monk[s] = 0;
 }
 
 /* quiet: nobody sings, the bell has rung out (a flash write may glitch the sound a moment) */

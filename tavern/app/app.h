@@ -21,14 +21,17 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x31564154u           /* "TAV1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                   /* 2 (1.1): the preset; a format 1 project (1.0) is carried over whole */
+#define P_NSAVED P_TEXTURE               /* the settings saved: 1.0's (Drift 1.1's air and shimmer are the preset's) */
+#define NPRESET 12
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* the mix, the room, setup (the tune's own are the world's) */
+    int16_t par[P_NSAVED];               /* the mix, the room, setup (the tune's own are the world's), under the preset */
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     uint8_t night_len;                   /* how long a night takes: world.c NIGHT_MIN[] */
-    uint8_t rsv0[2];
+    uint8_t preset;                      /* the preset (1.1): project.c PRESET[], 0 The Corner (1.0's session) */
+    uint8_t rsv0;
     world_t world;                       /* the tavern */
     uint8_t rsv[16];                     /* room to grow */
 } project_t;
@@ -40,6 +43,15 @@ void project_defaults(void);
 int project_load(void);                  /* 0 = loaded; else defaults are in place */
 int project_save(void);                  /* 0 = saved and verified */
 void project_apply(void);                /* the settings to the engine (boot, load) */
+/* the presets (1.1): the session's style, over the knobs and the world's choices (project.c) */
+const char *preset_name(int i);
+int preset_par(int p, int v);            /* the engine's value of setting p: the knob's v under the preset */
+void preset_kinds(int *w);               /* the kinds' weights (reel, jig, waltz, air), moved by the preset */
+int preset_kind_pct(int kind);           /* the preset's weight for a kind, % (100: as 1.0) */
+int preset_mode(uint32_t r10);           /* a tune's mode from r10 (0..9): the preset's folk modes */
+int preset_tempo(int t);
+int preset_songs(void);                  /* % chance of a song when one may come (1.0: 20) */
+int preset_inst(int inst, int level);    /* an instrument's level in the band, by the preset */
 
 void ui_init(void);
 void ui_frame(void);

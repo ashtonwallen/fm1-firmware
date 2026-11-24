@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "lofiradio",
+  "name": "LOFI RADIO",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless lo-fi hip-hop radio. Dusty keys, swung drums, vinyl crackle.",
+  "description": "LOFI RADIO turns the M-VAVE FM-1 into an endless lo-fi hip-hop station. Every few minutes a new track: a new key and tempo, a jazzy progression on a dusty electric piano, swung boom-bap drums, a round bassline and now and then a muted lead or vibraphone melody, under vinyl crackle and tape wobble. A turntable spins on the screen with each record's label, the track's name and a VU meter. Fourteen styles, from Study to Tokyo Night; four knobs: swing, dust, tempo, mood.",
+  "tags": ["generative", "chords", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/lofi-radio",
+  "screenshot": "docs/img/screen-radio.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

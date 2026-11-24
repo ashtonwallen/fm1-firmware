@@ -1,0 +1,100 @@
+# the controls: the knobs, ALGORITHM (tuning), HOLD, a new piece, the irama by hand, PLAY, the keys, a help card
+wait 1000
+# the Gamelan page: tempo, density, tuning, ombak
+spin K1 4
+expect par0 70
+spin K2 -5
+expect par1 40
+spin K4 10
+expect par3 50
+# HOME + SELECT: the tempo
+press HOME
+turn SELECT 2
+release HOME
+expect par0 72
+expect view 0
+# ALGORITHM: the tuning, shown on the third knob
+turn ALGO 1
+expect par2 4
+turn ALGO -2
+expect par2 2
+wait 200
+shot slendro.png
+# the Mix and Colour pages
+tap ENV
+expect view 1
+spin K1 -20
+expect par4 50
+tap ARP
+expect view 2
+spin K2 30
+expect par9 60
+tap GLO
+expect view 3
+spin K4 1
+expect leds 2
+spin K4 -1
+# a help card: held, it shows, and the release does nothing
+press REC
+wait 1000
+shot help_rec.png
+release REC
+expect hold 0
+# HOLD on and off
+tap REC
+wait 100
+expect hold 11
+wait 200
+shot hold.png
+tap REC
+wait 100
+expect hold 0
+# a new piece: this one ends at the next kenong or gong, rings, then the next begins
+wait 30000
+expect state 2
+expect pieces 2
+tap EDIT
+wait 200
+expect state 3
+wait 40000
+expect pieces 3
+# the irama by hand: slower (the kendang signals, then the beat slows until the elaboration doubles)
+wait 20000
+expect irama 0
+expect state 2
+tap OCT-
+wait 40000
+expect irama 1
+expect iramachanges >0
+shot irama2.png
+# PLAY rests (the ring dies away), and again plays a new piece
+tap PLAY
+wait 300
+expect playing 0
+expect state 0
+wait 15000
+peakreset
+wait 1000
+expect peak_db_max -80
+shot resting.png
+# the keys sound while resting: a bar, then the gong
+tapkey w5
+wait 300
+expect peak_db_min -40
+key b0 down
+wait 100
+key b0 up
+tap PLAY
+wait 300
+expect playing 1
+expect state 1
+# SAVE held: the preset back to its recipe
+tap HOME
+spin K1 10
+expect par0 82
+press SAVE
+wait 1700
+release SAVE
+expect par0 66
+# (it saved by itself while resting: a quiet moment)
+expect store_writes 1

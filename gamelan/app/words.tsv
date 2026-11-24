@@ -1,0 +1,14 @@
+# GAMELAN's words for the screen reader (fm1-reader): the screen's text <TAB> what to say. "#" a number, "*" a
+# word left out. tools/gen_words.py makes web/words/<id>.json and the link the FM-1 sends. Change a line and a new
+# file is made: keep the old ones (devices in the wild point at them).
+# (url: a placeholder: nothing is published yet; a reader that cannot fetch it says the text as it is)
+# url: https://ashtonwallen.github.io/fm1-gamelan/words/
+Sl. nem	slendro nem
+Pl. nem	pelog nem
+Pl. lima	pelog lima
+Hz	hertz
+I	one
+II	two
+III	three
+OCT-	octave down
+OCT+	octave up

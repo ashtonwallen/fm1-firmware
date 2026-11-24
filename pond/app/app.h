@@ -20,16 +20,19 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x444E4F50u           /* "POND": another firmware's project (AMB-1's "ENO1") gives a new pond */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                  /* 2 (1.1): the preset; format 1 (1.0) loads with Mill Pond */
+#define P_NSAVED P_PLUCK                 /* the player's settings kept: AMB-1's (1.1's new sounds come from the preset) */
+#define NPRESETS 13                      /* the pond's sound palettes (pond.c PRESETS) */
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* the player's settings (amb.h P_*); the pond shapes some (pond.c pd_sound) */
+    int16_t par[P_NSAVED];               /* the player's settings (amb.h P_*); the pond shapes some (pond.c pd_sound) */
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     uint8_t busy;                        /* 0..100: how lively the pond is */
     uint8_t daylen;                      /* a day's length: pond.c DAY_MIN[] (6 .. 96 minutes) */
     uint8_t cap;                         /* the most fish: 3 .. PD_NFISH */
-    uint8_t rsv[12];                     /* room to grow */
+    uint8_t preset;                      /* the sound's palette (1.1, pond.c PRESETS; 0 Mill Pond, as 1.0) */
+    uint8_t rsv[11];                     /* room to grow */
     world_t w;                           /* the pond */
 } project_t;
 

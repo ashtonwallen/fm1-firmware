@@ -5,7 +5,7 @@
   "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
   "license": "MPL-2.0",
   "tagline": "Fish in a pond, singing",
-  "description": "POND turns the M-VAVE FM-1 into a pond of singing fish. Each fish has a name, a species (its voice), a temperament and a note. They swim, sing softly, meet and play chords, make friends and rivals, grow, have fry and grow old. Days and seasons pass; lily pads, frogs at night, a heron now and then. Keys drop food and add their note to the scale. Left alone it settles into quiet ripples, slow drones and the odd plip. AMB-1's engine underneath: pad, FM bells, gliding bass, tape echo, plate reverb.",
+  "description": "POND turns the M-VAVE FM-1 into a pond of singing fish. Each fish has a name, a species (its voice), a temperament and a note. They swim, sing softly, meet and play chords, make friends and rivals, grow, have fry and grow old. Days and seasons pass; lily pads, frogs at night, a heron now and then. Keys drop food and add their note to the scale. Left alone it settles into quiet ripples, slow drones and the odd plip. AMB-1's engine underneath: pad, FM bells, gliding bass, tape echo, plate reverb. Thirteen presets recolour the sound.",
   "tags": ["ambient", "generative", "game", "fm"],
   "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
   "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/pond",

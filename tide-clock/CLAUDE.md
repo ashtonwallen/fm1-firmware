@@ -22,14 +22,19 @@ From Git Bash: `MSYS_NO_PATHCONV=1 wsl.exe -d Ubuntu -- bash -lc 'cd /mnt/d/Proj
 ## Where things are
 
 - `app/dsp/amb.c`: AMB-1's engine. `PIECES[]` are the day's eight phases (Night .. Dusk), one value per parameter;
-  `render_sea` is the sea layer (params `P_SEA`, `P_SURF`).
+  `render_sea` is the sea layer (params `P_SEA`, `P_SURF`). 1.1 ported AMB-1 Drift 1.1's sounds (strings, lead, air,
+  shimmer, Strings pad: `P_PLUCK`..`P_SHIMMER`, off at 0); every phase has them off (`D11_OFF`).
 - `app/world.c`: the world clock (Clock / Cycle), weather, boats, keeper, Captain, the log, and the conductor that
   blends phase recipes plus weather/tide/mood into engine targets and steps toward them (key changes on a new chord,
-  at most every 15 s).
+  at most every 15 s). PRESETS (1.1): `PRESETS[]` in `world.c` recolour the phase recipes in `targets()` (key, mode
+  shift or pentatonic, tempo %, pad colour, air texture, deltas per parameter); `preset_set` moves to one quickly
+  (8 s) with the key at once. Harbour (0) is 1.0's sound. The world is not touched.
 - `app/ui.c`: the scene (drawn in two 240x120 bands), log page, setup page, clock-setting screen, help cards,
-  autosave, screen reader.
-- `app/project.c` / `app/app.h`: the saved project (`PROJ_MAGIC` "TIDK", format 1). Anything else in the store gives
-  defaults.
+  autosave, screen reader. PRESETS (the encoder) turns presets (`preset_turn`); the name shows on the panel and the
+  setup page.
+- `app/project.c` / `app/app.h`: the saved project (`PROJ_MAGIC` "TIDK", format 2: 1.1 added `preset` in a byte 1.0
+  kept spare; format 1 loads whole, as Harbour). Anything else in the store gives defaults. Host `storev1` saves the
+  current project as format 1; `tests/scenarios/presets.amb` covers presets, peaks and the migration.
 - USB name "TIDE CLOCK FM-1" in `app/fm1.toml`: must keep "FM-1" so M-Flasher finds the unit.
 - Flash wear (`keep_due` in `app/ui.c`): the world and the time are saved at most once an hour, settings 5 s after a
   change but at most every 5 min, and once when the battery reads empty; saves wait for a quiet moment in the music.

@@ -1,0 +1,130 @@
+# the knobs, the keys and the buttons
+master 4096
+wait 300
+# Machine page: Density adds hits, Drift sets how often a mutation comes, Filter, Echo
+expect view 0
+expect par0 50
+expect hits3 1
+spin K1 30
+expect par0 80
+wait 100
+expect hits3 >1
+spin K1 -80
+expect par0 0
+wait 100
+expect hits0 4
+expect hits3 0
+spin K1 50
+expect par0 50
+spin K2 -50
+expect par1 0
+spin K3 20
+expect par2 66
+spin K4 -10
+expect par3 50
+wait 100
+shot machine_turning.png
+# Drift 0: nothing mutates; EDIT mutates once, now
+wait 8000
+expect muts 0
+tap EDIT
+wait 400
+expect muts 1
+wait 100
+shot mutation.png
+spin K2 100
+expect par1 100
+wait 4500
+expect muts >2
+# REC: Hold
+tap REC
+expect held 1
+wait 100
+expect eheld 1
+wait 2000
+shot held.png
+tap REC
+expect held 0
+# keys: the first six white keys mute and unmute the parts
+tapkey w1
+expect mute 2
+wait 600
+expect level1 <5
+tapkey w3
+expect mute 10
+wait 600
+shot muted.png
+tapkey w1
+tapkey w3
+expect mute 0
+wait 600
+expect level1 >95
+# Mix page (ENV)
+tap ENV
+expect view 1
+spin K2 -20
+expect par5 50
+# Space page (FX)
+tap FX
+expect view 2
+spin K1 10
+expect par8 18
+spin K2 1
+expect par9 2
+# Setup page (GLO): tempo, key, USB level, lights
+tap GLO
+expect view 3
+spin K1 4
+expect par12 122
+spin K2 1
+expect par13 6
+spin K3 1
+expect usb_full 1
+expect usb_audio_full 1
+spin K3 -1
+expect usb_audio_full 0
+spin K4 1
+expect leds 2
+spin K4 -1
+# ALGORITHM: the key
+turn ALGO 2
+expect par13 8
+# HOME + SELECT: the tempo, from any page
+press HOME
+turn SELECT 3 100
+release HOME
+expect par12 125
+expect view 3
+# SELECT turns the pages
+turn SELECT -3
+expect view 0
+# PLAY stops (the tails ring on, then quiet) and starts
+tap PLAY
+wait 200
+expect playing 0
+wait 12000
+peakreset
+wait 500
+expect peak_db_max -60
+tap PLAY
+wait 200
+expect playing 1
+# help cards: a held button shows its card and then does nothing
+press REC
+wait 1000
+shot help_rec.png
+release REC
+wait 100
+expect held 0
+press HOME
+wait 1000
+shot help_home.png
+release HOME
+# SAVE held: the preset back to its recipe
+press SAVE
+wait 1700
+release SAVE
+expect par0 50
+expect par12 118
+expect par13 5
+expect store_writes 0

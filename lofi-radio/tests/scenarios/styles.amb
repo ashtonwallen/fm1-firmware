@@ -1,0 +1,106 @@
+# every style makes sound: PRESETS steps through all fourteen; each starts a new record within seconds
+master 4096
+wait 300
+expect style 0
+peakreset
+wait 12000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 1
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 2
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 3
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 4
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 5
+peakreset
+wait 8000
+expect peak_db_min -40
+shot vinyl-dust.png
+turn PRESET 1
+wait 12000
+expect style 6
+peakreset
+wait 8000
+expect peak_db_min -40
+shot tokyo-night.png
+turn PRESET 1
+wait 12000
+expect style 7
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 8
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 9
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 10
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 11
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 12
+peakreset
+wait 8000
+expect peak_db_min -40
+turn PRESET 1
+wait 12000
+expect style 13
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot rooftop.png
+# and round again to the first; each style keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+turn K1 -5
+wait 200
+expect par0 40
+turn PRESET 1
+wait 3000
+expect style 1
+expect par0 40
+turn PRESET -1
+wait 3000
+expect style 0
+expect par0 40

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "nightdrive",
+  "name": "Night Drive",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless synthwave: neon grid, striped sun, night road",
+  "description": "Night Drive plays generated synthwave without end. A driving bass, a plucked arpeggio, lush detuned pads, a big gated snare and now and then a lead line, over minor-key progressions. Sections build and drop (intro, drive, break, build) and the key moves now and then. The screen is a neon grid road running toward a striped sunset, mountains on the horizon, the grid pulsing on the kick. Fourteen presets, each its own sound and colours; four knobs: speed, brightness, arpeggio density and drift.",
+  "tags": ["synth", "generative", "sequencer"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/night-drive",
+  "screenshot": "docs/img/screen-drive.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

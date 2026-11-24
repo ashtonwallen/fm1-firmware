@@ -77,6 +77,7 @@ void world_tick(void);                   /* each frame */
 void world_round(void);                  /* REC: a round for the house */
 void world_call(void);                   /* EDIT: call for a tune */
 void world_key(int pc);                  /* a key: the next tune in it */
+void world_restyle(void);                /* a new preset: the band's balance now (the rest from the next tune) */
 int world_state(void);                   /* 0 between tunes, 1 a tune, 2 closed */
 int world_leader(void);                  /* who leads (NCH: Hugh), -1 nobody */
 int world_type(void);                    /* 0 a tune, 1 a song, 2 a lament, 3 the last tune, 4 Hugh's air */

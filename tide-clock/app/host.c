@@ -6,9 +6,10 @@
  * Checks for "expect": playing view setting clock cycle sea leds dirty min (the time of day in minutes) day phase wx
  * fog wind storm (x100) lamp act (keeper's activity, KA_*) where (AT_*) mood trust late sheltered stayed storms fogs
  * shells lates visits logn logtype (the newest entry's EV_*) boatsout tide (x100) parN (the engine's value N, amb.h
- * P_*) tgtN (its target) battery. Commands: battery N (plat_battery as N, "off" its own); settime HH MM (the world's
+ * P_*) tgtN (its target) battery preset (1.1) format (the project's). Commands: battery N (plat_battery as N, "off" its own); settime HH MM (the world's
  * clock, as set by hand); weather calm|fog|wind|storm [MINUTES] (the weather now, its amounts at once); storeamb
- * (another firmware's project, AMB-1 Drift's "ENO1" format 5, in the store); seed N (the world's dice). */
+ * (another firmware's project, AMB-1 Drift's "ENO1" format 5, in the store); storev1 (the project as it is now, saved
+ * as 1.0 saved it: format 1, the preset's byte spare); seed N (the world's dice). */
 
 int app_expect(const char *what, int *got)
 {
@@ -27,6 +28,10 @@ int app_expect(const char *what, int *got)
         g = proj.sea;
     else if (!strcmp(what, "leds"))
         g = proj.leds;
+    else if (!strcmp(what, "preset"))
+        g = proj.preset;
+    else if (!strcmp(what, "format"))
+        g = (int)proj.format;
     else if (!strcmp(what, "battery"))
         g = batt();
     else if (!strcmp(what, "dirty"))
@@ -122,6 +127,14 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         o[0] = 0x45, o[1] = 0x4E, o[2] = 0x4F, o[3] = 0x31;
         o[4] = 5, o[5] = o[6] = o[7] = 0;
         plat_store_save(OBJ_PROJ, o, sizeof o);
+        return 1;
+    }
+    if (!strcmp(cmd, "storev1")) {                /* 1.0's project: format 1, no preset (the byte was spare, 0) */
+        project_t o = proj;
+        o.format = 1u;
+        o.preset = 0;
+        o.tod = w.ms / 1000u;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;
     }
     if (!strcmp(cmd, "seed")) {

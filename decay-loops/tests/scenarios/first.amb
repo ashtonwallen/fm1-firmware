@@ -1,0 +1,31 @@
+# a first look and listen: it plays from power-on, records its first loop by itself and plays it over; the pages
+wav first.wav
+wait 1500
+expect playing 1
+expect rec 1
+wait 2700
+shot first4.png
+expect layers >0
+wait 26000
+shot tape30.png
+expect loops >0
+expect passes >1
+wavstop
+expect peak_db_max -0.5
+expect peak_db_min -30
+tap ENV
+wait 100
+shot tone.png
+expect view 1
+tap ARP
+wait 100
+shot phrase.png
+tap GLO
+wait 100
+shot setup.png
+expect view 3
+# SELECT steps through the pages, back to the first
+turn SELECT -5 100
+expect view 0
+wait 200
+shot tape.png

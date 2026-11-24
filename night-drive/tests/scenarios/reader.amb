@@ -1,0 +1,23 @@
+# the screen reader: everything on the screen when it starts listening, a knob as it turns, a page, a help card, the
+# key, a preset
+wait 300
+listen
+wait 100
+said Road page: Speed 100 bpm, Bright 50, Arp 60, Drift 40. Preset Midnight, driving
+spin K2 3
+wait 400
+said Bright 53
+tap GLO
+wait 500
+said Setup page: Drums 70, Lead 60, Lights On, USB follows master
+tapkey 4
+said KEY A minor
+turn PRESET 1
+said PRESET Sunset Strip, E minor, speed 96 bpm
+press HOME
+wait 1000
+said HOME button. THE ROAD. SPEED, BRIGHT, ARP, DRIFT
+release HOME
+where
+said Preset Sunset Strip
+speakdump

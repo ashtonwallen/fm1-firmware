@@ -56,6 +56,10 @@ enum {
     P_PADTONE,                                        /* the pad's colour, set by the piece: Rhodes, Voices */
     P_BASSOCT, P_GLIDE, P_FIFTH,                      /* bass: its octave, its glide, how often it leans on the fifth */
     P_SWING, P_HATS,                                  /* pulse: swing, the hats' colour */
+    /* AMB-1 Drift 1.1 (ported): every one off at a level of 0 */
+    P_PLUCK, P_PLDENS, P_PLTONE, P_PLOCT,             /* strings: level, how often, harp .. kalimba, octave */
+    P_LEAD, P_LDTONE, P_LDDENS, P_LDOCT,              /* lead: level, bowed .. glass, how often, octave */
+    P_TEXTURE, P_TEXLVL, P_TEXMOD, P_SHIMMER,         /* air: rain, wind, sea, vinyl; its level, its sway; shimmer */
     P_NPARAMS
 };
 typedef struct {

@@ -1,0 +1,22 @@
+# PATCH BAY's words for the screen reader (fm1-reader): the screen's text <TAB> what to say. "#" a number, "*" a
+# word left out. tools/gen_words.py makes web/words/<id>.json. No published words site yet: the reader says the
+# screen's own text, which PATCH BAY writes out in words for it where it can.
+# url: https://charlesvestal.github.io/fm1-amb/words/
+# (that is AMB-1's site: this words file is not published there, so the reader says the text as it is)
+VCO	V C O
+VCF	V C F
+VCA	V C A
+FM	F M
+LFO	L F O
+ENV	envelope
+SEQ	sequencer
+QUANT	quantizer
+S&H	sample and hold
+Eb	E flat
+Ab	A flat
+Bb	B flat
+Mixolyd.	Mixolydian
+Pent maj	pentatonic major
+Pent min	pentatonic minor
+NOT SAVED FLASH ERROR	not saved: flash error
+NO LOOPS IN THE AUDIO	not plugged: no loops in the audio

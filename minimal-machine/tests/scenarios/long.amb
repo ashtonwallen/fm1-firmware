@@ -1,0 +1,29 @@
+# peaks over a long run, master full: twenty minutes, Drift fast, Density and Echo high, every five minutes another
+# preset
+master 4096
+wait 300
+spin K1 30
+spin K2 50
+spin K4 40
+peakreset
+wait 300000
+expect peak_db_max -1
+expect peak_db_min -20
+turn PRESET 4
+spin K1 50
+spin K4 50
+wait 300000
+expect peak_db_max -1
+turn PRESET 3
+spin K1 50
+spin K2 50
+spin K3 50
+wait 300000
+expect peak_db_max -1
+turn PRESET 3
+spin K1 -60
+spin K3 -60
+wait 300000
+expect peak_db_max -1
+expect muts >200
+shot long.png

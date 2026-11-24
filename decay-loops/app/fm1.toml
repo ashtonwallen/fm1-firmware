@@ -1,0 +1,23 @@
+# DECAY LOOPS' build settings (fm1-base's tools/build.py: ./build.sh)
+name = "DECAYLOOPS"            # the build's files: decayloops.fwsc, decayloops-X.Y.fwsc
+id_prefix = "FM-1_88"          # package identity: dev FM-1_8800, releases FM-1_88XXYYZZ
+usb_manufacturer = "DECAY LOOPS"
+usb_product = "DECAY LOOPS FM-1"
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/decay.c"]           # the engine, at -O2
+# the site
+tagline = "Tape loops that fall apart as they play"
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/decay-loops"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, and on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "DECAY LOOPS turns the M-VAVE FM-1 into a tape looper whose loops slowly disintegrate, after William Basinski's Disintegration Loops. It writes a phrase of chords or a slow figure, records it onto tape and plays it over and over. Each pass the tape wears: the highs roll off, dropouts open and grow, the pitch wobbles and the hiss rises, until only fragments are left. Before a loop is gone a fresh phrase is recorded on another layer and fades in, so it plays without end. Keys add notes to the next loop. Fourteen tape stocks and moods; the screen shows turning reels and the tape wearing away."
+tags = ["ambient", "generative", "experimental"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/img/screen-tape.png"

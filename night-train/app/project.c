@@ -1,7 +1,9 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal; NIGHT TRAIN: ashtonwallen */
 /* NIGHT TRAIN project: one flash object (OBJ_PROJ), the settings and the journey. A project of another format or
- * another firmware (AMB-1's "ENO1"), or none, gives the defaults: a new journey. Part of the unity build. */
+ * another firmware (AMB-1's "ENO1"), or none, gives the defaults: a new journey. Format 1 (1.0) is carried over
+ * whole: the same layout, its spare byte (always 0) is now the line, 0 Night Line, 1.0's sound. Part of the unity
+ * build. */
 project_t proj;
 _Static_assert(sizeof(project_t) <= 3840u, "the project fits one store object (PLAT_STORE_MAX)");
 
@@ -22,7 +24,7 @@ static int project_valid(void)
 {
     return proj.magic == PROJ_MAGIC && proj.format == PROJ_FORMAT && proj.stretch < W_NSTRETCH && proj.clack <= 100 &&
            proj.leds <= 2 && proj.midi <= 1 && proj.tune >= -50 && proj.tune <= 50 && proj.tone >= -50 &&
-           proj.tone <= 50 && proj.space >= -50 && proj.space <= 50 && world_valid(&proj.w);
+           proj.tone <= 50 && proj.space >= -50 && proj.space <= 50 && proj.line < PROJ_NLINES && world_valid(&proj.w);
 }
 
 int project_load(void)
@@ -30,6 +32,10 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {   /* 1.0's: on the first line */
+        proj.format = PROJ_FORMAT;
+        proj.line = 0;
+    }
     if (n == (int)sizeof proj && project_valid())
         return 0;
     project_defaults();

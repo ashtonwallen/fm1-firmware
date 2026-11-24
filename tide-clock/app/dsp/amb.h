@@ -53,10 +53,14 @@ enum {
     P_ECHO, P_ETIME, P_REVERB, P_SIZE,                /* space */
     P_BRIGHT, P_SWELL, P_BTONE, P_MOTION,             /* tone */
     P_TUNE, P_MIDI, P_TEMPO, P_ROOT, P_MODE, P_BOCT,  /* setup, panel encoders, bell octave */
-    P_PADTONE,                                        /* the pad's colour, set by the piece: Rhodes, Voices */
+    P_PADTONE,                                        /* the pad's colour, set by the piece: Rhodes, Voices, Strings */
     P_BASSOCT, P_GLIDE, P_FIFTH,                      /* bass: its octave, its glide, how often it leans on the fifth */
     P_SWING, P_HATS,                                  /* pulse: swing, the hats' colour */
     P_SEA, P_SURF,                                    /* TIDE CLOCK: the sea (filtered noise in slow waves): level, surf */
+    /* AMB-1 Drift 1.1's sounds (ported for TIDE CLOCK 1.1): each off at a level of 0 */
+    P_PLUCK, P_PLDENS, P_PLTONE, P_PLOCT,             /* strings: level, how often, harp .. kalimba, octave */
+    P_LEAD, P_LDTONE, P_LDDENS, P_LDOCT,              /* lead: level, bowed .. glass, how often, octave */
+    P_TEXTURE, P_TEXLVL, P_TEXMOD, P_SHIMMER,         /* air: rain, wind, sea, vinyl; its level, its sway; shimmer */
     P_NPARAMS
 };
 typedef struct {

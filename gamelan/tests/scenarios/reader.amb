@@ -1,0 +1,35 @@
+# the screen reader (fm1-reader, announce.c): pages, knobs, help cards, buttons and the music's events
+wait 200
+listen
+wait 100
+said Gamelan page: Tempo 66, Density 45, Tuning Pl. nem, Ombak 3.2 Hz. Preset Pelog Dawn, Pelog nem, playing
+listen
+where
+said Ladrang, irama I
+tap ENV
+wait 300
+said Mix page: Gongs 70, Balungan 60, Kotekan 45, Bonang 50
+tap GLO
+wait 300
+said Setup page: Pitch 0, Irama Auto, Form Ladrang, Lights On
+spin K2 2
+wait 300
+said Irama II
+spin K2 -2
+wait 300
+press EDIT
+wait 1000
+said EDIT button. A NEW PIECE: THIS ONE ENDS. AT THE NEXT GONG
+release EDIT
+tap REC
+wait 100
+said HOLD ON
+tap REC
+wait 100
+said HOLD OFF
+turn PRESET 1
+wait 300
+said PRESET Slendro Night, Slendro manyura, tempo 58
+wait 6000
+said New piece
+speakdump

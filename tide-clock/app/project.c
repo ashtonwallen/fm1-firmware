@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal
- * Changed for TIDE CLOCK by ashtonwallen: one object, the settings and the world. */
+ * Changed for TIDE CLOCK by ashtonwallen: one object, the settings and the world; format 2 (1.1) adds the preset. */
 /* TIDE CLOCK project: one flash object (OBJ_PROJ). A project of another magic or format (AMB-1's, AMB-1 Drift's), a
  * damaged one or none gives the defaults. Part of the unity build, after app.h. The engine's settings are not saved:
  * the world (world.c) makes them from the time of day. */
@@ -28,7 +28,7 @@ void project_defaults(void)
 
 static int project_valid(void)
 {
-    if (proj.magic != PROJ_MAGIC || proj.format != PROJ_FORMAT)
+    if (proj.magic != PROJ_MAGIC || proj.format != PROJ_FORMAT || proj.preset >= NPRESETS)
         return 0;
     if (proj.clock > 1 || proj.cycle >= NCYCLE || proj.sea > 10 || proj.leds > 2 || proj.midi > 1)
         return 0;
@@ -46,6 +46,12 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {
+        /* 1.0's project (format 1): the same layout, the preset's byte then spare (zero). The world as it was, the
+         * sound as it was: Harbour */
+        proj.format = PROJ_FORMAT;
+        proj.preset = 0;
+    }
     if (n == (int)sizeof proj && project_valid())
         return 0;
     project_defaults();

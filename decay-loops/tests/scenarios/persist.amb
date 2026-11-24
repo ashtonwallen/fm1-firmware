@@ -1,0 +1,45 @@
+# saving: SAVE at once; by itself once the knobs rest, at a quiet moment, no more than every 5 minutes; a reboot comes
+# back to what was saved (the preset, its settings, the others' settings, the keys' octave, the lights)
+wait 3000
+expect store_writes 0
+spin PRESET 4
+spin K1 7
+spin K4 -10
+tap OCT-
+tap SAVE
+wait 300
+expect store_writes 1
+expect dirty 0
+reboot
+wait 2000
+expect preset 4
+expect par0 32
+expect par3 25
+expect keyoct -1
+expect playing 1
+expect slot0p0 45
+# a change saves by itself (rested, then a quiet moment within two minutes or so)
+spin K2 -2
+expect dirty 1
+wait 9000
+expect store_writes 1
+wait 160000
+expect dirty 0
+expect store_writes 2
+# another change: not saved again before 5 minutes have passed since the last
+spin K2 1
+wait 120000
+expect dirty 1
+expect store_writes 2
+wait 200000
+expect dirty 0
+expect store_writes 3
+reboot
+wait 1000
+expect par1 11
+# while the tape is stopped it saves once rested
+tap PLAY
+spin K3 -1
+wait 300500
+expect dirty 0
+expect store_writes 4

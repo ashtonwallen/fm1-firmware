@@ -28,12 +28,21 @@ From Git Bash: `MSYS_NO_PATHCONV=1 wsl.exe -d Ubuntu -- bash -lc 'cd /mnt/d/Proj
   Bede's arrival, rivalry), events and the chronicle (`event`, `ev_text`), the voices to the engine (`voices_step`).
 - `app/dsp/amb.c`: AMB-1's engine plus the choir (`en_choir`, `en_voice`: the pad's four formant voices driven one by
   one), the drone (`en_drone`, the bass) and the tower bell (`en_toll`). Bell loops and pulse are off by settings.
+  AMB-1 Drift 1.1's sounds are ported in (strings, lead, air, shimmer: params `P_PLUCK`..`P_SHIMMER` at the end).
+  They play from the engine's scale: `world_key()` sets the root and pool to the office's final and mode.
+- Presets (1.1): `project.c` `PRESET[]` (12, `NPRESET` in `app.h`). `preset_par()` maps a knob's value to the
+  engine's (levels %, space offsets) and gives Drift 1.1's params; `preset_final/mode/pace/formant/vib` move the
+  chant (world.c `of_final`, `of_mode`). PRESETS turns them (`preset_step` in `ui.c`, then `world_preset()`).
+  Abbey Chapel (0) changes nothing. The world is never touched.
 - `app/ui.c`: pages Chapel / Brothers / Space / Setup, the chapel drawing, autosave
   (`keep_due`, for flash wear: the world at most hourly, settings at most every 5 min, once on an empty battery; only
   while nobody sings), the screen reader.
-- `app/app.h` `project_t` (magic "MON1", format 1): sound settings + `world_t` (one store object, under 3840 B).
-- `app/host.c`: simulator checks (`office`, `day`, `singing`, `slipsN`...) and commands (`days N`, `office N`,
-  `storeamb`).
+- `app/app.h` `project_t` (magic "MON1", format 2): sound settings (`par[P_NSAVED]`, AMB-1's 28 only, so the layout
+  is 1.0's) + the preset (1.0's spare byte) + `world_t` (one store object, under 3840 B). Format 1 loads whole on
+  preset 0.
+- `app/host.c`: simulator checks (`office`, `day`, `singing`, `slipsN`, `preset`, `format`, `effN` the engine's
+  value under the preset...) and commands (`days N`, `office N`, `storeamb`, `storev1`). `tests/scenarios/presets.amb`:
+  every preset sings, peaks, the world kept, format 1.
 - USB name "MONASTERY FM-1" in `app/fm1.toml`: must keep "FM-1" in it so M-Flasher finds the unit. `repo` and
   `install` there are placeholders (a release needs https addresses); no public repo yet.
 - `web/` is AMB-1's browser app, not updated (its tests skip without emcc).

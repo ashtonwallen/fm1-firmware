@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "patchbay",
+  "name": "Patch Bay",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Self-patching virtual modular synth",
+  "description": "Patch Bay turns the FM-1 into a small modular synth that patches itself. Sixteen modules sit on the screen as little panels with jacks: clock, sequencer, random, quantizer, two LFOs, two envelopes, VCO, FM pair, noise, filter, VCA, delay, mixer and reverb. Coloured cables sag between them. Every so often one cable lifts, flies to another jack and plugs in, and the music turns into a new patch: always in key, levels kept even, never harsh. Take over any time: pick a module and a jack, plug and unplug, turn the module's knob. Twelve starting patches, from Berlin School to Drone Cathedral.",
+  "tags": ["synth", "generative", "ambient"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/patch-bay",
+  "screenshot": "docs/img/screen.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

@@ -1,0 +1,153 @@
+# the presets (1.1): PRESETS turns through twelve session styles. Each leans the tunes (kinds, modes, tempo, songs),
+# the band's balance, the room, and puts Drift 1.1's air outside (rain, wind, sea, the fire) and its shimmer; each
+# makes sound and none clips; the regulars and the night are untouched; the preset is saved; 1.0's project (format
+# 1) comes back whole, on the first preset, The Corner
+wait 300
+expect preset 0
+expect format 2
+expect eff12 0
+expect eff4 55
+mood3 -60
+timewarp 3
+wait 240000
+expect night 1
+expect present >3
+# paused: the night waits while every preset goes by, and none of them touches it
+tap PLAY
+wait 300
+expect playing 0
+turn PRESET 1
+wait 200
+expect preset 1
+shot preset-name.png
+turn PRESET 10
+expect preset 11
+turn PRESET 1
+expect preset 0
+turn PRESET -1
+expect preset 11
+turn PRESET 1
+expect preset 0
+expect night 1
+expect mood3 <-40
+expect aff_0_1 <-60
+tap PLAY
+wait 300
+# every preset plays, none clips: two and a half minutes each (its next tune), the last minute measured
+wav presets.wav
+turn PRESET 1
+expect preset 1
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 2
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 3
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 4
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 5
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 6
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 7
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 8
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 9
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 10
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+turn PRESET 1
+expect preset 11
+wait 90000
+peakreset
+wait 60000
+expect peak_db_min -30
+expect peak_db_max -1
+wavstop
+expect eff12 3
+expect eff13 45
+shot lock-in.png
+tap LFO
+wait 300
+shot room-page.png
+tap HOME
+# the values the presets set
+turn PRESET -8
+expect preset 3
+expect eff12 1
+expect eff15 20
+expect eff5 80
+turn PRESET 1
+expect eff12 2
+expect eff13 50
+# the preset is saved
+tap SAVE
+reboot
+wait 300
+expect preset 4
+expect night 2
+expect aff_0_1 <-60
+# 1.0's project: format 1, carried over whole on the first preset
+storev1
+reboot
+wait 300
+expect format 2
+expect preset 0
+expect night 2
+expect aff_0_1 <-60
+# another firmware's project: a fresh tavern, the first preset
+storeamb
+reboot
+wait 300
+expect preset 0
+expect night 1
+expect tunes 0

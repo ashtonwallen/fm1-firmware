@@ -20,7 +20,9 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x314E4F4Du           /* "MON1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                   /* 2 (1.1): the preset; a format 1 project (1.0) is carried over whole */
+#define P_NSAVED P_PLUCK                 /* the sound's settings saved: AMB-1's (Drift 1.1's are the preset's) */
+#define NPRESET 12
 
 /* the world (world.c): the brothers, the day, the chronicle */
 #define NMONK 7
@@ -52,11 +54,11 @@ typedef struct {
 
 typedef struct {
     uint32_t magic, format;
-    int16_t par[P_NPARAMS];              /* the sound (amb.h P_*) */
+    int16_t par[P_NSAVED];               /* the sound (amb.h P_*, AMB-1's): the knobs' values, under the preset */
     uint8_t leds;                        /* lights: 0 off, 1 on */
     uint8_t daylen;                      /* Day length: 0..WD_NDAY-1 */
     uint8_t pace;                        /* the chant's pace, % (70..140) */
-    uint8_t rsv0;
+    uint8_t preset;                      /* the preset (1.1): project.c PRESET[], 0 Abbey Chapel (1.0's sound) */
     world_t world;
     uint8_t rsv[16];                     /* room to grow */
 } project_t;
@@ -68,6 +70,16 @@ int project_load(void);                  /* 0 = loaded; else defaults are in pla
 int project_save(void);                  /* 0 = saved and verified */
 void project_apply(void);                /* every value to the engine (boot, load) */
 void project_sound_defaults(void);       /* the sound back to the defaults (the world kept) */
+/* the presets (1.1): a sound palette over the knobs and the chant (project.c) */
+const char *preset_name(int i);
+int preset_par(int p, int v);            /* the engine's value of setting p: the knob's v under the preset */
+int preset_final(int final);             /* an office's final (MIDI), moved by the preset */
+int preset_mode(int mode);               /* an office's mode, or the preset's */
+int preset_pace(int pct);                /* the chant's pace % under the preset */
+int preset_formant(int f);               /* a monk's formants % */
+int preset_vib(int v);                   /* a monk's vibrato */
+void world_key(void);                    /* the office's final and mode to the engine (Drift 1.1's sounds' scale) */
+void world_preset(void);                 /* a new preset: the chant and the voices follow it */
 
 void world_defaults(world_t *w);
 int world_valid(const world_t *w);

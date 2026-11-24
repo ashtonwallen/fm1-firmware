@@ -5,7 +5,7 @@
  *
  * Checks: playing frozen view dirty sixteenths pad_level station phase land kmh km nlog stretch clack tone scroll
  * aboardN asleepN beatN tripsN (regular N) strangers rain tunnel parN (the engine's setting N as the app sets it)
- * battery. Commands: battery N; express (PRESETS' express); ff MIN (the journey MIN minutes on, the world alone, no
+ * battery line format (the project's). storev1: the project now, saved as 1.0 saved it (format 1, no line). Commands: battery N; express (PRESETS' express); ff MIN (the journey MIN minutes on, the world alone, no
  * sound: days in a moment); storeold (a project of AMB-1's format "ENO1" in the store); story (print the journal). */
 
 int app_expect(const char *what, int *got)
@@ -42,6 +42,10 @@ int app_expect(const char *what, int *got)
         g = proj.stretch;
     else if (!strcmp(what, "clack"))
         g = proj.clack;
+    else if (!strcmp(what, "line"))
+        g = proj.line;
+    else if (!strcmp(what, "format"))
+        g = (int)proj.format;
     else if (!strcmp(what, "tone"))
         g = proj.tone;
     else if (!strcmp(what, "scroll"))
@@ -111,6 +115,14 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         memcpy(o, &m, 4);
         memcpy(o + 4, &f, 4);
         plat_store_save(OBJ_PROJ, o, sizeof o);
+        return 1;
+    }
+    if (!strcmp(cmd, "storev1")) {               /* 1.0's project: format 1, its spare byte (now the line) 0 */
+        static project_t o;
+        o = proj;
+        o.format = 1u;
+        o.line = 0;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;
     }
     if (!strcmp(cmd, "story")) {                 /* the journal, oldest first */

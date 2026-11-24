@@ -9,6 +9,7 @@
  *   OCT- / OCT+    the fish sing an octave down / up
  *   HOME ENV SEQ FX GLO   the pages: POND, FISH, JOURNAL, MIX, SETUP (GLO again: WORLD)
  *   SELECT pages   ALGORITHM Busy   PRESETS the fish to follow (its name and a ring in the pond; the Fish page)
+ *   LFO / SEL      the pond's sound (1.1): the next / the last preset, named on the screen; the fish stay as they are
  *   KNOB 1-4       the page's four values
  *   SAVE           saves now (the pond saves itself: on events and every 20 minutes, in a short hush);
  *                  held 3 s: a NEW POND (the old one is gone) */
@@ -115,7 +116,7 @@ int ui_dirty(void) { return ui.dirty != 0; }
 
 static uint32_t pool_abs(void)                 /* the scale as absolute pitch classes */
 {
-    uint32_t p = pd_pool(), r = (uint32_t)proj.par[P_ROOT];
+    uint32_t p = pd_pool(), r = (uint32_t)pd_root();
     return ((p << r) | (p >> (12u - r))) & 0xFFFu;
 }
 
@@ -123,7 +124,7 @@ static uint32_t pool_abs(void)                 /* the scale as absolute pitch cl
 static const uint8_t DAY_MIN_UI[PD_NDAYLEN] = {6, 12, 24, 48, 96};
 static int knob_get(int k)
 {
-    if (k < P_NPARAMS)
+    if (k < P_NSAVED)
         return proj.par[k];
     if (k == K_LEDS)
         return proj.leds;
@@ -139,7 +140,7 @@ static int knob_get(int k)
 }
 static void knob_range(int k, int *lo, int *hi)
 {
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         *lo = en_param_info(k)->lo;
         *hi = en_param_info(k)->hi;
         return;
@@ -151,8 +152,8 @@ static void knob_range(int k, int *lo, int *hi)
 static void knob_text(int k, char *b)
 {
     int v = knob_get(k);
-    if (k < P_NPARAMS) {
-        en_param_text(k, v, b);
+    if (k < P_NSAVED) {
+        en_param_text(k, k == P_ROOT ? pd_root() : v, b);   /* (the key as the preset moves it) */
     } else if (k == K_LEDS) {
         cat_s(b, v == 2 ? "Keys" : v ? "On" : "Off");
     } else if (k == K_FISH) {
@@ -173,7 +174,7 @@ static void knob_set(int k, int v)
     v = v < lo ? lo : v > hi ? hi : v;
     if (v == knob_get(k))
         return;
-    if (k < P_NPARAMS)
+    if (k < P_NSAVED)
         proj.par[k] = (int16_t)v;
     else if (k == K_LEDS)
         proj.leds = (uint8_t)v;
@@ -233,6 +234,15 @@ static void follow(int dir)                     /* PRESETS: the next fish, named
         pd_cat(pd_cat(pd_cat(t, PD_SPECIES[W()->fish[s].species]), ", "), PD_TEMPER[W()->fish[s].temper]);
         say(fname(s), t);
     }
+}
+
+static void preset_step(int dir)                /* LFO / SEL: the next or the last preset, named */
+{
+    proj.preset = (uint8_t)((proj.preset + NPRESETS + (dir > 0 ? 1 : -1)) % NPRESETS);
+    pd_sound();
+    mark_dirty();
+    say("PRESET", pd_preset_name(proj.preset));
+    ui.msg_until = plat_ms() + 2500u;
 }
 
 static void do_save(void)
@@ -295,6 +305,7 @@ static void button(int b)
         }
         break;
     case B_SAVE: do_save(); break;
+    case B_LFO: case B_SEL: preset_step(b == B_LFO ? 1 : -1); break;
     default: break;
     }
 }
@@ -1002,6 +1013,8 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_HOME: L("THE POND"); L("BUSY, TEMPO, SPACE, TONE"); L("KEYS: FOOD AND ITS NOTE"); break;
     case B_ENV: L("THE FISH"); L("NAME, AGE, FRIEND, RIVAL"); L("PRESETS: THE NEXT FISH"); break;
     case B_SEQ: L("THE JOURNAL"); L("WHAT HAPPENED, NEWEST FIRST"); break;
+    case B_LFO: L("THE NEXT PRESET"); L("THE POND'S SOUND"); L("THE FISH STAY AS THEY ARE"); L("SEL: THE LAST ONE"); break;
+    case B_SEL: L("THE LAST PRESET"); L("THE POND'S SOUND"); L("LFO: THE NEXT ONE"); break;
     case B_FX: L("THE MIX"); L("PAD, FISH, BASS, FROGS"); break;
     case B_GLO: L("SETUP"); L("ROOT, TUNE, MIDI OUT, LIGHTS"); L("AGAIN: THE WORLD"); break;
     case B_EDIT: L("THE NEXT CHORD,"); L("CHOSEN BY THE FISH"); break;
@@ -1061,6 +1074,7 @@ static void draw_strip(void)
     char t[48];
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
+    h = hash(h, proj.preset);                    /* (named on the rule) */
     if (ui.view == V_LOG)
         h = hash(h, W()->born | (uint32_t)W()->died << 8 | (uint32_t)W()->herons << 16 | (uint32_t)pd_alive() << 24);
     if (h == ui.sig[2])
@@ -1071,6 +1085,13 @@ static void draw_strip(void)
         int32_t xd = 237 - NVIEWS * 6, xt;
         int k;
         caps(t, VIEW_NAME[ui.view], 12);
+        if (ui.view == V_POND || ui.view == V_MIX) {   /* and the preset (1.1) */
+            char q[24], *e = t;
+            caps(q, pd_preset_name(proj.preset), 20);
+            while (*e)
+                e++;
+            pd_cat(pd_cat(e, ": "), q);
+        }
         xt = xd - 5 - text_w(&FONT_T, t);
         cv_rect(4, 4, xt - 9, 1, K_LINE);
         cv_text(xt, -2, &FONT_T, t, K_ACC);
@@ -1249,6 +1270,8 @@ static void sp_page(int all)
     sp_int((uint32_t)pd_alive());
     sp_cat(" fish");
     sp_cat(sp_tp.playing ? ", singing" : ", resting");
+    sp_cat(". Preset ");
+    sp_cat(pd_preset_name(proj.preset));
     if (batt_words(batt())) {
         sp_cat(". ");
         sp_cat(batt_words(batt()));
@@ -1391,6 +1414,10 @@ static void speak_dump(void)
     }
     for (x = 0; x < 12; x++) {
         msg_text("FOOD", EN_NOTE_NAME[x], t);
+        sp_print("MSG", t);
+    }
+    for (x = 0; x < NPRESETS; x++) {              /* LFO / SEL: each preset named */
+        msg_text("PRESET", pd_preset_name(x), t);
         sp_print("MSG", t);
     }
     msg_text("NOT SAVED", "FLASH ERROR", t);

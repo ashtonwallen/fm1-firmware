@@ -1,0 +1,59 @@
+# the screen reader (fm1-reader, announce.c): a reader listens, and each page, knob, help card and button is said
+wait 200
+listen
+wait 100
+said Machine page: Density 50, Drift 6 bars, Filter 46, Echo 60. Preset Dub Chamber, F minor 7, tempo 118, playing
+listen
+where
+said Loops Kick 16, Hats 12, Perc 7, Stab 10, Bass 16, Bleep 5
+tap ENV
+wait 300
+said Mix page: Drums 70, Stab 70, Bass 70, Bleep 60
+tap GLO
+wait 300
+said Setup page: Tempo 118, Key F, USB level Master, Lights On
+spin K3 1
+wait 300
+said USB level Full
+spin K3 -1
+wait 300
+tap FX
+wait 300
+said Space page: Swing 8%, Echo time 3/16, Reverb 40, Duck 45
+spin K2 1
+wait 300
+said Echo time 1/4
+tap HOME
+wait 300
+spin K2 -50
+wait 300
+said Drift Held
+tapkey w2
+said MUTED Perc
+tapkey w2
+said UNMUTED Perc
+turn ALGO 1
+said KEY F#
+turn ALGO -1
+said KEY F
+turn PRESET 1
+said PRESET Warehouse, A minor, tempo 126
+turn PRESET -1
+said PRESET Dub Chamber
+tap REC
+said HOLD ON
+tap REC
+said HOLD OFF
+tap EDIT
+said MUTATE
+tap PLAY
+said STOPPED
+wait 300
+unsaid PLAYING
+tap PLAY
+said PLAYING
+press OCT+
+wait 1000
+said OCT+ button. THE NEXT PRESET
+release OCT+
+speakdump

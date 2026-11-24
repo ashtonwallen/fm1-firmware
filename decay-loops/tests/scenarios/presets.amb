@@ -1,0 +1,117 @@
+# every preset makes sound by itself: each from its own fresh loop, 25 s
+wait 500
+peakreset
+wait 20000
+expect preset 0
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 1
+expect loops >0
+expect peak_db_min -30
+expect peak_db_max -0.5
+shot reel.png
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 2
+expect peak_db_min -30
+expect peak_db_max -0.5
+shot wax.png
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 3
+expect peak_db_min -30
+expect peak_db_max -0.5
+shot wire.png
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 4
+expect peak_db_min -30
+expect peak_db_max -0.5
+shot fog.png
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 5
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 6
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 7
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 8
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 9
+expect peak_db_min -30
+expect peak_db_max -0.5
+shot dust.png
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 10
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 11
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 12
+expect peak_db_min -30
+expect peak_db_max -0.5
+spin PRESET 1
+wait 300
+peakreset
+wait 25000
+expect preset 13
+expect peak_db_min -30
+expect peak_db_max -0.5
+# round to the first again; each preset kept its own settings
+spin PRESET 1
+wait 300
+expect preset 0
+spin K1 5
+expect par0 50
+spin PRESET 1
+wait 300
+expect par0 30
+spin PRESET -1
+wait 300
+expect par0 50
+expect slot1p0 30

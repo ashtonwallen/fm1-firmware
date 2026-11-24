@@ -1,0 +1,23 @@
+# LOFI RADIO's build settings (fm1-base's tools/build.py: ./build.sh)
+name = "LOFIRADIO"             # the build's files: lofiradio.fwsc, lofiradio-X.Y.fwsc
+id_prefix = "FM-1_89"          # package identity: dev FM-1_8900, releases FM-1_89XXYYZZ
+usb_manufacturer = "LOFI RADIO"
+usb_product = "LOFI RADIO FM-1"   # keeps "FM-1": M-Flasher finds the unit by it
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB (at MASTER's level)
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/lofi.c"]            # the engine, at -O2
+# the site
+tagline = "Endless lo-fi hip-hop radio. Dusty keys, swung drums, vinyl crackle."
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/lofi-radio"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "LOFI RADIO turns the M-VAVE FM-1 into an endless lo-fi hip-hop station. Every few minutes a new track: a new key and tempo, a jazzy progression on a dusty electric piano, swung boom-bap drums, a round bassline and now and then a muted lead or vibraphone melody, under vinyl crackle and tape wobble. A turntable spins on the screen with each record's label, the track's name and a VU meter. Fourteen styles, from Study to Tokyo Night; four knobs: swing, dust, tempo, mood."
+tags = ["generative", "chords", "fm"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/img/screen-radio.png"

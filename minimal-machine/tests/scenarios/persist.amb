@@ -1,0 +1,34 @@
+# state survives a reboot: the knobs, each preset's own, Hold, mutes, and the loops as they evolved
+wait 300
+spin K1 12
+expect par0 62
+turn PRESET 2
+expect preset 2
+tap FX
+spin K3 -5
+expect par10 40
+tapkey w4
+expect mute 16
+# a few mutations, then Hold, then SAVE
+tap EDIT
+wait 400
+tap EDIT
+wait 400
+tap EDIT
+wait 400
+tap REC
+wait 200
+gen_mark
+tap SAVE
+expect store_writes 1
+reboot
+wait 300
+expect preset 2
+expect par10 40
+expect held 1
+expect mute 16
+expect gen_ok 1
+expect gen_same 1
+expect slot0p0 62
+turn PRESET -2
+expect par0 62

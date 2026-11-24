@@ -1,0 +1,92 @@
+# every preset makes sound: PRESETS through all fourteen, each heard for 15 s (a new piece starts on each)
+wait 2000
+turn PRESET 1
+expect preset 1
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset1.png
+turn PRESET 1
+expect preset 2
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset2.png
+turn PRESET 1
+expect preset 3
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+expect preset 4
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset4.png
+turn PRESET 1
+expect preset 5
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+expect preset 6
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset6.png
+turn PRESET 1
+expect preset 7
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+expect preset 8
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset8.png
+turn PRESET 1
+expect preset 9
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset9.png
+turn PRESET 1
+expect preset 10
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+expect preset 11
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset11.png
+turn PRESET 1
+expect preset 12
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+shot preset12.png
+turn PRESET 1
+expect preset 13
+peakreset
+wait 15000
+expect peak_db_min -40
+expect peak_db_max -1
+# and round to the first again
+turn PRESET 1
+expect preset 0
+expect par0 66

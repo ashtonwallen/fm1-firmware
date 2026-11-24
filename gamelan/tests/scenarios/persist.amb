@@ -1,0 +1,59 @@
+# state survives a reboot; each preset keeps its own settings; the autosave waits for a quiet moment; another
+# firmware's saved project (or a damaged one) gives the defaults
+wait 1000
+spin K2 10
+expect par1 55
+turn PRESET 2
+expect preset 2
+expect par0 52
+spin K1 -2
+expect par0 50
+tap REC
+expect hold 11
+tap SAVE
+expect store_writes 1
+expect dirty 0
+reboot
+wait 500
+expect preset 2
+expect par0 50
+expect hold 11
+expect playing 1
+turn PRESET -2
+expect preset 0
+expect par1 55
+# the autosave: not while it plays on (held in one piece, no silence between pieces) ...
+tap REC
+expect hold 0
+spin K3 1
+expect dirty 1
+wait 10000
+expect store_writes 1
+# ... but in the silence after a piece ends (EDIT: this one ends, then rings out)
+tap EDIT
+wait 60000
+expect store_writes 2
+expect dirty 0
+reboot
+wait 300
+expect preset 0
+expect par2 4
+# AMB-1 Drift's project in the same place: the defaults, nothing broken
+storeforeign
+reboot
+wait 300
+expect preset 0
+expect par1 45
+expect par2 3
+expect hold 0
+expect playing 1
+wait 8000
+expect gongs >0
+# ours, damaged: the defaults
+turn PRESET 3
+tap SAVE
+storebad
+reboot
+wait 300
+expect preset 0
+expect par1 45

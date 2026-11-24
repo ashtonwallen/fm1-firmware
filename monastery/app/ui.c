@@ -10,6 +10,7 @@
  *   white keys 1-7 a brother: asleep, he wakes; else he stands to sing the next verse
  *   HOME CHAPEL    ARP BROTHERS    FX SPACE    GLO SETUP          (SELECT steps through them)
  *   KNOB 1-4       the page's four values
+ *   PRESETS        the preset (1.1): the chapel's sound (project.c PRESET[]); the brothers and the day go on
  *   SAVE           saves (it also saves by itself, rarely, while nobody sings); held 1.5 s: the sound's defaults */
 #include "fastmath.h"
 
@@ -109,7 +110,7 @@ int ui_dirty(void) { return ui.dirty != 0; }
 /* ------------------------------------------------------------ values --- */
 static int knob_get(int k)
 {
-    if (k < P_NPARAMS)
+    if (k < P_NSAVED)
         return proj.par[k];
     if (k == K_LEDS)
         return proj.leds;
@@ -121,7 +122,7 @@ static int knob_get(int k)
 }
 static void knob_range(int k, int *lo, int *hi)
 {
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         *lo = en_param_info(k)->lo;
         *hi = en_param_info(k)->hi;
     } else {
@@ -140,7 +141,7 @@ static void knob_text(int k, char *b)
     int v = knob_get(k);
     if (k == P_MIDI) {
         cat_s(b, v ? "On" : "Off");
-    } else if (k < P_NPARAMS) {
+    } else if (k < P_NSAVED) {
         en_param_text(k, v, b);
     } else if (k == K_LEDS) {
         cat_s(b, v ? "On" : "Off");
@@ -163,9 +164,9 @@ static void knob_set(int k, int v)
     v = v < lo ? lo : v > hi ? hi : v;
     if (v == knob_get(k))
         return;
-    if (k < P_NPARAMS) {
+    if (k < P_NSAVED) {
         proj.par[k] = (int16_t)v;
-        en_set(k, v);
+        en_set(k, preset_par(k, v));
     } else if (k == K_LEDS) {
         proj.leds = (uint8_t)v;
     } else if (k == K_DAY) {             /* the office keeps its place, at the new pace */
@@ -201,6 +202,18 @@ static int32_t accel(int role, int32_t s, int range)
     if (range < 100 && m > 3u)
         m = 3u;
     return s * (int32_t)m;
+}
+
+static void caps(char *d, const char *s, int n);
+static void preset_step(int d)          /* PRESETS: the next or the last preset, round */
+{
+    char t[24];
+    proj.preset = (uint8_t)((proj.preset + NPRESET + d) % NPRESET);
+    project_apply();
+    world_preset();
+    mark_dirty();
+    caps(t, preset_name(proj.preset), sizeof t);
+    say("PRESET", t);
 }
 
 static void turn(int role, int k, int32_t e)
@@ -319,7 +332,10 @@ static void input(void)
             set_view(v);
     }
     plat_enc(EN_ALGO);
-    plat_enc(EN_PRESET);
+    if ((e = plat_enc(EN_PRESET)) != 0) {
+        preset_step(e > 0 ? 1 : -1);
+        ui.act_t = plat_ms();
+    }
     if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
         ui.reset_done = 1;
         ui.btn_used |= 1u << B_SAVE;
@@ -845,7 +861,7 @@ static void draw_low(void)
     for (i = 0; i < 4; i++)
         h = hash(h, (uint32_t)knob_get(VIEW_KNOB[ui.view][i]));
     h = hash(hash(h, (uint32_t)now_touch | (age > 90000u) << 1), wr.line_t);
-    h = hash(h, proj.world.nchron | (uint32_t)proj.world.chron_w << 8);
+    h = hash(h, proj.world.nchron | (uint32_t)proj.world.chron_w << 8 | (uint32_t)proj.preset << 16);
     if (h == ui.sig[2])
         return;
     ui.sig[2] = h;
@@ -876,7 +892,13 @@ static void draw_low(void)
         int32_t xd = 237 - NVIEWS * 6, xt;
         caps(t, VIEW_NAME[ui.view], sizeof t);
         xt = xd - 5 - text_w(&FONT_XS, t);
-        cv_rect(4, 23, xt - 9, 1, K_PANEL);
+        {                                /* the preset, at the left of the rule */
+            char pn[24];
+            int32_t xp;
+            caps(pn, preset_name(proj.preset), sizeof pn);
+            xp = cv_text(6, 16, &FONT_XS, pn, K_DIM) + 6;
+            cv_rect(xp, 23, xt - 9 - xp, 1, K_PANEL);
+        }
         cv_text(xt, 16, &FONT_XS, t, K_ACC);
         for (k = 0; k < NVIEWS; k++)
             cv_round(xd + k * 6, 21, 4, 4, 2, k == ui.view ? K_ACC : K_PANEL);
@@ -1034,6 +1056,8 @@ static void sp_where(void)
     itoa_u(proj.world.day, t);
     sp_cat(t);
     sp_cat(en_playing ? (wr.phase == PH_REST ? ", quiet" : ", singing") : ", resting");
+    sp_cat(". Preset ");
+    sp_cat(preset_name(proj.preset));
     for (i = 0; i < NMONK; i++)
         if (wr.monk_slot[i] >= 0) {
             sp_cat(n++ ? ", " : ". Singing: ");
@@ -1124,7 +1148,7 @@ static void speak_dump(void)
                 continue;
             knob_range(k, &lo, &hi);
             for (x = lo; x <= hi; x++) {
-                if (k < P_NPARAMS)
+                if (k < P_NSAVED)
                     proj.par[k] = (int16_t)x;
                 else if (k == K_LEDS)
                     proj.leds = (uint8_t)x;
@@ -1142,6 +1166,13 @@ static void speak_dump(void)
     ui.view = keep_view;
     sp_where();
     sp_print("WHERE", sp_buf);
+    for (i = 0; i < NPRESET; i++) {          /* PRESETS: its message */
+        char n[24];
+        caps(n, preset_name(i), sizeof n);
+        cat_s(cat_s(t, "PRESET "), n);
+        sp_print("MSG", t);
+        t[0] = 0;
+    }
     for (e = 1; e < NEV; e++)
         for (i = 0; i < NMONK; i++) {
             ev_text(e, i, (i + 1) % NMONK, i, t);

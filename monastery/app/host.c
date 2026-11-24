@@ -67,7 +67,13 @@ int app_expect(const char *what, int *got)
     else if (!strncmp(what, "sung", 4))
         g = mk(atoi(what + 4) % NMONK)->sung;
     else if (!strncmp(what, "par", 3))
-        g = proj.par[atoi(what + 3)];
+        g = proj.par[atoi(what + 3) % P_NSAVED];
+    else if (!strncmp(what, "eff", 3))           /* effN: the engine's setting N as the preset makes it */
+        g = preset_par(atoi(what + 3) % P_NPARAMS, atoi(what + 3) % P_NPARAMS < P_NSAVED ? proj.par[atoi(what + 3) % P_NSAVED] : 0);
+    else if (!strcmp(what, "preset"))
+        g = proj.preset;
+    else if (!strcmp(what, "format"))
+        g = (int)proj.format;
     else
         return 0;
     *got = g;
@@ -91,6 +97,14 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         int o = atoi(a) % NOFFICE;
         proj.world.office = (uint8_t)((o + NOFFICE - 1) % NOFFICE);   /* (to Matins: a new day) */
         world_skip();
+        return 1;
+    }
+    if (!strcmp(cmd, "storev1")) {               /* 1.0's project: format 1, its spare byte (now the preset) 0 */
+        static project_t o;
+        o = proj;
+        o.format = 1u;
+        o.preset = 0;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;
     }
     if (!strcmp(cmd, "storeamb")) {

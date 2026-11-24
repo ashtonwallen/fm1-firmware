@@ -1,0 +1,24 @@
+# another firmware's saved project (AMB-1's) gives the defaults, and so does a damaged one; it still drives at once
+wait 300
+spin K1 7
+tap SAVE
+expect store_writes 1
+storeamb
+reboot
+wait 300
+expect preset 0
+expect speed 100
+expect drums 70
+expect odo 0
+expect playing 1
+wait 20000
+expect peak_db_min -30
+turn PRESET 2
+spin K1 3
+tap SAVE
+storeshort
+reboot
+wait 300
+expect preset 0
+expect speed 100
+expect playing 1

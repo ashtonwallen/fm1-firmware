@@ -1,0 +1,37 @@
+# a long run at full MASTER with the auto-patcher at its quickest: always musical, never clipping, never silent;
+# its moves are kept at most once an hour
+master 4096
+wait 300
+spin K1 -20
+spin K1 1
+expect autor 1
+expect store_writes 0
+peakreset
+wait 600000
+expect moves >60
+expect musical 1
+expect level >10
+expect peak_db_max -1
+expect peak_db_min -24
+shot ten.png
+# the knob change (Auto) saved once it rested, after the first 5 minutes; the moves themselves not yet
+expect store_writes 1
+wait 600000
+expect musical 1
+expect level >10
+expect store_writes 1
+wait 2800000
+expect store_writes 2
+expect peak_db_max -1
+expect peak_db_min -24
+expect musical 1
+shot hour.png
+# another preset, the same
+turn PRESET 8
+peakreset
+wait 600000
+expect musical 1
+expect level >10
+expect peak_db_max -1
+expect peak_db_min -24
+shot rain.png

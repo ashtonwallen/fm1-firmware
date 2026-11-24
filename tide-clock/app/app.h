@@ -20,8 +20,9 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x4B444954u           /* "TIDK": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 1u
+#define PROJ_FORMAT 2u                  /* 2 (1.1): the preset; format 1 (1.0) loads with Harbour */
 
+#define NPRESETS 13                      /* the sound's palettes (world.c PRESETS) */
 #define NCYCLE 5                         /* Cycle mode: a whole day every 1, 2, 4, 8 or 12 hours */
 #define LOG_N 24                         /* the keeper's log: the last notable events */
 
@@ -47,7 +48,8 @@ typedef struct {
     uint8_t leds;                        /* lights: 0 off, 1 keys and the buttons' glow, 2 keys only */
     int8_t tune;                         /* -50..50 cents */
     uint8_t midi;                        /* MIDI out of the notes: 0 off, 1 on */
-    uint8_t rsv0[2];
+    uint8_t preset;                      /* the sound's palette (1.1, world.c PRESETS; 0 Harbour, as 1.0) */
+    uint8_t rsv0;
     /* the world */
     uint32_t tod;                        /* the time of day when last saved, seconds 0..86399 */
     uint32_t seed;                       /* the world's dice */

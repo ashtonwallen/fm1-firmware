@@ -1,0 +1,23 @@
+# NIGHT DRIVE's build settings (fm1-base's tools/build.py: ./build.sh). Built on AMB-1 by Charles Vestal.
+name = "NIGHTDRIVE"            # the build's files: nightdrive.fwsc, nightdrive-X.Y.fwsc
+id_prefix = "FM-1_90"          # package identity: dev FM-1_9000, releases FM-1_90XXYYZZ
+usb_manufacturer = "Night Drive"
+usb_product = "NIGHT DRIVE FM-1"
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/nd.c"]              # the engine, at -O2
+# the site
+tagline = "Endless synthwave: neon grid, striped sun, night road"
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/night-drive"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "Night Drive plays generated synthwave without end. A driving bass, a plucked arpeggio, lush detuned pads, a big gated snare and now and then a lead line, over minor-key progressions. Sections build and drop (intro, drive, break, build) and the key moves now and then. The screen is a neon grid road running toward a striped sunset, mountains on the horizon, the grid pulsing on the kick. Fourteen presets, each its own sound and colours; four knobs: speed, brightness, arpeggio density and drift."
+tags = ["synth", "generative", "sequencer"]
+screenshot = "docs/img/screen-drive.png"
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"

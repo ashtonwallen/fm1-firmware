@@ -1,0 +1,201 @@
+# PRESETS (1.1, LFO next / SEL last): thirteen palettes for the pond. Each makes sound, none clips; switching keeps
+# the pond (the fish, their notes and ties, the day, the journal); the preset is kept as a setting; 1.0's project
+# (format 1) loads whole, as Mill Pond
+wait 1000
+ff 120
+expect day 6
+expect preset 0
+snap
+# Mill Pond
+expect preset 0
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Koi Garden
+tap LFO
+expect preset 1
+wait 300
+shot preset.png
+# Koi Garden: the key a fourth up (D to G), the summer's Ionian made pentatonic, the kalimba
+expect sent19 7
+expect sent20 6
+expect sent28 >40
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Lily Night
+tap LFO
+expect preset 2
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Mountain Tarn
+tap LFO
+expect preset 3
+# Mountain Tarn: the strings pad, the wind
+expect sent22 2
+expect sent36 1
+expect sent37 >30
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Rain Pond
+tap LFO
+expect preset 4
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Frozen Edge
+tap LFO
+expect preset 5
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Lotus Temple
+tap LFO
+expect preset 6
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Willow Bank
+tap LFO
+expect preset 7
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Dragonfly Noon
+tap LFO
+expect preset 8
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Bog Mist
+tap LFO
+expect preset 9
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Moon Pool
+tap LFO
+expect preset 10
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Spring Thaw
+tap LFO
+expect preset 11
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# Old Well
+tap LFO
+expect preset 12
+wait 4000
+peakreset
+wait 25000
+expect peak_db_max -1
+expect peak_db_min -35
+expect fishsame 1
+expect fish >2
+# round again, and back
+tap LFO
+expect preset 0
+expect sent22 <2
+expect sent32 0
+tap SEL
+expect preset 12
+tap SEL
+expect preset 11
+tap FX
+wait 300
+shot mix.png
+tap HOME
+press LFO
+wait 1200
+shot help.png
+release LFO
+expect preset 11
+# kept as a setting (5 minutes after the last save at most)
+wait 310000
+expect dirty 0
+reboot
+wait 500
+expect preset 11
+expect fish >2
+# 1.0's project: the pond whole, the sound Mill Pond
+tap LFO
+expect preset 12
+storev1
+reboot
+wait 500
+expect format 2
+expect preset 0
+expect same 1
+expect busy 50
+expect playing 1
+peakreset
+wait 20000
+expect peak_db_min -35
+# a long run at the loud end (Lily Night's shimmer and lead, by night), never clipping
+tap LFO
+tap LFO
+night
+wait 3000
+peakreset
+wait 600000
+expect peak_db_max -0.5
+expect peak_db_min -40
+# another firmware's data: a new pond, Mill Pond
+storeamb
+reboot
+wait 500
+expect preset 0
+expect day 1

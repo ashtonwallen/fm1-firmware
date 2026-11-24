@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "decayloops",
+  "name": "DECAY LOOPS",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Tape loops that fall apart as they play",
+  "description": "DECAY LOOPS turns the M-VAVE FM-1 into a tape looper whose loops slowly disintegrate, after William Basinski's Disintegration Loops. It writes a phrase of chords or a slow figure, records it onto tape and plays it over and over. Each pass the tape wears: the highs roll off, dropouts open and grow, the pitch wobbles and the hiss rises, until only fragments are left. Before a loop is gone a fresh phrase is recorded on another layer and fades in, so it plays without end. Keys add notes to the next loop. Fourteen tape stocks and moods; the screen shows turning reels and the tape wearing away.",
+  "tags": ["ambient", "generative", "experimental"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/decay-loops",
+  "screenshot": "docs/img/screen-tape.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, and on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

@@ -22,3 +22,21 @@
 [submodule "shortwave/base"]
 	path = shortwave/base
 	url = https://github.com/charlesvestal/fm1-base
+[submodule "decay-loops/base"]
+	path = decay-loops/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "lofi-radio/base"]
+	path = lofi-radio/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "night-drive/base"]
+	path = night-drive/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "minimal-machine/base"]
+	path = minimal-machine/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "gamelan/base"]
+	path = gamelan/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "patch-bay/base"]
+	path = patch-bay/base
+	url = https://github.com/charlesvestal/fm1-base

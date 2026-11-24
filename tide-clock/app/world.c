@@ -41,7 +41,8 @@ enum { AT_HOME, AT_GALLERY, AT_EDGE, AT_TOWER, AT_BEACH, AT_POST };
 static int world_par(int p) { return p != P_TUNE && p != P_MIDI; }
 static int discrete_par(int p)
 {
-    return p == P_ROOT || p == P_MODE || p == P_BOCT || p == P_PADTONE || p == P_BASSOCT || p == P_ETIME;
+    return p == P_ROOT || p == P_MODE || p == P_BOCT || p == P_PADTONE || p == P_BASSOCT || p == P_ETIME ||
+           p == P_TEXTURE || p == P_PLOCT || p == P_LDOCT;
 }
 
 static struct {
@@ -55,6 +56,7 @@ static struct {
     uint8_t want_save;                 /* something worth keeping happened */
     uint8_t new_event;                 /* a log entry since the UI last looked */
     uint8_t phase;                     /* the phase the key is from */
+    uint32_t quick_t;                  /* a new preset: the values go to it quickly until then */
 } w;
 
 /* ----------------------------------------------------------- the dice --- */
@@ -476,6 +478,71 @@ static const int8_t STORM_D[P_NPARAMS] = {[P_PULSE] = 40, [P_HITS] = 40, [P_BASS
                                           [P_BRIGHT] = -10, [P_ECHO] = 10, [P_SWING] = -20, [P_BELLS] = -15,
                                           [P_MOTION] = 30, [P_BTONE] = 25, [P_HATS] = 20, [P_GLIDE] = -15};
 
+/* PRESETS (1.1): a palette for the coast. The day's phases still set the music; a preset recolours them: the key
+ * moved, the modes a step brighter or darker (or pentatonic), the tempo scaled, the pad's colour, AMB-1 Drift 1.1's
+ * strings, lead, air and shimmer, and the space. Only the sound changes: the time, the weather, the boats, Abel and
+ * his log go on as they were. Harbour (0) is the coast as composed in 1.0. Saved with the settings. */
+#define PR_PENT 9                        /* mode: the pentatonic of the phase's mode (major or minor) */
+typedef struct {
+    const char *name;
+    int8_t key;                          /* semitones the key moves */
+    int8_t mode;                         /* the modes: +1 a step brighter, -1 darker, PR_PENT pentatonic, 0 as they are */
+    uint8_t tempo;                       /* percent of the phase's tempo */
+    int8_t pt;                           /* the pad's colour: -1 the phase's, 0 Rhodes, 1 Voices, 2 Strings */
+    int8_t tex;                          /* the air's texture (0 rain, 1 wind, 2 sea, 3 vinyl); its level is in d */
+    int8_t d[P_NPARAMS];                 /* added to the phase's values */
+} preset_t;
+static const preset_t PRESETS[NPRESETS] = {
+    {"Harbour", 0, 0, 100, -1, 0, {0}},
+    {"Fjord", -2, -1, 85, 2, 1, {[P_REVERB] = 12, [P_SIZE] = 5, [P_BRIGHT] = -10, [P_BELLS] = -15, [P_PULSE] = -15,
+                                 [P_LEAD] = 40, [P_LDTONE] = 35, [P_LDOCT] = -1, [P_TEXLVL] = 30, [P_TEXMOD] = 20,
+                                 [P_DRIFT] = 10}},
+    {"Tropical Atoll", 3, PR_PENT, 110, 0, -1, {[P_PLUCK] = 55, [P_PLDENS] = 20, [P_PLTONE] = 55, [P_BELLS] = 5,
+                                                [P_BRIGHT] = 15, [P_PULSE] = 15, [P_HATS] = 10, [P_SWING] = 30,
+                                                [P_REVERB] = -12, [P_SEA] = 8, [P_BTONE] = 15}},
+    {"Winter Coast", -1, -1, 80, 2, 1, {[P_TEXLVL] = 40, [P_TEXMOD] = 30, [P_BELLS] = -20, [P_BTONE] = 25,
+                                        [P_SHIMMER] = 35, [P_BRIGHT] = -15, [P_PULSE] = -30, [P_BOCT] = 1,
+                                        [P_REVERB] = 8}},
+    {"Misty Isles", 5, 0, 90, 1, 0, {[P_LEAD] = 35, [P_LDTONE] = -35, [P_PLUCK] = 30, [P_PLTONE] = -10,
+                                     [P_ECHO] = 15, [P_REVERB] = 10, [P_BRIGHT] = -10, [P_TEXLVL] = 18, [P_BELLS] = -10}},
+    {"Lighthouse Choir", 0, 0, 85, 1, -1, {[P_SHIMMER] = 50, [P_LEAD] = 30, [P_LDTONE] = 40, [P_BELLS] = -25,
+                                           [P_PULSE] = -40, [P_REVERB] = 15, [P_SIZE] = 5, [P_PAD] = 10}},
+    {"Sea Glass", 2, 1, 100, 0, -1, {[P_PLUCK] = 40, [P_PLTONE] = 40, [P_BTONE] = 30, [P_BOCT] = 1, [P_BELLS] = 5,
+                                     [P_LEAD] = 25, [P_LDTONE] = 50, [P_LDOCT] = 1, [P_ECHO] = 10, [P_PULSE] = -15}},
+    {"Gale Warning", -3, -1, 115, 1, 1, {[P_PULSE] = 25, [P_HITS] = 20, [P_BASS] = 15, [P_TEXLVL] = 45,
+                                         [P_TEXMOD] = 40, [P_EVOLVE] = 20, [P_MOTION] = 20, [P_BELLS] = -10,
+                                         [P_HATS] = 15, [P_SURF] = 15}},
+    {"Night Ferry", -4, -1, 95, 0, 3, {[P_BASS] = 12, [P_ECHO] = 15, [P_TEXLVL] = 25, [P_PULSE] = 10,
+                                       [P_SWING] = 25, [P_BRIGHT] = -8, [P_SEA] = -10, [P_LEAD] = 25, [P_LDTONE] = -40,
+                                       [P_LDOCT] = -1}},
+    {"Saltmarsh", 2, 0, 95, -1, 0, {[P_PLUCK] = 45, [P_PLTONE] = -5, [P_PLDENS] = 10, [P_TEXLVL] = 35,
+                                    [P_BELLS] = -10, [P_SEA] = -15, [P_PULSE] = -10}},
+    {"Long Light", 0, 1, 105, 2, -1, {[P_SHIMMER] = 30, [P_LEAD] = 30, [P_LDTONE] = 40, [P_LDOCT] = 1,
+                                      [P_BRIGHT] = 10, [P_BELLS] = 5, [P_PLUCK] = 20, [P_PLTONE] = 10}},
+    {"Chapel Bay", 0, 0, 80, 1, -1, {[P_REVERB] = 18, [P_SIZE] = 8, [P_BELLS] = 10, [P_BTONE] = 20, [P_PULSE] = -45,
+                                     [P_SHIMMER] = 25, [P_DRIFT] = 15}},
+    {"Kelp Forest", -5, -1, 85, 2, -1, {[P_BRIGHT] = -25, [P_ECHO] = 20, [P_REVERB] = 12, [P_BELLS] = -10,
+                                        [P_LEAD] = 35, [P_LDTONE] = 40, [P_LDOCT] = -1, [P_SWELL] = 10,
+                                        [P_PULSE] = -10, [P_SURF] = -10}},
+};
+static const char *preset_name(int i) { return PRESETS[(unsigned)i < (unsigned)NPRESETS ? i : 0].name; }
+
+static int mode_shift(int m, int s)      /* the modes, brightest first: Lydian, Ionian, Mixolydian, Dorian, Aeolian, Phrygian */
+{
+    static const uint8_t ORDER[6] = {MODE_LYDIAN, MODE_IONIAN, MODE_MIXOLYDIAN, MODE_DORIAN, MODE_AEOLIAN, MODE_PHRYGIAN};
+    int r;
+    if (m == MODE_PENT_MAJ)
+        m = MODE_IONIAN;
+    else if (m == MODE_PENT_MIN)
+        m = MODE_AEOLIAN;
+    for (r = 0; r < 6 && ORDER[r] != m; r++)
+        ;
+    if (s == PR_PENT)
+        return r <= 2 ? MODE_PENT_MAJ : MODE_PENT_MIN;
+    r -= s;
+    return ORDER[r < 0 ? 0 : r > 5 ? 5 : r];
+}
+
 static float smooth(float x) { return x * x * (3.0f - 2.0f * x); }
 
 static void targets(void)
@@ -484,6 +551,7 @@ static void targets(void)
     uint16_t pool;
     int32_t m = (int32_t)world_min(), k, p;
     float f, mood = ((float)proj.mood - 50.0f) * 0.1f, tide = world_tide();
+    const preset_t *pr = &PRESETS[proj.preset < NPRESETS ? proj.preset : 0];
     for (k = 0; k < NPH + 1 && !(m >= PH_MID[k] && m < PH_MID[k + 1]); k++)
         ;
     if (k > NPH)
@@ -498,11 +566,23 @@ static void targets(void)
         const en_param_t *pi = en_param_info(p);
         if (!world_par(p))
             continue;
-        if (discrete_par(p)) {
-            w.tgt[p] = ph[p];
+        if (discrete_par(p)) {                      /* the phase's, as the preset colours it */
+            int d = ph[p] + pr->d[p];
+            if (p == P_ROOT)
+                d = ((ph[p] + pr->key) % 12 + 12) % 12;
+            else if (p == P_MODE)
+                d = pr->mode ? mode_shift(ph[p], pr->mode) : ph[p];
+            else if (p == P_PADTONE && pr->pt >= 0)
+                d = pr->pt;
+            else if (p == P_TEXTURE && pr->tex >= 0)
+                d = pr->tex;
+            w.tgt[p] = (int16_t)(d < pi->lo ? pi->lo : d > pi->hi ? pi->hi : d);
             continue;
         }
         v = (float)a[p] + (float)(b[p] - a[p]) * f;
+        if (p == P_TEMPO)
+            v = v * (float)pr->tempo * 0.01f;
+        v += (float)pr->d[p];
         v += w.fog * (float)FOG_D[p] + w.wind * (float)WIND_D[p] + w.storm * (float)STORM_D[p];
         if (p == P_BRIGHT || p == P_BELLS)
             v += mood;
@@ -554,7 +634,7 @@ static void conduct(uint32_t now)
             continue;
         }
         if (d) {
-            int s = d / 40;
+            int s = d / ((int32_t)(w.quick_t - now) > 0 ? 6 : 40);
             engine_set(p, w.cur[p] + (s ? s : d > 0 ? 1 : -1));
         }
     }
@@ -566,6 +646,15 @@ static void conduct(uint32_t now)
         en_next();
         w.swap_t = now;
     }
+}
+
+/* another preset (PRESETS): the world goes on; the sound goes to it over a few seconds, the key at once */
+static void preset_set(int i)
+{
+    uint32_t now = plat_ms();
+    proj.preset = (uint8_t)(((i % NPRESETS) + NPRESETS) % NPRESETS);
+    w.quick_t = now + 8000u;
+    w.swap_t = now - 15000u;
 }
 
 /* --------------------------------------------------------------- entry --- */
