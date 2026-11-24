@@ -159,6 +159,16 @@ STATE = ROOT / "state.json"
 PRIVATE = ("backup", "favorite")
 
 
+# Who made each firmware: catalog "made" is "Claude" or "ChatGPT"; no "made" means downloaded from its author.
+MADE_ORDER = ("downloaded", "Claude", "ChatGPT")
+MADE_LABEL = {"downloaded": "Downloaded", "Claude": "Made by Claude", "ChatGPT": "Made by ChatGPT"}
+MADE_FG = {"downloaded": None, "Claude": "#e59a72", "ChatGPT": "#6cc8ad"}
+
+
+def made(fw):
+    return fw.get("made") if fw.get("made") in MADE_FG else "downloaded"
+
+
 def load_catalog():
     cat = json.loads(CATALOG.read_text(encoding="utf-8"))
     state = json.loads(STATE.read_text(encoding="utf-8")) if STATE.exists() else {}
@@ -308,9 +318,16 @@ def run_app(smoke=False):
 
     body = tk.Frame(root, bg=BG)
     body.pack(fill="both", expand=True, padx=16)
-    lst = tk.Listbox(body, bg=PANEL, fg=FG, selectbackground=ACC, selectforeground="#16161a", activestyle="none",
+    left = tk.Frame(body, bg=BG)
+    left.pack(side="left", fill="y")
+    lst = tk.Listbox(left, bg=PANEL, fg=FG, selectbackground=ACC, selectforeground="#16161a", activestyle="none",
                      borderwidth=0, highlightthickness=0, font=("Segoe UI", 11), width=30)
-    lst.pack(side="left", fill="y", pady=4)
+    lst.pack(side="top", fill="y", expand=True, pady=4)
+    legend = tk.Frame(left, bg=BG)
+    legend.pack(side="top", fill="x")
+    for who in MADE_ORDER:
+        tk.Label(legend, text="● " + MADE_LABEL[who], bg=BG, fg=MADE_FG[who] or FG,
+                 font=("Segoe UI", 9)).pack(side="left", padx=(0, 10))
     right = tk.Frame(body, bg=BG)
     right.pack(side="left", fill="both", expand=True, padx=(14, 0))
     title = tk.Label(right, text="", bg=BG, fg=FG, font=("Segoe UI Semibold", 14), anchor="w")
@@ -345,13 +362,15 @@ def run_app(smoke=False):
 
     def items():
         fws = cat["data"]["firmwares"]
-        return sorted(fws, key=lambda f: (not f.get("favorite"), f["name"].lower()))
+        return sorted(fws, key=lambda f: (not f.get("favorite"), MADE_ORDER.index(made(f)), f["name"].lower()))
 
     def fill_list():
         sel = lst.curselection()
         lst.delete(0, "end")
-        for fw in items():
+        for i, fw in enumerate(items()):
             lst.insert("end", f"{'★ ' if fw.get('favorite') else '   '}{fw['name']}  {fw['version']}")
+            if MADE_FG[made(fw)]:
+                lst.itemconfig(i, fg=MADE_FG[made(fw)])
         lst.selection_set(sel[0] if sel else 0)
         show()
 
@@ -364,7 +383,7 @@ def run_app(smoke=False):
         if not fw:
             return
         title.config(text=f"{fw['name']}  {fw['version']}")
-        sub.config(text=fw.get("kind", ""))
+        sub.config(text=f"{fw.get('kind', '')}   ·   {MADE_LABEL[made(fw)]}")
         detail.config(state="normal")
         detail.delete("1.0", "end")
         detail.insert("end", fw["about"] + "\n\nHow to use it\n" + fw["how"]
