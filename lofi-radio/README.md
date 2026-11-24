@@ -6,18 +6,10 @@ Endless lo-fi hip-hop radio for the M-VAVE FM-1. Plays by itself from power-on.
 
 ## What it plays
 
-Generated tracks, one after another. Each has its own key, tempo (70-90 BPM), groove and title. Forty progressions
-of jazzy 7th to 13th chords on a dusty Rhodes, Wurli or felt piano. Changes drift as a track goes: tritone subs,
-altered dominants, chords borrowed from the parallel key, passing chords. Mostly in the B sections, never loud
-about it. Swung boom-bap drums with fills at section ends, half-time breakdowns, now and then a bar of just kick
-and hat. Round bass. Muted lead or vibraphone melody in question-and-answer phrases that come back changed later
-in the track. Vinyl crackle, tape wobble, a low-passed warmth over all of it. Every few minutes the track fades,
-the needle runs out, and the next record starts.
-
-Each track brings one or two guests from its style's set: nylon guitar, muted trumpet, sine sub, chopped vocal
-pad. They take a part's place for a while, never pile on. Some styles swap in brushes, a rim click or a shaker.
-
-Prefer 1.0's engine? Its release stays up; flash it back any time.
+Generated tracks, one after another. Each has its own key, tempo (70-90 BPM), groove and title. Jazzy 7th and 9th
+chords (ii-V-I and friends) on a dusty Rhodes, Wurli or felt piano. Swung boom-bap drums, a round bass, now and
+then a muted lead or vibraphone melody. Vinyl crackle, tape wobble, a low-passed warmth over all of it. Every few
+minutes the track fades, the needle runs out, and the next record starts.
 
 Screen shows a turntable: spinning record with a new label colour each track, tonearm, VU meter, track name, time
 and current chord.

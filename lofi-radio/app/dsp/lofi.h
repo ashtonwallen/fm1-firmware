@@ -6,15 +6,10 @@
  * then a short melody. A track runs a few minutes (intro, phrases, a breakdown, an outro), then the needle runs
  * out, a few seconds of crackle, and the next one starts in a new key.
  *
- *   KEYS     FM electric piano (Rhodes, Wurli or a felt piano by style), rolled chords, voice-led, a soft autopan;
- *            the changes vary as the track goes (substitutions, borrowed chords, passing chords; B sections most)
- *   DRUMS    synthesized: a soft sine kick, a snare or a side-stick, closed and open hats; brushes, a rim click, a
- *            shaker by style; swung, laid back; fills where sections end, half-time breakdowns, thinner bars
+ *   KEYS     FM electric piano (Rhodes, Wurli or a felt piano by style), rolled chords, voice-led, a soft autopan
+ *   DRUMS    synthesized: a soft sine kick, a snare or a side-stick, closed and open hats; swung, laid back
  *   BASS     a round sine with a little second harmonic, roots, fifths and approach notes, a short glide
- *   MELODY   a muted lead or a vibraphone, a two-bar motif in question-and-answer phrases, developed later in the
- *            track, each phrase ending on the chord; through a dotted echo
- *   GUESTS   one or two a track, from the style's set, in a part's place: a nylon guitar, a muted trumpet, a sine
- *            sub, chopped formant vocal
+ *   MELODY   a muted lead or a vibraphone, a two-bar motif that follows the chords, through a dotted echo
  *   DUST     vinyl hiss and crackle, a scratch once a turn, tape wow and flutter (a modulated delay)
  *   ROOM     a small four-line room reverb; the whole bus low-passed, gently saturated and levelled
  *
@@ -88,17 +83,3 @@ void en_title(uint32_t seed, char *buf);       /* a track's title (lower case, 2
 uint8_t en_label_colour(uint32_t seed);        /* its record label's colour: 0..11 */
 const char *en_chord_name(int root, int q, char *buf);   /* "Dm9", "G13", "Cmaj7" (12 bytes) */
 uint32_t en_track_rand(uint32_t base, uint32_t no);      /* track no's seed from the radio's */
-
-#ifdef EN_HOST                                 /* the engine tests' view: events fired by type, each part's level */
-enum { EN_PART_KEYS, EN_PART_BASS, EN_PART_SUB, EN_PART_DRUMS, EN_PART_KIT, EN_PART_GTR, EN_PART_VOX, EN_PART_MEL,
-       EN_PART_TPT, EN_NPART };
-enum { EN_EV_SUB = 8, EN_EV_BRUSH, EN_EV_CLICK, EN_EV_SHAKE, EN_EV_GTR, EN_EV_VOX };
-typedef struct {
-    double sum2;                               /* the part's energy (mean of the two sides), where it sounded */
-    uint32_t n;                                /* frames it sounded in */
-    float peak;
-} en_part_t;
-extern uint32_t en_fired[16];
-extern en_part_t en_part[EN_NPART];
-extern int en_meas;                            /* 1: measure the parts (slower) */
-#endif

@@ -877,13 +877,6 @@ static void draw_side(void)                      /* the right: the track, its ti
         e = cat_s(e, "  in ");
         e = cat_s(e, EN_NOTE_NAME[en_key % 12]);
         cat_s(e, en_minor ? "m" : "");
-        if (text_w(&FONT_XS, t) > 78) {         /* a long chord ("C#maj#11"): the key without "in" */
-            e = cat_s(cat_s(t, c), " / ");
-            e = cat_s(e, EN_NOTE_NAME[en_key % 12]);
-            cat_s(e, en_minor ? "m" : "");
-        }
-        if (text_w(&FONT_XS, t) > 78)           /* still too long: the chord alone */
-            cat_s(t, c);
         cv_text(x, 78, &FONT_XS, t, K_DIM);
     }
     draw_vu();
@@ -918,7 +911,7 @@ static int help_lines(int b, const char *l[HELP_LINES])
     case B_HOME: L("THE RADIO"); L("SWING, DUST, TEMPO, MOOD"); break;
     case B_ENV: L("THE MIX"); L("KEYS, DRUMS, BASS, MELODY"); break;
     case B_GLO: L("THE ROOM"); L("TONE, RAIN, LENGTH, LIGHTS"); break;
-    case B_EDIT: L("THE NEXT TRACK:"); L("A NEW KEY AND GROOVE,"); L("NEW GUEST PLAYERS"); break;
+    case B_EDIT: L("THE NEXT TRACK:"); L("A NEW KEY AND GROOVE"); break;
     case B_REC: L("REPEAT: THIS TRACK"); L(" PLAYS ON"); L("AGAIN: ON TO THE NEXT"); break;
     case B_OCTDN: L("THE KEYS AN OCTAVE DOWN"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
     case B_OCTUP: L("THE KEYS AN OCTAVE UP"); L("WITH OCT-, 5 S: UPDATE MODE"); break;

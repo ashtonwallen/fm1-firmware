@@ -7,8 +7,7 @@
  * Checks: playing view style dirty track tracks beats phase section repeat bpm key minor oct leds trackms tracklen
  * needle vu parN slotNpM savedtrack (fm1-base's own: store_writes peak_db_max peak_db_min ...). Commands: battery N
  * (plat_battery as N, "battery off" the simulator's own); storeamb (an AMB-1 Drift project in the store);
- * storejunk (this firmware's magic, a wrong format); storev1 (a LOFI RADIO 1.0 project: format 1, Late Bus, swing 60,
- * mood 90, Length 3, lights 2, octave 3, track 7). */
+ * storejunk (this firmware's magic, a wrong format). */
 
 int app_expect(const char *what, int *got)
 {
@@ -82,29 +81,6 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         memcpy(o, &m, 4);
         memcpy(o + 4, &f, 4);
         plat_store_save(OBJ_PROJ, o, sizeof o);
-        return 1;
-    }
-    if (!strcmp(cmd, "storev1")) {                /* 1.0's project as it saved it (the same layout, format 1) */
-        static project_t o;
-        int i;
-        memset(&o, 0, sizeof o);
-        o.magic = PROJ_MAGIC;
-        o.format = 1u;
-        for (i = 0; i < NSTYLES; i++)
-            en_style_recipe(i, o.slot[i]);
-        o.style = 3;
-        en_style_recipe(3, o.par);
-        o.par[P_SWING] = 60;
-        o.par[P_MOOD] = 90;
-        o.par[P_LENGTH] = 3;
-        o.slot[3][P_SWING] = 60;
-        o.slot[3][P_MOOD] = 90;
-        o.slot[0][P_DUST] = 77;
-        o.leds = 2;
-        o.oct = 3;
-        o.track_no = 7;
-        o.seed = 0x12345678u;
-        plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;
     }
     if (!strcmp(cmd, "storejunk")) {              /* this firmware's magic, the size right, a format it never wrote */

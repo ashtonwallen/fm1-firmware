@@ -2,8 +2,8 @@
  * Copyright (C) 2026 Charles Vestal
  * LOFI RADIO: ashtonwallen, 2026 */
 /* LOFI RADIO's project: one flash object (OBJ_PROJ): each style's settings as it was left, Length, the lights, and
- * where the radio is (the last track and the seed of those to come). Format 1 (LOFI RADIO 1.0) is the same layout
- * and is carried over as it is; a project of another format or another firmware, or none, gives the defaults. Part of the unity build, after app.h. */
+ * where the radio is (the last track and the seed of those to come). A project of another format or another
+ * firmware, or none, gives the defaults. Part of the unity build, after app.h. */
 project_t proj;
 
 static void take(int i)                          /* a style's settings into play (Length is the player's) */
@@ -64,8 +64,6 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
-    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u)
-        proj.format = PROJ_FORMAT;               /* 1.0's: the same layout, every value kept (saved as 2 next time) */
     if (n == (int)sizeof proj && project_valid())
         return 0;
     project_defaults();
