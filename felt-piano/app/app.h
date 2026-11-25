@@ -20,7 +20,8 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x31544C46u           /* "FLT1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 2u                   /* 2: thirty styles (1.1); 1: 1.0's fourteen, still read */
+#define PROJ_FORMAT 3u                   /* 3: thirty-three styles (1.2); 2 (1.1's thirty) and 1 (1.0's fourteen)
+                                         * still read */
 #define NSTYLES EN_NSTYLES
 
 typedef struct {
@@ -35,14 +36,17 @@ typedef struct {
     uint32_t seed;                       /* the player's seed (the pieces to come) */
     uint8_t rsv[16];                     /* room to grow */
 } project_t;
-typedef struct {                         /* format 1 (1.0): the same, with fourteen slots */
-    uint32_t magic, format;
-    int16_t par[P_NPARAMS];
-    int16_t slot[EN_NSTYLES_V1][P_NSTYLE];
-    uint8_t style, leds, oct, rsv0;
-    uint32_t track_no, seed;
-    uint8_t rsv[16];
-} project_v1_t;
+#define PROJ_OLD(NAME, N)                                                                                      \
+    typedef struct {                                                                                               \
+        uint32_t magic, format;                                                                                    \
+        int16_t par[P_NPARAMS];                                                                                    \
+        int16_t slot[N][P_NSTYLE];                                                                                 \
+        uint8_t style, leds, oct, rsv0;                                                                            \
+        uint32_t track_no, seed;                                                                                   \
+        uint8_t rsv[16];                                                                                           \
+    } NAME
+PROJ_OLD(project_v1_t, EN_NSTYLES_V1);   /* format 1 (1.0): the same, with fourteen slots */
+PROJ_OLD(project_v2_t, EN_NSTYLES_V2);   /* format 2 (1.1): thirty */
 typedef char project_fits_its_store[sizeof(project_t) <= 3840 ? 1 : -1];   /* (a saved object: 3840 bytes at most) */
 
 extern project_t proj;

@@ -6,9 +6,9 @@ Endless generated solo piano for the M-VAVE FM-1. Plays by itself from power-on.
 
 ## What it plays
 
-Pieces, one after another, each with its own key, mode, tempo and title. Eleven idioms, set by preset:
+Pieces, one after another, each with its own key, mode, tempo and title. Twelve idioms, set by preset:
 Gymnopedie-like waltz, Airport-style loops, felt ostinato, nocturne, sparse modal playing, Glass-style arpeggios,
-four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby, slow 12/8 blues.
+four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby, slow 12/8 blues, minor blues.
 
 Modelled felt piano: soft hammers, dampers, pedal, sympathetic strings, key noise, small room. Screen: scrolling
 piano roll, each note a fading line of light.
@@ -38,7 +38,9 @@ Teeth, Row Q, Seat 9, Blue Pencil, Cold Radiator, Iron Pier, Coat Check.
 
 New in 1.1: Laundromat, Bicycle Spokes, Revolving Door (arpeggios); Pew Cushion, Sexton's Keys (hymn); Tip Jar,
 Brass Spittoon, Sleeve Garter (stride); Sunken Steeple, Flaxen Braid, Linen Sails (planing); Crib Mobile, Rocking
-Horse (lullaby); Wet Ring, Mop Bucket, Bent Nickel (blues). A 1.0 save carries over.
+Horse (lullaby); Wet Ring, Mop Bucket, Bent Nickel (blues).
+
+New in 1.2: Pawn Ticket, Wilted Corsage, Spare Key (minor blues). Saves from 1.0 and 1.1 carry over.
 
 ## Credits
 

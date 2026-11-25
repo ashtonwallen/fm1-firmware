@@ -252,7 +252,8 @@ static int dump(int st, uint32_t seed, int bars)
 }
 
 /* the demo clips: 20 s of every style from FIRST (its number in the name), and 00-listen.wav: three minutes of the
- * default style from power-on, or (FIRST > 0: a release's new styles) half a minute of each new idiom in turn */
+ * default style from power-on, or (FIRST > 0: a release's new styles) half a minute of each new idiom in turn (with
+ * fewer than three new idioms, a share of the three minutes for each new style) */
 static int demos(const char *dir, int first)
 {
     char path[512], name[64];
@@ -290,18 +291,22 @@ static int demos(const char *dir, int first)
         run(180.0, &a);
         wav_close();
     } else {
-        int id, done = 0;
+        int id, done = 0, nid = 0, each;
+        for (i = first; i < EN_NSTYLES; i++)     /* the new idioms; fewer than three: every new style */
+            nid += !(done >> en_style_idiom(i) & 1), done |= 1 << en_style_idiom(i);
+        each = nid < 3 ? 180 / (EN_NSTYLES - first) : 30;
+        done = 0;
         wav_open(path);
         for (id = 0; id < ID_N; id++)
             for (i = first; i < EN_NSTYLES; i++)
-                if (en_style_idiom(i) == id && !(done >> id & 1)) {
+                if (en_style_idiom(i) == id && (nid < 3 || !(done >> id & 1))) {
                     done |= 1 << id;
                     en_init();
                     style(i);
                     en_track(0, 0xFE170000u + (uint32_t)i * 7919u);
                     en_play(1);
                     master = 4096;
-                    run(27.0, &a);
+                    run((double)each - 3.0, &a);
                     for (k = 0; k < 30; k++) {   /* three seconds' fade */
                         master = 4096 * (29 - k) / 30;
                         run(0.1, &a);

@@ -7,7 +7,7 @@
  * Checks: playing view style dirty track tracks notes phase idiom repeat bpm key mode pedal voices oct leds trackms
  * tracklen vu parN slotNpM savedtrack (fm1-base's own: store_writes peak_db_max peak_db_min ...). Commands: battery N
  * (plat_battery as N, "battery off" the simulator's own); storeamb (an AMB-1 Drift project in the store);
- * storejunk (this firmware's magic, a wrong format); storev1 (a project 1.0 saved). */
+ * storejunk (this firmware's magic, a wrong format); storev1, storev2 (a project 1.0, 1.1 saved). */
 
 int app_expect(const char *what, int *got)
 {
@@ -101,6 +101,26 @@ int app_host_cmd(const char *cmd, const char *a, const char *b, const char *c, c
         o.leds = 2;
         o.oct = 4;
         o.track_no = 40u;
+        o.seed = 0x46454C54u;
+        plat_store_save(OBJ_PROJ, &o, sizeof o);
+        return 1;
+    }
+    if (!strcmp(cmd, "storev2")) {                /* 1.1's project (format 2, thirty styles): style 29, its slot's
+                                                  * first knob 61, Length 2, octave 1, lights 0, piece 70 */
+        static project_v2_t o;
+        int i;
+        memset(&o, 0, sizeof o);
+        o.magic = PROJ_MAGIC;
+        o.format = 2u;
+        for (i = 0; i < EN_NSTYLES_V2; i++)
+            en_style_recipe(i, o.slot[i]);
+        o.slot[29][0] = 61;
+        memcpy(o.par, o.slot[29], sizeof o.slot[29]);
+        o.par[P_LENGTH] = 2;
+        o.style = 29;
+        o.leds = 0;
+        o.oct = 1;
+        o.track_no = 70u;
         o.seed = 0x46454C54u;
         plat_store_save(OBJ_PROJ, &o, sizeof o);
         return 1;

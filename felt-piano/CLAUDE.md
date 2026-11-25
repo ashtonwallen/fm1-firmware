@@ -15,8 +15,9 @@ From Git Bash: `MSYS_NO_PATHCONV=1 wsl.exe -d Ubuntu -- bash -lc 'cd /mnt/d/Proj
   then `/tmp/ft` (checks, levels, cost per style), `/tmp/ft dump STYLE SEED BARS` (what a piece plays, bar by bar),
   `/tmp/ft demos DIR [FIRST]` (one 20 s WAV per style from FIRST plus a 3 min listen: from power-on, or with FIRST
   half a minute of each new idiom), `/tmp/ft chorale` (the hymn's part-writing, every chord, with what it finds)
-- Old styles must not change: `tests/host/same_test.c` fingerprints what 1.0's fourteen styles render; build it
-  against `git show HEAD:felt-piano/app/dsp/felt.c` (and felt.h) and the working engine, and compare the output
+- Old styles must not change: `tests/host/same_test.c` fingerprints what the last release's styles render (all of
+  the engine it is built with, or `EN_NSTYLES_V2` of the current one); build it against
+  `git show HEAD:felt-piano/app/dsp/felt.c` (and felt.h) and the working engine, and compare the output
 - Engine cost: time `en_render` on the host against AMB-1 Drift's busiest piece (Low Tide, ~168 ns/frame). Busiest
   FELT PIANO style is about the same; sixteen voices held with the pedal is the worst case (~180 ns/frame)
 
@@ -34,7 +35,7 @@ Keep LF line endings. No doubles or libm in the engine (fastmath.h). No 64-bit d
     (1.0); `arp_bar` (Glass-style cycles, `ACYC`), `hymn_bar` (tunes `HPHR` as soprano and bass, alto and tenor found
     per phrase by `hy_solve`, a cheapest path through `hy_pen`), `stride_bar` (`S_A`/`S_B` sections), `plane_bar`
     (pentatonic, fifths, sevenths or whole-tone chords over pedals), `lull_bar` (6/8), `blues_bar` (12/8, `BFORM`,
-    `LICK`) (1.1). Compound time: `en_compound`, the beat a dotted quarter, `en_meter` 2 (6/8) or 4 (12/8).
+    `LICK`) (1.1); `mblues_bar` (minor blues, 12/8: `MBFORM`, `MLICK`, its own left hands `mb_lh`) (1.2). Compound time: `en_compound`, the beat a dotted quarter, `en_meter` 2 (6/8) or 4 (12/8).
     Melody picker `mel_pick` (steps, leap recovery, chord tones on strong beats, contour, kept themes); piece flow
     intro/body/end/gap; titles `en_title`.
   - Styles: `STYLES` (ten settings, idiom, variant, register, modes). Names follow `.claude-briefs/naming-rule.md`
@@ -46,8 +47,8 @@ Keep LF line endings. No doubles or libm in the engine (fastmath.h). No 64-bit d
 - UI: `app/ui.c`. Pages Piece/Touch/Setup, piano roll (`draw_roll`, `draw_top`), header with PED and REPEAT pills,
   help cards `help_lines`, autosave (knobs rested 10 s, settings at most every 5 min, piece position at most hourly,
   only while resting or at a piece's close or gap), screen reader `speak`.
-- Project: `app/project.c` (format 2, magic "FLT1"; format 1, 1.0's fourteen slots, is carried over); anything
-  else in the store gives the defaults.
+- Project: `app/project.c` (format 3, magic "FLT1"; formats 1 and 2, 1.0's fourteen and 1.1's thirty slots, are
+  carried over); anything else in the store gives the defaults.
 - Host checks/commands: `app/host.c`; scenarios in `tests/scenarios/`; engine tests `tests/host/felt_test.c`.
 - Words for the screen reader: `app/words.tsv` (the url line is a placeholder; nothing is published yet).
 - USB name "FELT PIANO FM-1" in `app/fm1.toml`: must keep "FM-1" so M-Flasher finds the unit.

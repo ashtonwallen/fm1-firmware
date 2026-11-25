@@ -64,17 +64,18 @@ const char *en_mode_name(int m) { return MODE_NAME[(unsigned)m < M_NM ? m : 0]; 
 /* the mode's colour note (Dorian's sixth, Lydian's fourth): the improviser leans on it */
 static const int8_t MODE_CHAR[M_NM] = {-1, 9, 6, -1, 10, -1};
 static const char *const IDIOM_NAME[ID_N] = {"Gymnopedie", "Airport", "Ostinato", "Nocturne", "Modal",
-                                             "Minimalist", "Chorale", "Stride", "Planing", "Lullaby", "Blues"};
+                                             "Minimalist", "Chorale", "Stride", "Planing", "Lullaby", "Blues",
+                                             "Minor Blues"};
 const char *en_idiom_name(int id) { return IDIOM_NAME[(unsigned)id < ID_N ? id : 0]; }
 
 /* chord types: semitones above the root */
 enum { T_MAJ, T_MIN, T_MAJ7, T_M7, T_DOM7, T_ADD9, T_MADD9, T_MAJ9, T_M9, T_DOM9, T_SUS2, T_6, T_M7B5, T_DIM7, T_M6, T_DIM,
-       T_N };
-static const uint8_t CT_N[T_N] = {3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 3, 4, 4, 4, 4, 3};
+       T_7B9, T_N };
+static const uint8_t CT_N[T_N] = {3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 3, 4, 4, 4, 4, 3, 5};
 static const int8_t CT_IV[T_N][5] = {
     {0, 4, 7}, {0, 3, 7}, {0, 4, 7, 11}, {0, 3, 7, 10}, {0, 4, 7, 10}, {0, 4, 7, 14}, {0, 3, 7, 14},
     {0, 4, 7, 11, 14}, {0, 3, 7, 10, 14}, {0, 4, 7, 10, 14}, {0, 2, 7}, {0, 4, 7, 9}, {0, 3, 6, 10}, {0, 3, 6, 9}, {0, 3, 7, 9},
-    {0, 3, 6},
+    {0, 3, 6}, {0, 4, 7, 10, 13},
 };
 typedef struct {
     int8_t root;                                 /* semitones above the tonic */
@@ -128,6 +129,9 @@ static const style_t STYLES[EN_NSTYLES] = {
     {"Wet Ring",       {46, 35, 50, 45, 45, 60, 40, 45, 20, 50}, ID_BLUES, 2, 0, MB(M_BLU)},
     {"Mop Bucket",     {52, 50, 45, 40, 30, 55, 35, 50, 30, 55}, ID_BLUES, 0, 0, MB(M_BLU)},
     {"Bent Nickel",    {58, 55, 40, 35, 25, 50, 30, 45, 10, 60}, ID_BLUES, 1, 0, MB(M_BLU)},
+    {"Pawn Ticket",    {50, 45, 50, 45, 40, 55, 45, 45, 20, 55}, ID_MBLUES, 0, 0, MB(M_AEO)},
+    {"Wilted Corsage", {44, 30, 55, 50, 50, 60, 50, 40, 30, 50}, ID_MBLUES, 1, 0, MB(M_AEO)},
+    {"Spare Key",      {54, 50, 40, 40, 30, 50, 35, 50, 10, 60}, ID_MBLUES, 2, 0, MB(M_AEO)},
 };
 static const style_t *sty(int i) { return &STYLES[(i % EN_NSTYLES + EN_NSTYLES) % EN_NSTYLES]; }
 const char *en_style_name(int i) { return sty(i)->name; }
@@ -453,6 +457,33 @@ static const lick_t LICK[] = {
 /* the calls (lines one and two) and the answers that come home (line three) */
 static const uint8_t LICK_CALL[] = {0, 1, 3, 4, 5, 7, 8}, LICK_HOME[] = {2, 6, 0, 7};
 
+/* Minor blues (12/8): the twelve bars (i, iv, bVI7 to V7b9; a turnaround's two chords from the bar's half), and the
+ * right hand's licks from the minor blues scale (1 b3 4 b5 5 b7), as LICK's */
+#define MB_I {0, T_M7}
+#define MB_IV {5, T_M7}
+#define MB_VI {8, T_DOM7}
+#define MB_V {7, T_7B9}
+static const bform_t MBFORM[] = {
+    {{{MB_I, NX}, {MB_I, NX}, {MB_I, NX}, {MB_I, NX}, {MB_IV, NX}, {MB_IV, NX}, {MB_I, NX}, {MB_I, NX}, {MB_VI, NX},
+      {MB_V, NX}, {MB_I, NX}, {MB_I, MB_V}}},
+    {{{MB_I, NX}, {MB_IV, NX}, {MB_I, NX}, {MB_I, NX}, {MB_IV, NX}, {MB_IV, NX}, {MB_I, NX}, {MB_I, NX}, {MB_VI, NX},
+      {MB_V, NX}, {MB_I, MB_VI}, {{2, T_M7B5}, MB_V}}},
+    {{{MB_I, NX}, {MB_I, NX}, {MB_I, NX}, {MB_I, NX}, {MB_IV, NX}, {MB_IV, NX}, {MB_I, NX}, {MB_I, NX}, {MB_VI, NX},
+      {MB_V, NX}, {MB_I, MB_IV}, {MB_I, MB_V}}},
+};
+static const lick_t MLICK[] = {
+    {5, {0, 8, 12, 20, 24}, {3, 0, -2, -5, 0}, {8, 4, 8, 4, 20}, {1, 0, 0, 0, 0}},          /* the third bent, home */
+    {6, {0, 8, 12, 16, 20, 24}, {12, 10, 7, 6, 5, 3}, {8, 4, 4, 4, 4, 20}, {0, 0, 0, 0, 0, 1}},   /* a fall */
+    {5, {0, 4, 8, 12, 24}, {7, 6, 5, 3, 0}, {4, 4, 4, 12, 22}, {0}},                         /* home */
+    {4, {0, 4, 8, 12}, {-5, -2, 0, 3}, {4, 4, 4, 22}, {0, 0, 0, 1}},                         /* up from below */
+    {5, {0, 12, 16, 20, 24}, {7, 7, 5, 3, 0}, {8, 4, 4, 4, 20}, {2, 0, 0, 0, 0}},            /* a double stop */
+    {2, {0, 24}, {3, 0}, {22, 20}, {1, 0}},                                                  /* two words */
+    {7, {0, 4, 8, 12, 20, 24, 32}, {0, -2, 0, 3, 0, -2, -5}, {4, 4, 4, 8, 4, 8, 14}, {0}},   /* low answer */
+    {6, {0, 4, 8, 12, 24, 32}, {10, 10, 10, 12, 10, 7}, {4, 4, 4, 12, 8, 14}, {0}},          /* the seventh, insisting */
+    {4, {12, 20, 24, 32}, {5, 6, 7, 3}, {8, 4, 8, 14}, {0, 0, 0, 1}},                        /* a late start */
+};
+static const uint8_t MLICK_CALL[] = {0, 1, 3, 4, 7, 8, 5}, MLICK_HOME[] = {2, 6, 0};
+
 /* -------------------------------------------------------------- titles --- */
 static const char *const T_ADJ[] = {
     "quiet", "slow", "small", "pale", "distant", "rented", "soft", "grey", "blue", "still", "winter", "paper", "early",
@@ -554,6 +585,16 @@ void en_title(uint32_t seed, int idiom, char *b)
             put_s(put_s(b, n), " blues");
         else
             put_s(put_s(put_s(b, "low down "), n), " blues");
+        break;
+    case ID_MBLUES:
+        if (f == 0)
+            put_s(put_s(b, n), " gone cold");
+        else if (f == 1)
+            put_s(put_s(b, "minor blues for "), n);
+        else if (f == 2)
+            put_s(put_s(put_s(put_s(b, "goodbye, "), a), " "), n);
+        else
+            put_s(put_s(put_s(put_s(b, a), " "), n), ", minor");
         break;
     default:
         if (f == 0)
@@ -2578,6 +2619,162 @@ static void blues_bar(int b)
     }
 }
 
+/* Minor blues: the left hand over a chord for so many beats from t0: rolling eighths (var 0), a held root with the
+ * seventh and tenth (1), or the root and fifth with the third and seventh stabbed before beats three and one (2) */
+static void mb_lh(ch_t c, float t0, int beats, float x, int last)
+{
+    int r = bass_note(c, 36), i, third = CT_IV[c.t][1], sev = CT_N[c.t] >= 4 ? CT_IV[c.t][3] : 10, pcs[2], sh[2];
+    float v = loud(x);
+    chord_at(t0, c);
+    ped_change(t0, last);
+    pcs[0] = (en_key + c.root + third) % 12;
+    pcs[1] = (en_key + c.root + sev) % 12;
+    voice_lead(pcs, 2, 52, 64, sh);
+    switch (pc.var) {
+    case 0:
+        for (i = 0; i < beats; i++) {            /* up and back: 1 5 8, 10 8 5 */
+            static const int8_t UP[3] = {0, 7, 12};
+            float tb = t0 + 12.0f * (float)i;
+            int up = !(i & 1), k;
+            for (k = 0; k < 3; k++) {
+                int n = up ? r + UP[k] : k == 0 ? r + 12 + third : k == 1 ? r + 12 : r + 7;
+                note_at(tb + 4.0f * (float)k, n, v * (up && k == 0 ? 0.5f : 0.34f), up && k == 0 ? 11.0f : 6.0f,
+                        up && k == 0 ? R_BASS : R_ARP, hum(4.0f));
+            }
+        }
+        break;
+    case 1:
+        note_at(t0, r, v * 0.52f, 12.0f * (float)beats, R_BASS, hum(4.0f));
+        note_at(t0 + 0.8f, r + sev, v * 0.32f, 12.0f * (float)beats - 1.0f, R_CHORD, hum(3.0f));
+        note_at(t0 + 1.6f, r + 12 + third, v * 0.32f, 12.0f * (float)beats - 2.0f, R_CHORD, hum(3.0f));
+        if (beats == 4)
+            note_at(t0 + 24.0f, r + 7, v * 0.3f, 22.0f, R_BASS, hum(4.0f));
+        break;
+    default:
+        for (i = 0; i < beats; i += 2) {
+            float tb = t0 + 12.0f * (float)i;
+            note_at(tb, i ? r + 7 - (r + 7 > 50 ? 12 : 0) : r, v * 0.5f, beats > 1 ? 18.0f : 11.0f, R_BASS, hum(4.0f));
+            if (beats - i < 2)                   /* (a beat alone: no stab into the next chord) */
+                break;
+            note_at(tb + 20.0f, sh[0], v * 0.3f, 3.5f, R_CHORD, hum(3.0f));
+            note_at(tb + 20.0f, sh[1], v * 0.3f, 3.5f, R_CHORD, hum(3.0f));
+        }
+        break;
+    }
+}
+/* a short answer that isn't the call again */
+static int mb_tail(void)
+{
+    return pc.bl_la == 5 ? 3 : pc.bl_la == 3 ? 5 : tirand(2) ? 5 : 3;
+}
+/* a bar of the minor blues: as blues_bar; the close a line falling from the third over i, bVI7, V7b9, then a
+ * rolled i6/9 */
+static void mblues_bar(int b)
+{
+    const bform_t *F = &MBFORM[pc.bl_form];
+    int body = b - pc.intro, last = b == pc.nbars - 1, coda = b >= pc.coda, bar12, chorus = 0, i, two, T = pc.bl_T;
+    float x, rit;
+    ch_t c0, c1;
+    if (b < pc.intro)
+        bar12 = 10 + b;
+    else if (coda)
+        bar12 = 10 + (b - pc.coda);
+    else
+        chorus = body / 12, bar12 = body % 12;
+    c0 = F->c[bar12][0];
+    c1 = F->c[bar12][1];
+    if (coda) {
+        c0 = (ch_t){0, T_M9};
+        c1 = (ch_t)MB_VI;
+    }
+    two = c1.root != 99;
+    pc.ch[0] = c0;
+    pc.at2 = two ? 24 : -1;
+    if (two)
+        pc.ch[1] = c1;
+    bar_spt = pc.spt / bar_tempo(bar12 & 3, 4, &rit);
+    if (coda)
+        rit = last ? 0.45f + 0.3f * pf(P_RUBATO) : 0.25f;
+    bar_rit = rit;
+    {
+        static const float CX[5] = {0.48f, 0.6f, 0.7f, 0.54f, 0.64f};
+        float lx = bar12 >= 8 ? 1.06f : bar12 >= 4 ? 1.0f : 0.94f;
+        x = b < pc.intro || coda ? 0.42f : (chorus == pc.bl_nch - 1 && pc.bl_nch > 1 ? 0.46f : CX[chorus % 5]) * lx;
+    }
+    if (bar12 == 0 && b >= pc.intro) {           /* a chorus: its call and its answer */
+        pc.bl_la = pc.bl_prev ? pc.bl_prev - 1 : MLICK_CALL[tirand(NA(MLICK_CALL))];
+        pc.bl_prev = 0;
+        do
+            pc.bl_lb = MLICK_HOME[tirand(NA(MLICK_HOME))];
+        while (pc.bl_lb == pc.bl_la);
+    }
+    if (last) {                                  /* the end: i6/9 rolled, the tonic on top, held */
+        ch_t c = {0, T_M6};
+        int r1 = bass_note(c, 36), t3 = in_rng((en_key + 3) % 12, 57);
+        chord_at(0.0f, c);
+        ped_change(0.0f, 1);
+        note_at(0.0f, r1, loud(0.42f) * 0.55f, 84.0f, R_BASS, hum(4.0f));
+        note_at(1.5f, r1 + 7, loud(0.42f) * 0.38f, 84.0f, R_CHORD, hum(3.0f));
+        note_at(3.0f, t3, loud(0.42f) * 0.4f, 84.0f, R_CHORD, hum(3.0f));
+        note_at(4.5f, t3 + 6, loud(0.42f) * 0.4f, 84.0f, R_CHORD, hum(3.0f));
+        note_at(6.0f, t3 + 11, loud(0.42f) * 0.42f, 84.0f, R_CHORD, hum(3.0f));
+        note_at(20.0f, T + 12, loud(0.36f) * 0.4f, 64.0f, R_MEL, hum(6.0f));
+        return;
+    }
+    if (coda) {                                  /* the close: i, then bVI7, V7b9; the line falls b3 9 1 7 */
+        static const int8_t LN[4] = {3, 2, 0, -1};
+        ch_t v7 = MB_V;
+        int rv = bass_note(v7, 36);
+        mb_lh(c0, 0.0f, 2, x, 0);
+        mb_lh(c1, 24.0f, 1, x, 0);
+        chord_at(36.0f, v7);
+        note_at(36.0f, rv - (rv > 40 ? 12 : 0), loud(x) * 0.52f, 11.0f, R_BASS, hum(4.0f));
+        note_at(36.5f, in_rng((en_key + 5) % 12, 52), loud(x) * 0.3f, 11.0f, R_CHORD, hum(3.0f));
+        note_at(36.5f, in_rng((en_key + 8) % 12, 52), loud(x) * 0.3f, 11.0f, R_CHORD, hum(3.0f));
+        for (i = 0; i < 4; i++)
+            note_at(12.0f * (float)i, T + LN[i], loud(x) * (i ? 0.52f : 0.6f), 11.0f, R_MEL, hum(6.0f));
+        return;
+    }
+    if (two) {
+        mb_lh(c0, 0.0f, 2, x, last);
+        mb_lh(c1, 24.0f, 2, x, last);
+    } else {
+        mb_lh(c0, 0.0f, 4, x, last);
+    }
+    if (bar12 == 10 && !two) {                   /* the turnaround: the tonic on top, the minor line falling under */
+        for (i = 0; i < 4; i++) {
+            float t = 12.0f * (float)i;
+            note_at(t, T - 2 - i, loud(x) * 0.58f, 8.0f, R_MEL, hum(4.0f));
+            note_at(t, T, loud(x) * 0.6f, 8.0f, R_MEL, hum(4.0f));
+            note_at(t + 8.0f, T, loud(x) * 0.44f, 3.5f, R_MEL, hum(4.0f));
+        }
+    } else if (bar12 == 11 && b < pc.coda - 1 && trand() < 0.6f) {   /* a pickup into the next chorus */
+        int nx = MLICK_CALL[tirand(NA(MLICK_CALL))], tg = T + MLICK[nx].o[0];
+        int n1 = bl_fit(tg - 5, bar_ch(36), 1), n2 = bl_fit(tg - 3, bar_ch(40), 1);
+        pc.bl_prev = nx + 1;
+        note_at(36.0f, n1, loud(x) * 0.6f, 3.5f, R_MEL, hum(5.0f));
+        note_at(40.0f, n2 > n1 && n2 < tg - 1 ? n2 : tg - 2, loud(x) * 0.6f, 3.5f, R_MEL, hum(5.0f));
+        note_at(44.0f, tg - 1, loud(x) * 0.62f, 3.5f, R_MEL, hum(5.0f));
+    } else if (b >= pc.intro) {
+        int line = bar12 / 4, lb = bar12 % 4;
+        if (lb == 0)                             /* the call (the same twice), then the line that comes home */
+            bl_lick(&MLICK[line < 2 ? pc.bl_la : pc.bl_lb], 0.0f, x, 0);
+        else if (lb == 1 && trand() < 0.25f + 0.5f * pf(P_DENSITY))
+            bl_lick(&MLICK[mb_tail()], 0.0f, x * 0.9f, 0);
+        else if (lb == 3 && bar12 < 11 && !pc.bl_st && trand() < 0.6f)
+            bl_lick(&MLICK[mb_tail()], 0.0f, x * 0.8f, 0);
+        else if (lb == 2 && (pc.bl_st = trand() < 0.45f + 0.4f * pf(P_DENSITY)) != 0) {   /* a soft stab */
+            ch_t c = bar_ch(20);
+            int t3 = in_rng((ch_rootpc(c) + CT_IV[c.t][1]) % 12, 64), s7 = CT_N[c.t] >= 4 ? CT_IV[c.t][3] : 10;
+            int t7 = in_rng((ch_rootpc(c) + s7) % 12, 64);
+            note_at(20.0f, t3, loud(x) * 0.45f, 3.5f, R_CHORD, hum(4.0f));
+            note_at(20.0f, t7, loud(x) * 0.45f, 3.5f, R_CHORD, hum(4.0f));
+            note_at(32.0f, t3, loud(x) * 0.4f, 10.0f, R_CHORD, hum(4.0f));
+            note_at(32.0f, t7, loud(x) * 0.4f, 10.0f, R_CHORD, hum(4.0f));
+        }
+    }
+}
+
 /* ----------------------------------------------------------- planning --- */
 static void plan(void)
 {
@@ -2653,6 +2850,7 @@ static void plan(void)
         pc.nbars = pc.coda + 4;
         break;
     case ID_BLUES:                               /* a turnaround in; choruses; the last one's turnaround the ending */
+    case ID_MBLUES:
         pc.intro = 2;
         pc.bl_nch = clampi(body / 12, 1, 6);
         pc.coda = pc.intro + 12 * pc.bl_nch - 2;
@@ -2772,6 +2970,11 @@ static void new_piece(void)
         pc.meter = 4;
         pc.bl_form = pc.var == 1 ? 1 : tirand(2) ? 2 : 0;
         break;
+    case ID_MBLUES:
+        pc.mode = M_AEO;
+        pc.meter = 4;
+        pc.bl_form = pc.var == 1 ? 1 : tirand(2) ? 2 : 0;
+        break;
     default: {
         int k, n = 0, pick;
         for (k = 0; k < M_NM; k++)
@@ -2794,7 +2997,8 @@ static void new_piece(void)
     en_mode = (uint8_t)pc.mode;
     en_idiom = (uint8_t)pc.idiom;
     en_meter = (uint8_t)pc.meter;
-    en_compound = (uint8_t)((pc.idiom == ID_NOCT && pc.var == 0) || pc.idiom == ID_LULL || pc.idiom == ID_BLUES);
+    en_compound = (uint8_t)((pc.idiom == ID_NOCT && pc.var == 0) || pc.idiom == ID_LULL || pc.idiom == ID_BLUES ||
+                           pc.idiom == ID_MBLUES);
     pc.tbar = pc.meter * TPB;
     pc.drift = 0.0f;
     tempo_set();
@@ -2833,7 +3037,7 @@ static void new_piece(void)
         pc.pl_main = pc.var == 1 ? SH_FIFTH : pc.var == 2 ? SH_SEV : SH_PENT;
         pc.pl_alt = ALT[pc.mode][tirand(2)];
     }
-    if (pc.idiom == ID_BLUES)                    /* the right hand's tonic: D4 .. C#5 */
+    if (pc.idiom == ID_BLUES || pc.idiom == ID_MBLUES)   /* the right hand's tonic: D4 .. C#5 */
         pc.bl_T = in_rng(en_key, 62);
     if (pc.idiom == ID_AIR) {                    /* the loops: three to five, lengths that never line up */
         static const float PER[9] = {15.0f, 17.0f, 19.0f, 21.0f, 23.0f, 25.0f, 27.0f, 29.0f, 31.0f};
@@ -2900,6 +3104,7 @@ static void compose(void)
     case ID_PLANE: plane_bar(b); break;
     case ID_LULL: lull_bar(b); break;
     case ID_BLUES: blues_bar(b); break;
+    case ID_MBLUES: mblues_bar(b); break;
     default: air_bar(b); break;
     }
     bar_left += (float)at_tick((float)pc.tbar);
@@ -3245,7 +3450,7 @@ static void clock_ms(uint32_t k)
 void en_render(int32_t *out, uint32_t n, uint32_t gain_q12)
 {
     /* MASTER; sparse idioms a little up (a few notes at a time read quieter) */
-    static const float IG[ID_N] = {1.0f, 1.7f, 1.0f, 1.0f, 1.2f, 1.1f, 1.3f, 1.1f, 1.9f, 1.1f, 1.25f};
+    static const float IG[ID_N] = {1.0f, 1.7f, 1.0f, 1.0f, 1.2f, 1.1f, 1.3f, 1.1f, 1.9f, 1.1f, 1.25f, 1.25f};
     const float gain = (float)gain_q12 * (1.0f / 4096.0f) * 2.0f * IG[(unsigned)pc.idiom < ID_N ? pc.idiom : 0];
     drain();
     while (n) {

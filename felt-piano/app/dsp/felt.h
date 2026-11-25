@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal
  * FELT PIANO: ashtonwallen, 2026 */
-/* The instrument: endless generated solo piano. Each "piece" comes from a seed and is played in one of eleven idioms,
+/* The instrument: endless generated solo piano. Each "piece" comes from a seed and is played in one of twelve idioms,
  * chosen by the style (preset):
  *
  *   GYMNOPEDIE  slow 3/4: a low bass note, a chord on beat two, two chords rocking; a modal melody above
@@ -16,6 +16,8 @@
  *   PLANING     one chord shape slid in parallel over a long bass pedal; pentatonic arabesques above
  *   LULLABY     6/8: a rocking left hand, a singable tune in four-bar pairs
  *   BLUES       slow 12/8 blues: twelve-bar choruses, licks in call and response, a turnaround, a bII9 ending
+ *   MINOR BLUES slow 12/8 minor blues: i, iv, bVI7 to V7; a rolling, sparse or stabbing left hand, minor
+ *               blues-scale calls and answers, the minor line cliche turning round, a bVI7-V7b9 to i6/9 close
  *
  * A piece ends on its tonic, slowing, the pedal held while it rings away; a few seconds of quiet; the next.
  *
@@ -32,8 +34,9 @@
 #include <stdint.h>
 
 #define EN_SR 44100.0f
-#define EN_NSTYLES 30
+#define EN_NSTYLES 33
 #define EN_NSTYLES_V1 14                       /* 1.0's (a project saved by 1.0 holds these) */
+#define EN_NSTYLES_V2 30                       /* 1.1's */
 
 /* parameters: ranges in en_param_info(). The first ten are a style's own (each style keeps them as left);
  * Length is the player's */
@@ -70,7 +73,8 @@ void en_render(int32_t *out_lr, uint32_t n, uint32_t gain_q12);
 
 /* state for the screen (UI) */
 enum { PH_INTRO, PH_BODY, PH_END, PH_GAP };    /* a piece: its opening, its body, its close, the quiet after */
-enum { ID_GYM, ID_AIR, ID_OST, ID_NOCT, ID_MODAL, ID_ARP, ID_HYMN, ID_STRIDE, ID_PLANE, ID_LULL, ID_BLUES, ID_N };
+enum { ID_GYM, ID_AIR, ID_OST, ID_NOCT, ID_MODAL, ID_ARP, ID_HYMN, ID_STRIDE, ID_PLANE, ID_LULL, ID_BLUES, ID_MBLUES,
+       ID_N };
 extern volatile uint8_t en_playing, en_phase, en_repeat_on;
 extern volatile uint32_t en_track_no;          /* the piece playing (1, 2, ...) */
 extern volatile uint32_t en_track_seed;        /* its seed: its title */

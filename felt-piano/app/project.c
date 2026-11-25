@@ -2,8 +2,8 @@
  * Copyright (C) 2026 Charles Vestal
  * FELT PIANO: ashtonwallen, 2026 */
 /* FELT PIANO's project: one flash object (OBJ_PROJ): each style's settings as it was left, Length, the lights, and
- * where the player is (the last piece and the seed of those to come). 1.0's project (format 1, fourteen styles) is
- * read into this one, the new styles at their recipes; another format or another firmware, or none, gives the
+ * where the player is (the last piece and the seed of those to come). 1.0's and 1.1's projects (formats 1 and 2,
+ * fourteen and thirty styles) are read into this one, the new styles at their recipes; another format or another firmware, or none, gives the
  * defaults. Part of the unity build, after app.h. */
 project_t proj;
 
@@ -60,22 +60,22 @@ static int project_valid(void)
     return 1;
 }
 
-/* 1.0's project, as loaded into proj's bytes: into this format (the styles it didn't have at their recipes) */
-static void project_from_v1(void)
-{
-    project_v1_t o;
-    int i;
-    memcpy(&o, &proj, sizeof o);
-    project_defaults();
-    memcpy(proj.par, o.par, sizeof proj.par);
-    for (i = 0; i < EN_NSTYLES_V1; i++)
-        memcpy(proj.slot[i], o.slot[i], sizeof proj.slot[i]);
-    proj.style = o.style < EN_NSTYLES_V1 ? o.style : 0xFF;   /* (out of range: not valid) */
-    proj.leds = o.leds;
-    proj.oct = o.oct;
-    proj.track_no = o.track_no;
-    proj.seed = o.seed;
-}
+/* an older project, as loaded into proj's bytes: into this format (the styles it didn't have at their recipes) */
+#define PROJECT_FROM_OLD(TYPE, N)                                                                                  \
+    do {                                                                                                           \
+        TYPE o;                                                                                                    \
+        int i;                                                                                                     \
+        memcpy(&o, &proj, sizeof o);                                                                               \
+        project_defaults();                                                                                        \
+        memcpy(proj.par, o.par, sizeof proj.par);                                                                  \
+        for (i = 0; i < (N); i++)                                                                                  \
+            memcpy(proj.slot[i], o.slot[i], sizeof proj.slot[i]);                                                  \
+        proj.style = o.style < (N) ? o.style : 0xFF;   /* (out of range: not valid) */                            \
+        proj.leds = o.leds;                                                                                        \
+        proj.oct = o.oct;                                                                                          \
+        proj.track_no = o.track_no;                                                                                \
+        proj.seed = o.seed;                                                                                        \
+    } while (0)
 
 int project_load(void)
 {
@@ -83,7 +83,9 @@ int project_load(void)
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
     if (n == (int)sizeof(project_v1_t) && proj.magic == PROJ_MAGIC && proj.format == 1u)
-        project_from_v1();
+        PROJECT_FROM_OLD(project_v1_t, EN_NSTYLES_V1);
+    else if (n == (int)sizeof(project_v2_t) && proj.magic == PROJ_MAGIC && proj.format == 2u)
+        PROJECT_FROM_OLD(project_v2_t, EN_NSTYLES_V2);
     else if (n != (int)sizeof proj)
         proj.magic = 0;
     if (project_valid())

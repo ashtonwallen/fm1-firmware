@@ -1,5 +1,5 @@
 # another firmware's save (AMB-1 Drift's project), or this one's of an unknown format: the defaults, playing; 1.0's save
-# (fourteen styles) carries over into 1.1's thirty
+# (fourteen styles) and 1.1's (thirty) carry over into 1.2's thirty-three
 storeamb
 reboot
 wait 500
@@ -34,3 +34,19 @@ turn PRESET 8
 wait 3000
 expect style 20
 expect par0 58
+storev2
+reboot
+wait 500
+expect style 29
+expect par0 61
+expect slot29p0 61
+expect par10 2
+expect oct 1
+expect leds 0
+expect track >70
+expect playing 1
+expect slot31p0 44
+turn PRESET 2
+wait 3000
+expect style 31
+expect par0 44

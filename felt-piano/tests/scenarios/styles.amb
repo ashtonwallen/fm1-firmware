@@ -1,4 +1,4 @@
-# every style makes sound: PRESETS steps through all thirty; each starts a new piece within seconds
+# every style makes sound: PRESETS steps through all thirty-three; each starts a new piece within seconds
 master 4096
 wait 300
 expect style 0
@@ -203,6 +203,28 @@ expect peak_db_max -1
 turn PRESET 1
 wait 12000
 expect style 29
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 30
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot pawn-ticket.png
+turn PRESET 1
+wait 12000
+expect style 31
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 32
 peakreset
 wait 8000
 expect peak_db_min -40

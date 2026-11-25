@@ -17,7 +17,7 @@ credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from F
 
 # firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
 author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
-description = "FELT PIANO turns the M-VAVE FM-1 into an endless solo pianist. Every few minutes a new piece in one of eleven idioms: Gymnopedie-like waltz, Airport-style loops, felt ostinato, nocturne, modal improvising, Glass-style arpeggios, four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby or slow 12/8 blues. A modal felt-piano voice with soft hammers, dampers, sympathetic strings, pedal and key noise, in a gentle room; a piano roll scrolls on the screen. Thirty presets, from Erik's Bowler to Bent Nickel."
+description = "FELT PIANO turns the M-VAVE FM-1 into an endless solo pianist. Every few minutes a new piece in one of twelve idioms: Gymnopedie-like waltz, Airport-style loops, felt ostinato, nocturne, modal improvising, Glass-style arpeggios, four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby, slow 12/8 blues or minor blues. A modal felt-piano voice with soft hammers, dampers, sympathetic strings, pedal and key noise, in a gentle room; a piano roll scrolls on the screen. Thirty-three presets, from Erik's Bowler to Spare Key."
 tags = ["generative", "ambient"]
 install = "https://github.com/ashtonwallen/fm1-firmware/releases"
 screenshot = "docs/img/screen-roll.png"
