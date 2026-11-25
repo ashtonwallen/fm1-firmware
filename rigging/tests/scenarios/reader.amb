@@ -1,0 +1,31 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards, the presets
+wait 300
+listen
+wait 300
+where
+wait 300
+said Sea page: Wind 45, Gusts 50, Swell 50, Ambience 50
+tap ENV
+wait 400
+said Rig page
+spin K1 -3
+wait 300
+said Breath 32
+tap EDIT
+wait 300
+said COMING ABOUT
+turn PRESET 1
+wait 300
+said PRESET Cat's Paw
+press SAVE
+wait 1200
+said SAVE button. SAVES THE VOYAGE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said PAUSED
+where
+wait 300
+said paused
+speakdump

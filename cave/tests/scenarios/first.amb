@@ -1,0 +1,58 @@
+# a first look and listen: it plays from power-on, with no touch; the pages; the help cards
+wav first.wav
+wait 300
+expect playing 1
+expect style 0
+wait 8000
+shot intro.png
+wait 30000
+shot cave.png
+expect notes >20
+expect vu >3
+wavstop
+expect peak_db_max -1
+expect peak_db_min -40
+tap ENV
+wait 100
+expect view 1
+shot space.png
+tap GLO
+wait 100
+expect view 2
+shot setup.png
+turn SELECT -5 100
+expect view 0
+tap HOME
+wait 100
+expect view 0
+# a help card: hold a button
+press EDIT
+wait 1200
+shot help.png
+release EDIT
+wait 100
+# the moments: a trickle, bats, a falling stone, a flood (its rearranging at its height)
+trickle
+wait 700
+shot trickle.png
+bats
+wait 1200
+shot bats.png
+stone
+wait 300
+shot stone-fall.png
+wait 600
+shot stone.png
+expect stones 1
+flood
+wait 100000
+shot flood.png
+expect floods 1
+wait 240000
+expect peak_db_max -1
+# hours later: the stalagmites grown, their notes fallen through the set
+ff 600
+wait 2000
+expect minutes >600
+expect retunes >2
+shot later.png

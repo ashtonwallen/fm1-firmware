@@ -1,0 +1,31 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards, the caves
+wait 300
+listen
+wait 300
+where
+wait 300
+said Cave page: Drips 50, Ring 60, River 45, Ambience 40
+tap ENV
+wait 400
+said Space page
+spin K1 -3
+wait 300
+said Cavern 67
+tap EDIT
+wait 300
+said THE RIVER MOVES ON
+turn PRESET 1
+wait 300
+said CAVE Rimstone Pools
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY CAVE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said RESTING
+where
+wait 300
+said resting
+speakdump

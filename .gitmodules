@@ -73,3 +73,9 @@
 [submodule "fm-chip/base"]
 	path = fm-chip/base
 	url = https://github.com/charlesvestal/fm1-base
+[submodule "juke-joint/base"]
+	path = juke-joint/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "organ-trio/base"]
+	path = organ-trio/base
+	url = https://github.com/charlesvestal/fm1-base

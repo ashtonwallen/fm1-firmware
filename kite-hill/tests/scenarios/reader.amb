@@ -1,0 +1,28 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new part of the day
+wait 300
+listen
+wait 300
+where
+wait 300
+said Hill page: Wind 50, Kites 4, Ambience 50, Space 45
+tap ENV
+wait 400
+said Line page
+spin K1 -3
+wait 300
+said Tone 47
+tap EDIT
+wait 300
+said ON TO STEADY AFTERNOON
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY HILL
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said RESTING
+where
+wait 300
+said resting
+speakdump

@@ -1,0 +1,48 @@
+# state survives a power-off: the hill and its knobs, the lights, the keys' octave, the held weather, and the world
+master 4096
+wait 500
+turn PRESET 2
+wait 300
+expect style 2
+spin K1 -12
+spin K4 20
+tap OCT+
+tap GLO
+spin K3 1
+wait 300
+expect par0 38
+expect par2 75
+expect leds 2
+tap EDIT
+wait 300
+expect phase 2
+tap SAVE
+wait 300
+expect dirty 0
+expect savedday 1
+reboot
+wait 500
+expect style 2
+expect par0 38
+expect par2 75
+expect oct 3
+expect leds 2
+expect playing 1
+expect phase 2
+expect day 1
+expect slot0p0 50
+# by itself: a change saves once the knobs rest, at a quiet moment, at most every 5 minutes
+spin K1 1
+wait 600000
+expect dirty 0
+expect store_writes >1
+reboot
+wait 500
+expect style 2
+expect par0 39
+# the world: kept at most hourly, so after a reboot the hill is about where it was
+wait 4000000
+expect day >1
+reboot
+wait 500
+expect day >1

@@ -1,0 +1,66 @@
+# the controls: the knobs, PLAY, EDIT (come about), REC (hold the helm), OCT-/OCT+ and the keys (trim), ALGORITHM,
+# SAVE held
+master 4096
+wait 2000
+# the sea page's knobs: wind, gusts, swell, ambience
+spin K1 10
+spin K2 -10
+spin K3 4
+spin K4 30
+wait 300
+expect par0 55
+expect par1 40
+expect par2 54
+expect par3 80
+expect dirty 1
+shot knobs.png
+# the rig page
+tap ENV
+spin K1 -20
+wait 200
+expect par4 15
+# PLAY: resting, the rig and the sea fall quiet; again: it plays on
+tap PLAY
+wait 6000
+expect playing 0
+peakreset
+wait 2000
+expect peak_db_max -60
+shot paused.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: come about, a new course
+expect courses 0
+tap EDIT
+wait 1000
+expect courses 1
+# REC: the helm held
+tap REC
+wait 100
+expect hold 1
+tap GLO
+wait 100
+shot hold.png
+tap REC
+wait 100
+expect hold 0
+# setup: the helm by its knob too
+spin K3 1
+wait 100
+expect hold 1
+spin K3 -1
+wait 100
+expect hold 0
+# ALGORITHM: ambience, from any page
+tap HOME
+spin ALGO -20
+wait 200
+expect par3 60
+# SAVE held: the preset back to its recipe
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 45
+expect par3 50

@@ -1,0 +1,20 @@
+# another firmware's save (AMB-1 Drift's project), or this one's of an unknown format: the defaults, playing
+storeamb
+reboot
+wait 500
+expect style 0
+expect par0 50
+expect par8 50
+expect leds 1
+expect oct 2
+expect day 1
+expect phase 1
+expect playing 1
+wait 8000
+expect launches >0
+storejunk
+reboot
+wait 500
+expect style 0
+expect day 1
+expect playing 1

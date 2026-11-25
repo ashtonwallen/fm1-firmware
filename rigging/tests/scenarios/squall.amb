@@ -1,0 +1,13 @@
+# a squall: the whole rig sings, the peaks hold, the screen shows it; then it passes
+master 4096
+wait 4000
+peakreset
+squall
+wait 45000
+expect squall 1
+expect sounding >5
+expect wind >7
+shot squall.png
+wait 150000
+expect squall 0
+expect peak_db_max -1

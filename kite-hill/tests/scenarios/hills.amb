@@ -1,0 +1,113 @@
+# every hill makes sound: PRESETS steps through all twelve; each keeps its own settings
+master 4096
+wait 300
+expect style 0
+wait 20000
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-0.png
+turn PRESET 1
+wait 25000
+expect style 1
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-1.png
+turn PRESET 1
+wait 25000
+expect style 2
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-2.png
+turn PRESET 1
+wait 25000
+expect style 3
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-3.png
+turn PRESET 1
+wait 25000
+expect style 4
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-4.png
+turn PRESET 1
+wait 25000
+expect style 5
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-5.png
+turn PRESET 1
+wait 25000
+expect style 6
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-6.png
+turn PRESET 1
+wait 25000
+expect style 7
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-7.png
+turn PRESET 1
+wait 25000
+expect style 8
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-8.png
+turn PRESET 1
+wait 25000
+expect style 9
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-9.png
+turn PRESET 1
+wait 25000
+expect style 10
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-10.png
+turn PRESET 1
+wait 25000
+expect style 11
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot hill-11.png
+# and round again to the first; each hill keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+turn K1 -5
+wait 200
+expect par0 45
+turn PRESET 1
+wait 3000
+expect style 1
+expect par0 55
+turn PRESET -1
+wait 3000
+expect style 0
+expect par0 45

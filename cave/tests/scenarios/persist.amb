@@ -1,0 +1,47 @@
+# state survives a power-off: the cave and its knobs, the lights, the keys' octave, and the cave's world
+master 4096
+wait 500
+turn PRESET 2
+wait 300
+expect style 2
+spin K1 -12
+spin K4 20
+tap OCT+
+tap GLO
+spin K4 1
+wait 300
+expect par0 43
+expect par3 50
+expect leds 2
+ff 300
+wait 1000
+expect minutes >299
+tap SAVE
+wait 300
+expect dirty 0
+expect world2 >299
+reboot
+wait 500
+expect style 2
+expect par0 43
+expect par3 50
+expect oct 3
+expect leds 2
+expect playing 1
+expect slot0p0 50
+# the world goes on from where it was
+expect minutes >299
+# by itself: a change saves once the knobs rest, at a lull, at most every 5 minutes
+spin K1 3
+wait 600000
+expect dirty 0
+expect store_writes >1
+reboot
+wait 500
+expect style 2
+expect par0 46
+# the world: kept at most hourly (so an hour and a bit of playing is kept)
+wait 3900000
+reboot
+wait 500
+expect minutes >340

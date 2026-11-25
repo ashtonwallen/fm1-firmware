@@ -1,0 +1,48 @@
+# state survives a power-off: the preset and its knobs, the lights, the helm, and the voyage (her course)
+master 4096
+wait 500
+turn PRESET 2
+wait 300
+expect style 2
+spin K1 -12
+spin K4 20
+tap GLO
+spin K4 1
+wait 300
+expect par0 54
+expect par3 75
+expect leds 2
+tap REC
+wait 100
+tap OCT+
+wait 30000
+expect heading 255
+tap SAVE
+wait 300
+expect dirty 0
+expect worldok 1
+reboot
+wait 500
+expect style 2
+expect par0 54
+expect par3 75
+expect leds 2
+expect hold 1
+expect playing 1
+expect slot0p0 45
+expect heading 255
+# by itself: a change saves once the knobs rest, at a quiet moment, at most every 5 minutes
+tap HOME
+spin K1 3
+wait 600000
+expect dirty 0
+expect store_writes >1
+reboot
+wait 500
+expect style 2
+expect par0 57
+# the voyage: kept at most hourly (the watch goes on from where it was)
+wait 4000000
+reboot
+wait 500
+expect watch >3600

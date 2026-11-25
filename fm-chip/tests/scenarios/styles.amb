@@ -1,0 +1,120 @@
+# every game makes sound: PRESETS steps through all thirteen; each starts a new song at once
+master 4096
+wait 300
+expect style 0
+peakreset
+wait 12000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-00.png
+turn PRESET 1
+wait 6000
+expect style 1
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-01.png
+turn PRESET 1
+wait 6000
+expect style 2
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-02.png
+turn PRESET 1
+wait 6000
+expect style 3
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-03.png
+turn PRESET 1
+wait 6000
+expect style 4
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-04.png
+turn PRESET 1
+wait 6000
+expect style 5
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-05.png
+turn PRESET 1
+wait 6000
+expect style 6
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-06.png
+turn PRESET 1
+wait 6000
+expect style 7
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-07.png
+turn PRESET 1
+wait 6000
+expect style 8
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-08.png
+turn PRESET 1
+wait 6000
+expect style 9
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-09.png
+turn PRESET 1
+wait 6000
+expect style 10
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-10.png
+turn PRESET 1
+wait 6000
+expect style 11
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-11.png
+turn PRESET 1
+wait 6000
+expect style 12
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot style-12.png
+# and round again to the first; each game keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+spin K1 -5
+wait 200
+expect par0 145
+turn PRESET 1
+wait 3000
+expect style 1
+expect par0 168
+turn PRESET -1
+wait 3000
+expect style 0
+expect par0 145

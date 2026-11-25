@@ -1,0 +1,26 @@
+# another firmware's save (AMB-1 Drift's, LOFI RADIO's), or this one's of an unknown format: the defaults, playing
+storeamb
+reboot
+wait 500
+expect style 0
+expect par0 150
+expect par3 12
+expect leds 1
+expect oct 2
+expect song 1
+expect playing 1
+wait 8000
+expect rows >10
+storechip
+reboot
+wait 500
+expect style 0
+expect par0 150
+expect song 1
+expect playing 1
+storejunk
+reboot
+wait 500
+expect style 0
+expect song 1
+expect playing 1

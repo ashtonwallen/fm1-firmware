@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "rigging",
+  "name": "RIGGING",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Tall ship on open ocean. Wind plays tuned ropes. Course moves harmony.",
+  "description": "RIGGING turns the M-VAVE FM-1 into a tall ship crossing open ocean, played by the wind. Every rope and stay is a tuned string that hums when the wind finds it. Which ropes sound depends on wind strength and its angle to the ship, so each change of course moves the harmony one step through a chain of chords; ropes retune only once quiet, so nothing clashes. Gusts sweep the rig on the swell, squalls make all twelve ropes sing, calms leave the creak. Ship's bell every half hour. Ambience knob for wind, sea, sails and creaks. Twelve presets. Keys trim the course.",
+  "tags": ["generative", "ambient"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/rigging",
+  "screenshot": "docs/img/screen-ship.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

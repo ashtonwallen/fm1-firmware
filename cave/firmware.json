@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "cave",
+  "name": "CAVE",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Water dripping in a cavern, tuned. Stalagmites grow and retune over hours.",
+  "description": "CAVE turns the M-VAVE FM-1 into a cavern that plays itself. Drips fall from the ceiling at their own steady rates and ring stalagmites and pools, each tuned to the cave's set: pentatonics, just intonation, slendro, a harmonic series, whole tone. Stalagmites grow over hours and their notes fall step by step through the set. An underground river is the drone and moves slowly through a few chosen harmonies. Trickles, floods, falling stones and bats now and then. Big cavern reverb, an Ambience knob for the water bed, keys drop pebbles. Twelve caves, from Soda Straws to Ox Bow Lake.",
+  "tags": ["generative", "ambient"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/cave",
+  "screenshot": "docs/img/screen-cave.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

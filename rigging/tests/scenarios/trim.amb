@@ -1,0 +1,30 @@
+# the helm: OCT+ five degrees to starboard, OCT- to port, the keys a degree a key from the middle (held so the
+# helm makes no change of its own)
+master 4096
+wait 1000
+tap REC
+wait 100
+expect hold 1
+expect heading 250
+tap OCT+
+wait 20000
+expect heading 255
+tap OCT-
+tap OCT-
+wait 20000
+expect heading 245
+key 16 down
+wait 50
+key 16 up
+wait 20000
+expect heading 248
+key 13 down
+wait 50
+key 13 up
+wait 5000
+expect heading 248
+key 10 down
+wait 50
+key 10 up
+wait 20000
+expect heading 245

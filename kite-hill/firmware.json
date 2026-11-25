@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "kitehill",
+  "name": "KITE HILL",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Windy hilltop full of kites. Every line hums a note; the weather plays them.",
+  "description": "KITE HILL turns the M-VAVE FM-1 into a windy hilltop that plays itself. Each kite line hums a note from the hill's tuning set: kites climb in steady wind and sink in lulls, so their notes swell and fade, and a gust lifts them all together. New kites go up on new notes; now and then one breaks loose and drifts away on a falling tone. The day turns from a still morning to a gusty evening, the harmony moving through a short ring of chords, and each new day in a near key. A low drone, a wind bed on its own Ambience level. Twelve hills, from Chalk Horse to Uncle's Diamond; keys send up a kite.",
+  "tags": ["generative", "ambient"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/kite-hill",
+  "screenshot": "docs/img/screen-hill.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

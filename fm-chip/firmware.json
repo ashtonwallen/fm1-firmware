@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "fmchip",
+  "name": "FM CHIP",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless 16-bit game music. Six FM channels, PCM drums, a tracker on screen.",
+  "description": "FM CHIP turns the M-VAVE FM-1 into an endless 16-bit console soundtrack in the style of the Mega Drive / Genesis FM chip. Six four-operator FM channels play slap bass, brass, bells, electric piano and synth leads; 8-bit PCM drums hit underneath. Each song is written as tracker patterns through intro, verse, chorus and bridge, with seventh chords, pushed stabs and busy basslines, loops a few times and ends on a jingle. The screen shows the chip at work: each channel's algorithm and operator envelopes live, drum pads, scrolling patterns. Thirteen games, from Loop De Loop to Last Continue.",
+  "tags": ["generative", "chords", "sequencer"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/fm-chip",
+  "screenshot": "docs/img/screen-fmchip.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}
