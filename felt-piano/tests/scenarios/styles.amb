@@ -1,4 +1,4 @@
-# every style makes sound: PRESETS steps through all fourteen; each starts a new piece within seconds
+# every style makes sound: PRESETS steps through all thirty; each starts a new piece within seconds
 master 4096
 wait 300
 expect style 0
@@ -89,6 +89,124 @@ wait 8000
 expect peak_db_min -40
 expect peak_db_max -1
 shot coat-check.png
+turn PRESET 1
+wait 12000
+expect style 14
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot laundromat.png
+turn PRESET 1
+wait 12000
+expect style 15
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 16
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 17
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot pew-cushion.png
+turn PRESET 1
+wait 12000
+expect style 18
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 19
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot tip-jar.png
+turn PRESET 1
+wait 12000
+expect style 20
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 21
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 22
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot sunken-steeple.png
+turn PRESET 1
+wait 12000
+expect style 23
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 24
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 25
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot crib-mobile.png
+turn PRESET 1
+wait 12000
+expect style 26
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 27
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot wet-ring.png
+turn PRESET 1
+wait 12000
+expect style 28
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 29
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
 # and round again to the first; each style keeps its own settings
 turn PRESET 1
 wait 3000

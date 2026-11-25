@@ -163,6 +163,7 @@ PRIVATE = ("backup", "favorite")
 # list); no "made" means downloaded from its author. The firmware's page names the model.
 MADE_LABEL = {"downloaded": "Downloaded", "Claude": "Made by Claude", "ChatGPT": "Made by ChatGPT"}
 OWN_FG = "#e59a72"
+NEW_FG = "#8fd18f"                           # "NEW" (never installed) marks
 # The list's sections, in order (catalog "category"); anything else goes under "Other".
 CATEGORIES = ("Music generators", "Ambient", "Visual generators", "Worlds", "Instruments and grooveboxes", "Other")
 
@@ -173,6 +174,20 @@ def made(fw):
 
 def category(fw):
     return fw.get("category") if fw.get("category") in CATEGORIES else "Other"
+
+
+def tried():
+    """Every "Name Version" this app has put on the FM-1, read from its own install lines in the log. A firmware
+    whose current version is not in it is new: never installed (a new version counts as new)."""
+    try:
+        text = LOG_MD.read_text(encoding="utf-8")   # the app's lines, and the hand-flashed ones from before it
+        return set(re.findall(r"put \*\*(.+?)\*\* on the FM-1", text)) | set(re.findall(r"Flashed \*\*(.+?)\*\*", text))
+    except OSError:
+        return set()
+
+
+def is_new(fw, seen):
+    return f"{fw['name']} {fw['version']}" not in seen
 
 
 def load_catalog():
@@ -338,6 +353,8 @@ def run_app(smoke=False):
     legend.pack(side="bottom", fill="x", pady=(2, 0))
     tk.Label(legend, text="● Yours (Claude or ChatGPT)", bg=BG, fg=OWN_FG, font=("Segoe UI", 9)).pack(side="left")
     tk.Label(legend, text="● Downloaded", bg=BG, fg=FG, font=("Segoe UI", 9)).pack(side="left", padx=(10, 0))
+    tk.Label(legend, text="NEW: never installed", bg=BG, fg=NEW_FG, font=("Segoe UI", 9)).pack(side="left",
+                                                                                                padx=(10, 0))
     lscroll = ttk.Scrollbar(left, orient="vertical")
     lst = tk.Listbox(left, bg=PANEL, fg=FG, selectbackground=ACC, selectforeground="#16161a", activestyle="none",
                      borderwidth=0, highlightthickness=0, font=("Segoe UI", 11), width=30,
@@ -400,25 +417,41 @@ def run_app(smoke=False):
         fws = cat["data"]["firmwares"]
         return sorted(fws, key=lambda f: (CATEGORIES.index(category(f)), not f.get("favorite"), f["name"].lower()))
 
+    seen = {"set": set()}                    # "Name Version" pairs installed before (from the log)
+
     def fill_list():
         cur = selected()
         lst.delete(0, "end")
         rows.clear()
+        seen["set"] = tried()
+        fresh = [fw for fw in items() if is_new(fw, seen["set"])]
+
+        def heading(text, fg=DIM):
+            if rows:
+                lst.insert("end", "")
+                rows.append(None)
+                lst.itemconfig("end", selectbackground=PANEL)
+            lst.insert("end", text)
+            rows.append(None)
+            lst.itemconfig("end", fg=fg, selectbackground=PANEL, selectforeground=fg)
+
+        def row(fw):
+            lst.insert("end", f"{'★ ' if fw.get('favorite') else '   '}{fw['name']}  {fw['version']}"
+                              + ("    NEW" if is_new(fw, seen["set"]) else ""))
+            rows.append(fw)
+            if made(fw) != "downloaded":
+                lst.itemconfig("end", fg=OWN_FG)
+
+        if fresh:                            # everything never installed comes first, so none gets missed
+            heading(f"NOT TRIED YET ({len(fresh)})", NEW_FG)
+            for fw in fresh:
+                row(fw)
         last = None
         for fw in items():
             if category(fw) != last:
                 last = category(fw)
-                if rows:
-                    lst.insert("end", "")
-                    rows.append(None)
-                    lst.itemconfig("end", selectbackground=PANEL)
-                lst.insert("end", last.upper())
-                rows.append(None)
-                lst.itemconfig("end", fg=DIM, selectbackground=PANEL, selectforeground=DIM)
-            lst.insert("end", f"{'★ ' if fw.get('favorite') else '   '}{fw['name']}  {fw['version']}")
-            rows.append(fw)
-            if made(fw) != "downloaded":
-                lst.itemconfig("end", fg=OWN_FG)
+                heading(last.upper())
+            row(fw)
         at = next((i for i, r in enumerate(rows) if r is not None and cur is not None and r["id"] == cur["id"]),
                   next(i for i, r in enumerate(rows) if r is not None))
         lst.selection_set(at)
@@ -455,6 +488,8 @@ def run_app(smoke=False):
                              + ", with your settings and saves.")
         else:
             hint.config(text="Installing backs up the whole FM-1 first, so you can always go back.")
+        if is_new(fw, seen["set"]):
+            hint.config(text=f"NEW: {fw['name']} {fw['version']} has never been installed. " + hint.cget("text"))
         who.config(text=f"{category(fw)}   ·   {MADE_LABEL[made(fw)]}",
                    fg=OWN_FG if made(fw) != "downloaded" else DIM)
         detail.config(state="normal")

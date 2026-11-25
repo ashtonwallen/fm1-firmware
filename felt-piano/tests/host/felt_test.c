@@ -67,12 +67,13 @@ static void wav_close(void)
     wav = 0;
 }
 
+static int master = 4096;                        /* the output level (a fade, for the demos' tour) */
 static void run(double sec, stats_t *s)
 {
     static int32_t buf[512];
     uint32_t b, nb = (uint32_t)(sec * 44100.0 / 256.0), j;
     for (b = 0; b < nb; b++) {
-        en_render(buf, 256, 4096);
+        en_render(buf, 256, master);
         if (en_voices > s->maxv)
             s->maxv = en_voices;
         for (j = 0; j < 512; j++) {
@@ -142,6 +143,87 @@ static void dbg_chord(int bar, int tick, int root, uint16_t pcs)
     strcat(line, t);
 }
 
+/* ---- the chorale's parts: every chord's four notes, checked as a harmony teacher would */
+static uint16_t ch_now;
+static int ch_root, sat_prev[4], sat_have, sat_n, sat_bad_note, sat_incomplete, sat_par, sat_cross, sat_print;
+static void chk_chord(int bar, int tick, int root, uint16_t pcs)
+{
+    (void)bar, (void)tick;
+    ch_now = pcs;
+    ch_root = root;
+}
+static void chk_satb(int bar, int tick, const int *v)
+{
+    int i, j, has_root = 0, has_third = 0;
+    sat_n++;
+    for (i = 0; i < 4; i++) {
+        int p = v[i] % 12, rel = (p - ch_root + 12) % 12;
+        if (!(ch_now >> p & 1u)) {
+            sat_bad_note++;
+            if (sat_print-- > 0)
+                printf("  bar %d tick %d: part %d (%d) not in the chord\n", bar, tick, i, v[i]);
+        }
+        has_root |= rel == 0;
+        has_third |= rel == 3 || rel == 4;
+    }
+    if (!has_root || !has_third) {
+        sat_incomplete++;
+        if (sat_print-- > 0)
+            printf("  bar %d tick %d: incomplete chord %d %d %d %d\n", bar, tick, v[0], v[1], v[2], v[3]);
+    }
+    if (v[1] > v[0] || v[2] > v[1] || v[3] > v[2])
+        sat_cross++;
+    if (sat_have)
+        for (i = 0; i < 4; i++)
+            for (j = i + 1; j < 4; j++) {
+                int a = v[i] - v[j], q = sat_prev[i] - sat_prev[j], mi = v[i] - sat_prev[i], mj = v[j] - sat_prev[j];
+                if (a % 12 == q % 12 && (a % 12 == 0 || a % 12 == 7) && mi && mj && (mi > 0) == (mj > 0)) {
+                    sat_par++;
+                    if (sat_print-- > 0)
+                        printf("  key %d bar %d tick %d: parallel %s, parts %d and %d (%d %d %d %d -> %d %d %d %d)\n", (int)en_key, bar, tick,
+                               a % 12 ? "fifths" : "octaves", i, j, sat_prev[0], sat_prev[1], sat_prev[2], sat_prev[3],
+                               v[0], v[1], v[2], v[3]);
+                }
+            }
+    for (i = 0; i < 4; i++)
+        sat_prev[i] = v[i];
+    sat_have = 1;
+}
+static void chorale_check(int verbose)
+{
+    static int32_t buf[512];
+    int st, seed;
+    en_dbg_chord = chk_chord;
+    en_dbg_satb = chk_satb;
+    sat_print = verbose ? 40 : 0;
+    for (st = 0; st < EN_NSTYLES; st++) {
+        if (en_style_idiom(st) != ID_HYMN)
+            continue;
+        for (seed = 0; seed < 36; seed++) {
+            int16_t p[P_NPARAMS];
+            int k;
+            uint32_t tp0;
+            en_init();
+            en_style_recipe(st, p);
+            en_style(st);
+            for (k = 0; k < P_NSTYLE; k++)
+                en_set(k, p[k]);
+            en_set(P_LENGTH, 1);
+            en_track(0, 0x5A7Bu + (uint32_t)seed * 7919u);
+            en_play(1);
+            sat_have = 0;
+            en_render(buf, 256, 4096);
+            tp0 = en_tracks_played;
+            while (en_tracks_played == tp0)
+                en_render(buf, 256, 4096);
+        }
+    }
+    en_dbg_chord = 0;
+    en_dbg_satb = 0;
+    printf("chorale: %d chords; %d notes outside the chord, %d without root or third, %d parallels, %d crossings\n",
+           sat_n, sat_bad_note, sat_incomplete, sat_par, sat_cross);
+}
+
 static int dump(int st, uint32_t seed, int bars)
 {
     stats_t a = {0};
@@ -156,7 +238,7 @@ static int dump(int st, uint32_t seed, int bars)
     run(0.05, &a);
     en_title(en_track_seed, en_idiom, t);
     printf("# %s: '%s', %s in %s %s, %d/%d, %d bpm\n", en_style_name(st), t, en_idiom_name(en_idiom),
-           EN_NOTE_NAME[en_key], en_mode_name(en_mode), en_compound ? 12 : en_meter, en_compound ? 8 : 4, en_bpm);
+           EN_NOTE_NAME[en_key], en_mode_name(en_mode), en_compound ? en_meter * 3 : en_meter, en_compound ? 8 : 4, en_bpm);
     {
         uint32_t tp0 = en_tracks_played;
         while (last_bar < bars && en_tracks_played == tp0)
@@ -169,12 +251,14 @@ static int dump(int st, uint32_t seed, int bars)
     return 0;
 }
 
-static int demos(const char *dir)
+/* the demo clips: 20 s of every style from FIRST (its number in the name), and 00-listen.wav: three minutes of the
+ * default style from power-on, or (FIRST > 0: a release's new styles) half a minute of each new idiom in turn */
+static int demos(const char *dir, int first)
 {
     char path[512], name[64];
     int i, k;
     stats_t a = {0};
-    for (i = 0; i < EN_NSTYLES; i++) {
+    for (i = first; i < EN_NSTYLES; i++) {
         en_init();
         style(i);
         en_track(0, 0xFE170000u + (uint32_t)i * 7919u);
@@ -196,14 +280,36 @@ static int demos(const char *dir)
         wav_close();
         printf("%s\n", path);
     }
-    en_init();
-    style(0);
-    en_track(0, 0x46454C54u);
-    en_play(1);
     snprintf(path, sizeof path, "%s/00-listen.wav", dir);
-    wav_open(path);
-    run(180.0, &a);
-    wav_close();
+    if (first == 0) {
+        en_init();
+        style(0);
+        en_track(0, 0x46454C54u);
+        en_play(1);
+        wav_open(path);
+        run(180.0, &a);
+        wav_close();
+    } else {
+        int id, done = 0;
+        wav_open(path);
+        for (id = 0; id < ID_N; id++)
+            for (i = first; i < EN_NSTYLES; i++)
+                if (en_style_idiom(i) == id && !(done >> id & 1)) {
+                    done |= 1 << id;
+                    en_init();
+                    style(i);
+                    en_track(0, 0xFE170000u + (uint32_t)i * 7919u);
+                    en_play(1);
+                    master = 4096;
+                    run(27.0, &a);
+                    for (k = 0; k < 30; k++) {   /* three seconds' fade */
+                        master = 4096 * (29 - k) / 30;
+                        run(0.1, &a);
+                    }
+                    master = 4096;
+                }
+        wav_close();
+    }
     printf("%s (peak %.1f dB)\n", path, db(a.peak));
     return 0;
 }
@@ -215,7 +321,11 @@ int main(int argc, char **argv)
     if (argc > 4 && !strcmp(argv[1], "dump"))
         return dump(atoi(argv[2]), (uint32_t)strtoul(argv[3], 0, 0), atoi(argv[4]));
     if (argc > 2 && !strcmp(argv[1], "demos"))
-        return demos(argv[2]);
+        return demos(argv[2], argc > 3 ? atoi(argv[3]) : 0);
+    if (argc > 1 && !strcmp(argv[1], "chorale")) {
+        chorale_check(1);
+        return 0;
+    }
     /* the pure parts */
     for (i = 0; i < 3000; i++) {
         en_title(en_track_rand(1234u, (uint32_t)i), i % ID_N, t);
@@ -232,6 +342,10 @@ int main(int argc, char **argv)
             CHECK(p[k] >= en_param_info(k)->lo && p[k] <= en_param_info(k)->hi, "style %d param %d", i, k);
         CHECK(strlen(en_style_name(i)) <= 14, "style name %s too long", en_style_name(i));
     }
+    /* the chorale's part-writing: in the chord, complete, no parallels, no crossed parts */
+    chorale_check(0);
+    CHECK(sat_n > 1000 && sat_bad_note == 0 && sat_incomplete == 0 && sat_par == 0 && sat_cross == 0,
+          "chorale part-writing");
     /* every style: sound within seconds, bounded over a long run, pieces move on */
     for (i = 0; i < EN_NSTYLES; i++) {
         stats_t a = {0}, b = {0};

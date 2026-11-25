@@ -6,14 +6,12 @@ Endless generated solo piano for the M-VAVE FM-1. Plays by itself from power-on.
 
 ## What it plays
 
-Pieces, one after another, each with its own key, mode, tempo and title. Five idioms, set by preset: Gymnopedie-like
-waltz, Airport-style drifting loops, felt ostinato, nocturne, sparse modal playing. Rubato, swells, a slow ending on
-a long note, then quiet and the next.
+Pieces, one after another, each with its own key, mode, tempo and title. Eleven idioms, set by preset:
+Gymnopedie-like waltz, Airport-style loops, felt ostinato, nocturne, sparse modal playing, Glass-style arpeggios,
+four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby, slow 12/8 blues.
 
-Modelled piano: soft felt hammers, beating partials, dampers, sustain pedal, sympathetic strings, key noise, small
-room.
-
-Screen: scrolling piano roll, each note a line of light fading as it rings. Pedal lane below, title and key on top.
+Modelled felt piano: soft hammers, dampers, pedal, sympathetic strings, key noise, small room. Screen: scrolling
+piano roll, each note a fading line of light.
 
 ## Controls
 
@@ -31,12 +29,16 @@ Screen: scrolling piano roll, each note a line of light fading as it rings. Peda
 | Keys | play along |
 | SAVE | saves. Held: style back to its recipe |
 
-Hold any button for its help card. Settings also save themselves at a quiet moment. USB audio follows MASTER.
+Hold any button for its help card. Settings save themselves at a quiet moment. USB audio follows MASTER.
 
 ## Styles
 
 Erik's Bowler, Slow Carousel, Velvet Lid, Paper Lanterns, Hammer Rail, Una Corda, Lemon Peel, Upright in 4B, Milk
 Teeth, Row Q, Seat 9, Blue Pencil, Cold Radiator, Iron Pier, Coat Check.
+
+New in 1.1: Laundromat, Bicycle Spokes, Revolving Door (arpeggios); Pew Cushion, Sexton's Keys (hymn); Tip Jar,
+Brass Spittoon, Sleeve Garter (stride); Sunken Steeple, Flaxen Braid, Linen Sails (planing); Crib Mobile, Rocking
+Horse (lullaby); Wet Ring, Mop Bucket, Bent Nickel (blues). A 1.0 save carries over.
 
 ## Credits
 

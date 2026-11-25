@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal
  * FELT PIANO: ashtonwallen, 2026 */
-/* The instrument: endless generated solo piano. Each "piece" comes from a seed and is played in one of five idioms,
+/* The instrument: endless generated solo piano. Each "piece" comes from a seed and is played in one of eleven idioms,
  * chosen by the style (preset):
  *
  *   GYMNOPEDIE  slow 3/4: a low bass note, a chord on beat two, two chords rocking; a modal melody above
@@ -9,6 +9,13 @@
  *   OSTINATO    a broken-chord figure that repeats, one of its notes moving now and then; a swell and a fall
  *   NOCTURNE    an arpeggiated left hand over simple progressions in periods (to V, then home), a singing right hand
  *   MODAL       sparse improvising in Dorian, Lydian or Aeolian over an open drone of two chords
+ *   MINIMALIST  a broken-chord figure repeated, chords changing every two or four bars through a short cycle; the
+ *               figure grows a note at a time, then sheds them
+ *   CHORALE     a hymn in four parts, a chord a beat, cadences and breaths; verses, then an amen
+ *   STRIDE      a slow stride ballad: bass and chord in the left hand, a swung song melody with blue touches
+ *   PLANING     one chord shape slid in parallel over a long bass pedal; pentatonic arabesques above
+ *   LULLABY     6/8: a rocking left hand, a singable tune in four-bar pairs
+ *   BLUES       slow 12/8 blues: twelve-bar choruses, licks in call and response, a turnaround, a bII9 ending
  *
  * A piece ends on its tonic, slowing, the pedal held while it rings away; a few seconds of quiet; the next.
  *
@@ -25,7 +32,8 @@
 #include <stdint.h>
 
 #define EN_SR 44100.0f
-#define EN_NSTYLES 14
+#define EN_NSTYLES 30
+#define EN_NSTYLES_V1 14                       /* 1.0's (a project saved by 1.0 holds these) */
 
 /* parameters: ranges in en_param_info(). The first ten are a style's own (each style keeps them as left);
  * Length is the player's */
@@ -62,7 +70,7 @@ void en_render(int32_t *out_lr, uint32_t n, uint32_t gain_q12);
 
 /* state for the screen (UI) */
 enum { PH_INTRO, PH_BODY, PH_END, PH_GAP };    /* a piece: its opening, its body, its close, the quiet after */
-enum { ID_GYM, ID_AIR, ID_OST, ID_NOCT, ID_MODAL, ID_N };
+enum { ID_GYM, ID_AIR, ID_OST, ID_NOCT, ID_MODAL, ID_ARP, ID_HYMN, ID_STRIDE, ID_PLANE, ID_LULL, ID_BLUES, ID_N };
 extern volatile uint8_t en_playing, en_phase, en_repeat_on;
 extern volatile uint32_t en_track_no;          /* the piece playing (1, 2, ...) */
 extern volatile uint32_t en_track_seed;        /* its seed: its title */
@@ -70,8 +78,8 @@ extern volatile uint32_t en_seed_base;         /* the player's seed (saved: the 
 extern volatile uint32_t en_track_ms;          /* time into the piece */
 extern volatile uint32_t en_track_len_ms;      /* about how long it will run */
 extern volatile uint8_t en_key, en_mode;       /* its key: pitch class; its mode (en_mode_name) */
-extern volatile uint8_t en_idiom, en_meter;    /* ID_*; beats a bar (3, 4; 4 in 12/8 with en_compound) */
-extern volatile uint8_t en_compound;           /* 12/8 */
+extern volatile uint8_t en_idiom, en_meter;    /* ID_*; beats a bar (3, 4; 4 in 12/8, 2 in 6/8 with en_compound) */
+extern volatile uint8_t en_compound;           /* compound time: 12/8 (en_meter 4) or 6/8 (en_meter 2) */
 extern volatile uint8_t en_bpm;                /* its tempo */
 extern volatile uint16_t en_chord_pcs;         /* the harmony now, as pitch classes (bit i) */
 extern volatile uint8_t en_chord_root;         /* its root (pitch class) */
@@ -112,4 +120,6 @@ enum { R_BASS, R_CHORD, R_ARP, R_MEL, R_LOOP, R_PLAYER };   /* a note's part in 
  * harmony as it begins */
 extern void (*en_dbg_note)(int bar, int tick, int note, float vel, int role, int dur_ticks);
 extern void (*en_dbg_chord)(int bar, int tick, int root_pc, uint16_t pcs);
+/* the chorale's four parts as they are chosen (soprano, alto, tenor, bass), a chord at a time */
+extern void (*en_dbg_satb)(int bar, int tick, const int *satb);
 #endif

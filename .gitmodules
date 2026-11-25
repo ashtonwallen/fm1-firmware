@@ -61,3 +61,15 @@
 [submodule "city-pop/base"]
 	path = city-pop/base
 	url = https://github.com/charlesvestal/fm1-base
+[submodule "cave/base"]
+	path = cave/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "rigging/base"]
+	path = rigging/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "kite-hill/base"]
+	path = kite-hill/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "fm-chip/base"]
+	path = fm-chip/base
+	url = https://github.com/charlesvestal/fm1-base

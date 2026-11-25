@@ -794,7 +794,7 @@ static void draw_top(void)
     e = cat_s(e, " ");
     e = cat_s(e, en_mode_name(en_mode));
     e = cat_s(e, ", ");
-    cat_s(e, en_compound ? "12/8" : en_meter == 3 ? "3/4" : "4/4");
+    cat_s(e, en_compound ? (en_meter == 2 ? "6/8" : "12/8") : en_meter == 3 ? "3/4" : "4/4");
     cv_text(8, 17, &FONT_XS, t, K_DIM);
     if (en_phase == PH_GAP)
         cat_s(t, "next");
@@ -1204,7 +1204,7 @@ static void speak_dump(void)
         ui.dirty = (uint8_t)(x >> 1 & 1);
         en_repeat_on = (uint8_t)(x == 5);
         en_key = (uint8_t)(x * 5 % 12);
-        en_mode = (uint8_t)(x % 5);
+        en_mode = (uint8_t)(x % 6);
         en_idiom = (uint8_t)(x % ID_N);
         proj.style = (uint8_t)(x * 3 % NSTYLES);
         sp_page(1);
@@ -1217,7 +1217,7 @@ static void speak_dump(void)
         en_track_no = (uint32_t)x + 1u;
         en_track_seed = en_track_rand(0x46454C54u, (uint32_t)x + 1u);
         en_key = (uint8_t)(x % 12);
-        en_mode = (uint8_t)(x % 5);
+        en_mode = (uint8_t)(x % 6);
         en_idiom = (uint8_t)(x / 5 % ID_N);
         sp_track_text();
         sp_print("TRACK", sp_buf);

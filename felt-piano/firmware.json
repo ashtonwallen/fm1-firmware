@@ -5,7 +5,7 @@
   "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
   "license": "MPL-2.0",
   "tagline": "Endless generated solo piano. Felt hammers, a soft pedal, a quiet room.",
-  "description": "FELT PIANO turns the M-VAVE FM-1 into an endless solo pianist. Every few minutes a new piece in one of five idioms: a slow Gymnopedie-like waltz, Airport-style loops drifting out of phase, a felt ostinato that changes one note at a time, a nocturne, or sparse modal improvising. A modal felt-piano voice with soft hammers, beating unisons, dampers, sympathetic strings, pedal and key noise, in a gentle room. A piano roll scrolls on the screen, each note a light that fades as it rings. Fourteen presets, from Erik's Bowler to Coat Check; knobs for tempo, density, felt and room.",
+  "description": "FELT PIANO turns the M-VAVE FM-1 into an endless solo pianist. Every few minutes a new piece in one of eleven idioms: Gymnopedie-like waltz, Airport-style loops, felt ostinato, nocturne, modal improvising, Glass-style arpeggios, four-part hymn, slow stride ballad, Debussy-style planing, 6/8 lullaby or slow 12/8 blues. A modal felt-piano voice with soft hammers, dampers, sympathetic strings, pedal and key noise, in a gentle room; a piano roll scrolls on the screen. Thirty presets, from Erik's Bowler to Bent Nickel.",
   "tags": ["generative", "ambient"],
   "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
   "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/felt-piano",
