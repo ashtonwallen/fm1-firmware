@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new tune
+wait 300
+listen
+wait 300
+where
+wait 300
+said Band page: Tempo 100%, Harp 55, Drive 45, Room 40
+tap ENV
+wait 400
+said Mix page
+spin K1 -3
+wait 300
+said Piano 67
+tap EDIT
+wait 300
+said NEXT TUNE
+wait 6000
+said Tune 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY NIGHT
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said PAUSED
+where
+wait 300
+said paused
+speakdump

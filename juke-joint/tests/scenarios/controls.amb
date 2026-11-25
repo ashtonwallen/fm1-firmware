@@ -1,0 +1,89 @@
+# the controls: the knobs, PLAY, EDIT (next tune), REC (repeat), the keys, the octave, ALGORITHM (harp), SAVE held
+master 4096
+wait 2000
+expect track 1
+# the band page's knobs: tempo, harp, drive, room
+spin K1 10
+spin K2 -10
+spin K3 4
+spin K4 30
+wait 300
+expect par0 110
+expect par1 45
+expect par2 49
+expect par3 70
+expect dirty 1
+shot knobs.png
+# the mix page
+tap ENV
+spin K1 -20
+wait 200
+expect par4 50
+# PLAY: resting, everything damped, silence; again: it plays on
+tap PLAY
+wait 2500
+expect playing 0
+peakreset
+wait 1500
+expect peak_db_max -70
+shot paused.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the band stops, the next tune within a few seconds
+tap EDIT
+wait 6000
+expect track 2
+expect trackms <4000
+expect bpm >40
+# the keys play along, even resting
+tap PLAY
+wait 3000
+peakreset
+key 10 down
+wait 300
+key 10 up
+expect peak_db_min -50
+tap OCT+
+wait 50
+expect oct 3
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+wait 50
+expect oct 0
+tap OCT-
+wait 50
+expect oct 0
+tap PLAY
+wait 500
+# REC: repeat; the solos go round, the tune plays on past its length
+tap REC
+wait 100
+expect repeat 1
+tap GLO
+spin K3 -5
+wait 200
+expect par10 0
+wait 300000
+expect track 2
+shot repeat.png
+tap REC
+wait 100
+expect repeat 0
+# ALGORITHM: the harp, from any page
+tap HOME
+spin ALGO -20
+wait 200
+expect par1 25
+spin ALGO -40
+wait 200
+expect par1 0
+# SAVE held: the night back to its recipe
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 100
+expect par1 55

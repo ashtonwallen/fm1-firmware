@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "jukejoint",
+  "name": "JUKE JOINT",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless blues trio in a back room. Piano, upright bass, brushes, a harp sitting in.",
+  "description": "JUKE JOINT turns the M-VAVE FM-1 into a blues trio playing an endless set in a back room. Piano, upright bass and brushes play slow 12/8 blues, shuffles, minor blues and eight-bar ballads, every tune new: a count-off or intro, the head, piano choruses, sometimes a stop-time chorus, the head out and an ending. A harmonica player sits in on some tunes, answering the piano and taking a chorus. The room murmurs and claps between tunes. On screen, the band on a low stage under one bare bulb, the form below. Thirteen nights.",
+  "tags": ["generative", "arranger", "chords"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/juke-joint",
+  "screenshot": "docs/img/screen-stage.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}
