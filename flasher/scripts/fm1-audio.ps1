@@ -93,9 +93,21 @@ namespace Fm1Audio2 {
 '@
 
 $reg = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio'
+function Get-ContainerIds($ids) {
+    # InstanceId -> container ID, for many devices in one query.
+    $map = @{}
+    if ($ids) {
+        Get-PnpDeviceProperty -InstanceId $ids -KeyName DEVPKEY_Device_ContainerId -ErrorAction SilentlyContinue |
+            ForEach-Object { $map[$_.InstanceId] = $_.Data }
+    }
+    $map
+}
 function Get-Endpoints {
     # Every audio endpoint Windows knows, with its state (1 active, 2 disabled, 4 not present, 8 unplugged).
-    Get-PnpDevice -Class AudioEndpoint | ForEach-Object {
+    # Container IDs are fetched in one call: one call per endpoint costs ~0.8 s each.
+    $eps = @(Get-PnpDevice -Class AudioEndpoint)
+    $cont = Get-ContainerIds $eps.InstanceId
+    $eps | ForEach-Object {
         if ($_.InstanceId -match '(\{0\.0\.([01])\.00000000\})\.(\{[0-9A-Fa-f-]+\})') {
             $flow = if ($Matches[2] -eq '0') { 'Render' } else { 'Capture' }
             $key = Join-Path $reg "$flow\$($Matches[3])"
@@ -107,7 +119,7 @@ function Get-Endpoints {
                 Id        = "$($Matches[1]).$($Matches[3])".ToLower()
                 Flow      = $flow
                 State     = $state
-                Container = (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName DEVPKEY_Device_ContainerId -ErrorAction SilentlyContinue).Data
+                Container = $cont[$_.InstanceId]
             }
         }
     }
@@ -133,9 +145,9 @@ $container = (Get-PnpDeviceProperty -InstanceId $usb.InstanceId -KeyName DEVPKEY
 # so it was missing from the endpoint list). Find hidden recording endpoints whose interface is one of the FM-1's
 # USB audio functions and show them again (no admin needed).
 if ($Action -eq 'apply') {
-    $fmMedia = @(Get-PnpDevice -PresentOnly -Class MEDIA | Where-Object {
-        (Get-PnpDeviceProperty -InstanceId $_.InstanceId -KeyName DEVPKEY_Device_ContainerId -ErrorAction SilentlyContinue).Data -eq $container
-    } | ForEach-Object FriendlyName)
+    $media = @(Get-PnpDevice -PresentOnly -Class MEDIA)
+    $mcont = Get-ContainerIds $media.InstanceId
+    $fmMedia = @($media | Where-Object { $mcont[$_.InstanceId] -eq $container } | ForEach-Object FriendlyName)
     Get-ChildItem (Join-Path $reg 'Capture') | ForEach-Object {
         $st = (Get-ItemProperty $_.PSPath).DeviceState
         $iface = (Get-ItemProperty (Join-Path $_.PSPath 'Properties') -ErrorAction SilentlyContinue).'{b3f8fa53-0004-438e-9003-51a46e139bfc},6'
