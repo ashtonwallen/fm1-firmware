@@ -1,18 +1,18 @@
-# the tavern keeps itself rarely (the flash's wear): tunes, quarrels and new nights only mark it; the world is saved
+# the tavern keeps itself rarely (the flash's wear): tunes, events and new nights only mark it; the world is saved
 # once an hour at most, between tunes
 wait 300
 expect store_writes 0
 timewarp 10
-mood2 -50
+worlddirty
 wait 600000
 expect dirty 1
 endtune
 wait 600000
-mood4 60
+worlddirty
 wait 600000
 endtune
 wait 600000
-mood1 -70
+worlddirty
 wait 600000
 expect night >1
 expect store_writes 0

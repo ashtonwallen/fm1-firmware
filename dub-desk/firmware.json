@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "dubdesk",
+  "name": "DUB DESK",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless roots dub. A reggae band and an engineer who never leaves the desk.",
+  "description": "DUB DESK turns the M-VAVE FM-1 into an endless roots dub session. A reggae band plays sixteen original riddims at 65 to 80 BPM: one-drop, rockers and steppers drums, a deep sub bass carrying the tune, guitar skank, organ bubble, now and then a melodica line or a horn stab. A virtual engineer mixes it live: drops to drum and bass, throws the snare into a tape echo, kicks the spring reverb, sweeps a high-pass, sounds the siren. The screen is the desk: faders moving by themselves, echo blips riding a tape loop, a shaking spring tank. Thirteen styles.",
+  "tags": ["generative", "chords", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/dub-desk",
+  "screenshot": "docs/img/screen-desk.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

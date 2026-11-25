@@ -1,32 +1,39 @@
-# the world over simulated days (Day length 30 min): the offices go round, the day turns, the brothers do as they
-# do (the novice slips, the old brother sinks flat, the rivals clash, Columba sleeps at Matins), all in the chronicle
+# the world over simulated days (Day length 30 min): the offices go round, the day turns, the abbot intones, cantors
+# lead the antiphons, the verses go side to side, between two cantors or from a soloist to the choir; the low voices
+# hold the ison or sing the organum; all in the chronicle. Nobody sings a wrong note, out of tune or against another
 tap GLO
 spin K1 -2
 tap HOME
 expect office 1
 expect day 1
+expect choir 6
 wait 1800000
 expect day 2
 expect events >8
-expect chron >5
-expect slips1 >0
-expect flats2 >0
-expect clashes3 >0
+expect chron >0
+expect cantor0 >7
+expect sung2 >0
+expect sung5 >0
+expect notes >500
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+expect chrongone 0
 shot day2.png
-# to Matins: Columba nods off sooner or later, and the Amen (or the end) wakes him
-office 0
-expect day 3
-wait 3000
-shot matins_bell.png
-wait 900000
-expect naps5 >0
-expect asleep 0
-# the days: the novice learns and takes his vows; a new novice comes to the gate; the old brother falls ill and
-# comes back (days N: N of the world's daily turns at once)
+# Sext: a small choir (three), the ison
+office 4
+expect office 4
+expect choir 3
+wait 20000
+shot sext.png
+# the days: the novice is given the verses, then a solo, and in time takes his vows; a new novice comes to the gate
+# (days N: N of the world's daily turns at once)
 expect vowed1 0
+expect part1 <30
 days 30
 expect vowed1 1
-expect skill1 >84
+expect part1 >84
 expect here6 1
 tap ARP
 wait 300
@@ -37,3 +44,8 @@ expect here 7
 wait 600000
 shot later.png
 expect day >90
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+expect chrongone 0

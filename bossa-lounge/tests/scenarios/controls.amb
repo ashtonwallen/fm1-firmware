@@ -1,0 +1,89 @@
+# the controls: the knobs, PLAY, EDIT (next tune), REC (repeat), the keys, the octave, ALGORITHM, SAVE held
+master 4096
+wait 2000
+expect tune 1
+# the tune page's knobs: tempo, feel, mood, melody
+spin K1 -10
+spin K2 10
+spin K3 -10
+spin K4 -30
+wait 300
+expect par0 128
+expect par1 35
+expect par2 5
+expect par3 40
+expect dirty 1
+shot knobs.png
+# tempo follows at once
+wait 3000
+expect bpm >110
+expect bpm <146
+# the combo page
+tap ENV
+spin K1 -20
+wait 200
+expect par4 55
+# PLAY: the tape stops, silence; again: it plays on
+tap PLAY
+wait 2500
+expect playing 0
+peakreset
+wait 1500
+expect peak_db_max -70
+shot paused.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the next tune within a few seconds
+tap EDIT
+wait 4500
+expect tune 2
+expect tunems <3000
+# the keys play along, even paused
+tap PLAY
+wait 3000
+peakreset
+key 10 down
+wait 300
+key 10 up
+expect peak_db_min -50
+tap OCT+
+wait 50
+expect oct 3
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+wait 50
+expect oct 0
+tap OCT-
+wait 50
+expect oct 0
+tap PLAY
+wait 500
+# REC: repeat; the tune plays on past its end
+tap REC
+wait 100
+expect repeat 1
+tap GLO
+spin K3 -5
+wait 200
+expect par10 0
+wait 200000
+expect tune 2
+shot repeat.png
+tap REC
+wait 100
+expect repeat 0
+# ALGORITHM: tone, from any page
+tap HOME
+spin ALGO -20
+wait 200
+expect par8 46
+# SAVE held: the style back to its recipe
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 138
+expect par2 15

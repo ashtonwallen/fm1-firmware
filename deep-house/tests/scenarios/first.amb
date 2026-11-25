@@ -1,0 +1,49 @@
+# a first look and listen: it plays from power-on, with no touch; the pages; the help cards; the first blend
+wav first.wav
+wait 300
+expect playing 1
+expect track 1
+expect on0 1
+wait 8000
+shot intro.png
+wait 30000
+shot groove.png
+expect beats >60
+expect vu >5
+wavstop
+expect peak_db_max -1
+expect peak_db_min -40
+tap ENV
+wait 100
+expect view 1
+shot groove-page.png
+tap GLO
+wait 100
+expect view 2
+shot levels-page.png
+turn SELECT -5 100
+expect view 0
+tap HOME
+wait 100
+expect view 0
+# a help card: hold a button
+press EDIT
+wait 1200
+shot help.png
+release EDIT
+wait 100
+expect mixing 0
+# by itself, within a few minutes: the next record cued on deck B, then the blend, then deck B the set's
+wait 180000
+shot cued.png
+expect tracks 2
+wait 50000
+expect mixing 1
+expect on1 1
+shot blend.png
+wait 70000
+expect mixing 0
+expect master 1
+expect mixes 1
+expect track 2
+shot deck-b.png

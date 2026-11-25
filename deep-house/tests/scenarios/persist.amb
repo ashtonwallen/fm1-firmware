@@ -1,0 +1,42 @@
+# state survives a power-off: the set and its knobs, the keys' octave, the player's filter and mix, and where the set is
+master 4096
+wait 500
+turn PRESET 2
+wait 300
+expect style 2
+spin K1 -12
+spin K4 20
+spin K3 -1
+tap OCT+
+wait 300
+expect par0 68
+expect par1 55
+expect par11 0
+tap SAVE
+wait 300
+expect dirty 0
+reboot
+wait 500
+expect style 2
+expect par0 68
+expect par1 55
+expect par11 0
+expect oct 3
+expect playing 1
+expect slot0p0 70
+# the set goes on: the next record after the last one begun
+expect track >1
+# by itself: a change saves once the knobs rest, at a quiet moment (a breakdown), at most every 5 minutes
+spin K1 3
+wait 900000
+expect dirty 0
+expect store_writes >1
+reboot
+wait 500
+expect style 2
+expect par0 71
+# where the set is: kept at most hourly
+wait 3700000
+reboot
+wait 500
+expect track >12

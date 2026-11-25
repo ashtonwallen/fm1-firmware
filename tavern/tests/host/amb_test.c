@@ -3,11 +3,15 @@
  * Tavern session: ashtonwallen, 2026 */
 /* The instrument on the host: the pure parts (scales, chords, voice leading, names), the tunes (their form,
  * their range, their endings, the same seed the same tune) and the render (silence at rest, sound when the band
- * plays, never NaN, bounded, a tune ends after its passes, players join on the bar, a string breaks). */
+ * plays, never NaN, bounded, a tune ends after its passes, players come in and rest only where a phrase begins,
+ * a set goes straight on into its next tune in a new key, every note in the key and every backing note in the
+ * chord, the air outside silent at 0). Then the render's cost, in ns a frame. */
+#define _POSIX_C_SOURCE 199309L
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 #include "amb.h"
 
 static int fails;
@@ -21,23 +25,38 @@ static int fails;
         }                                                                                                          \
     } while (0)
 
-static uint32_t midi_count;
-void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
+static uint32_t midi_count, notes, off_key, off_chord;
+void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)   /* every note: in the key; the backing's in the chord */
 {
-    (void)st;
-    (void)d1;
-    (void)d2;
+    int ch = (int)(st & 15u), pc = (int)(d1 % 12u);
     midi_count++;
+    if ((st & 0xF0u) != 0x90u || !d2 || ch == 9)
+        return;
+    notes++;
+    if (!(en_keymask >> pc & 1u))
+        off_key++;
+    if ((ch == 2 || ch == 3 || (ch == 1 && !en_harp)) && !(en_chordmask >> pc & 1u)) {
+        off_chord++;
+        if (off_chord < 6)
+            printf("  note %u (channel %d) outside the chord %03x (bar %d sess %d)\n", d1, ch, en_chordmask, en_bar, en_sess);
+    }
 }
 
 static int32_t buf[2 * 256];
 static float peak, sum2;
-static int bad;
+static int bad, midphrase, changes;
 static void run(float secs)
 {
     int blocks = (int)(secs * 44100.0f / 256.0f), b, j;
     for (b = 0; b < blocks; b++) {
+        uint8_t live = en_live, sess = en_sess;
+        uint32_t done = en_tunes_done;
         en_render(buf, 256, 2048);
+        if (sess == 1 && en_sess == 1 && done == en_tunes_done && live != en_live) {
+            changes++;                           /* someone came in or rested: only where a phrase begins */
+            if (en_bar & 3)
+                midphrase++;
+        }
         for (j = 0; j < 512; j++) {
             float x = (float)buf[j] / 8388608.0f;
             if (x != x)
@@ -53,7 +72,7 @@ static void band(int level)
 {
     int i;
     for (i = 0; i < EN_NINST; i++)
-        en_inst(i, i == I_VOICE ? 0 : level, 70);
+        en_inst(i, i == I_VOICE ? 0 : level);
 }
 
 #define ALL_BUT_VOICE (0xFFu & ~(1u << I_VOICE))
@@ -109,7 +128,7 @@ int main(void)
      * reach, the second phrase opens as the first, and a seed always makes the same tune */
     {
         static const int MODES[4] = {MODE_IONIAN, MODE_DORIAN, MODE_MIXOLYDIAN, MODE_AEOLIAN};
-        int k, m, s, p, b, e, notes = 0, same = 0, total = 0;
+        int k, m, s, p, b, e, notes = 0, same = 0, total = 0, beats = 0, off_beat_tones = 0;
         for (k = 0; k < EN_NKIND; k++)
             for (m = 0; m < 4; m++)
                 for (s = 0; s < 60; s++) {
@@ -136,6 +155,14 @@ int main(void)
                             }
                         }
                         CHECK(last == (p ? 7 : 0), "kind %d part %d ends on %d", k, p, last);
+                        for (b = 0; b < 8; b++)  /* on the beats, a tone of the bar's chord (bar 9, home, aside) */
+                            for (e = 0; e < t.eighths; e += t.beat) {
+                                int v = t.mel[p][b][e], d = ((v - t.chord[p][b]) % 7 + 7) % 7;
+                                if (v > -50) {
+                                    beats++;
+                                    off_beat_tones += d != 0 && d != 2 && d != 4;
+                                }
+                            }
                         CHECK(t.chord[p][8] == 0, "the second ending's chord");
                         for (e = 0; e < t.eighths; e++)
                             same += t.mel[p][4][e] == t.mel[p][0][e], total++;
@@ -143,6 +170,7 @@ int main(void)
                 }
         CHECK(same == total, "the second phrase opens as the first (%d of %d)", same, total);
         CHECK(notes > 10000, "notes %d", notes);
+        CHECK(off_beat_tones == 0, "%d of %d notes on the beat not in the chord", off_beat_tones, beats);
     }
 
     /* the render: silent at rest, sound when the band plays, never NaN, bounded */
@@ -175,12 +203,12 @@ int main(void)
         CHECK(en_sess == 0 && en_live == 0, "the room after the tune");
     }
 
-    /* each kind, solo then the band on the repeat: players join on the bar */
+    /* each kind, solo then the band: asked for in the first bar, they come in where the next phrase begins */
     {
         int k;
         for (k = 0; k < EN_NKIND; k++) {
             band(0);
-            en_inst(k == K_AIR ? I_HARP : I_FIDDLE, 80, 60);
+            en_inst(k == K_AIR ? I_HARP : I_FIDDLE, 80);
             en_set(P_TEMPO, k == K_AIR ? 54 : 90);
             en_tune((uint16_t)(77 + k), k, 2, k == K_AIR);
             run(0.5f);
@@ -189,8 +217,13 @@ int main(void)
             run(0.05f);
             CHECK(en_live == (k == K_AIR ? 1u << I_HARP : 1u << I_FIDDLE), "kind %d: not mid-bar", k);
             peak = 0.0f;
-            run(8.0f);
-            CHECK(en_live == ALL_BUT_VOICE, "kind %d: joined (%02x)", k, en_live);
+            while (en_bar < 3)
+                run(0.1f);
+            CHECK(en_live == (k == K_AIR ? 1u << I_HARP : 1u << I_FIDDLE), "kind %d: not mid-phrase (bar %d)", k, en_bar);
+            while (en_bar < 4)
+                run(0.05f);
+            run(0.4f);                           /* (en_bar turns a sixteenth before the bar begins) */
+            CHECK(en_live == ALL_BUT_VOICE, "kind %d: in on the phrase (%02x)", k, en_live);
             CHECK(!bad && peak > 0.05f && peak < 0.99f, "kind %d peak %f", k, (double)peak);
         }
         /* closing time: the tune ends at the end of its pass */
@@ -199,19 +232,106 @@ int main(void)
         CHECK(en_passes == en_pass + 1, "en_end: this pass the last");
     }
 
-    /* a broken string: out now */
+    /* a player asked to rest mid-phrase plays on to the phrase's end */
+    run(3.0f);
+    band(70);
+    en_set(P_TEMPO, 90);
     en_tune(5, K_JIG, 2, 0);
-    run(4.0f);
-    en_twang(I_FIDDLE);
-    run(0.05f);
-    CHECK(!(en_live & 1u << I_FIDDLE), "the fiddle still plays after its string broke");
-    run(4.0f);
-    CHECK(!(en_live & 1u << I_FIDDLE), "the fiddle back on its own");
+    run(0.3f);
+    run(2.5f);
+    CHECK(en_bar >= 1 && en_bar < 3, "jig bar %d", en_bar);
+    en_inst(I_FIDDLE, 0);
+    run(0.1f);
+    CHECK(en_live & 1u << I_FIDDLE, "the fiddle stopped mid-phrase");
+    while (en_bar < 4)
+        run(0.05f);
+    run(0.4f);
+    CHECK(!(en_live & 1u << I_FIDDLE), "the fiddle rests from the phrase (%02x)", en_live);
+
+    /* a set: the next tune queued goes straight on at the end of the last pass, in its own key and tempo, with no
+     * last note between; en_end takes a queued one back */
+    {
+        uint32_t done = en_tunes_done, seg = en_segues;
+        int k;
+        band(70);
+        en_set(P_TEMPO, 120);
+        en_set(P_ROOT, 2);
+        en_set(P_MODE, MODE_DORIAN);
+        en_tune(321, K_REEL, 1, 0);
+        run(1.0f);
+        en_next(654, K_REEL, 1, 9, MODE_MIXOLYDIAN, 126);
+        for (k = 0; k < 80 && en_segues == seg; k++)
+            run(1.0f);
+        CHECK(en_segues == seg + 1 && en_tunes_done == done + 1, "the set went on (%u %u)", en_segues, en_tunes_done);
+        CHECK(en_sess == 1 && en_bar == 0 && en_part == 0, "straight on, from the top (%d %d)", en_sess, en_bar);
+        CHECK(en_keymask == (((EN_MODE_POOL[MODE_MIXOLYDIAN] << 9) | (EN_MODE_POOL[MODE_MIXOLYDIAN] >> 3)) & 0xFFFu),
+              "A Mixolydian: %03x", en_keymask);
+        CHECK(en_live == ALL_BUT_VOICE, "the band plays on into it (%02x)", en_live);
+        en_next(987, K_JIG, 1, 7, MODE_IONIAN, 100);
+        en_end();
+        for (k = 0; k < 80 && en_sess != 0; k++)
+            run(1.0f);
+        CHECK(en_segues == seg + 1 && en_sess == 0, "en_end: no next tune (%u)", en_segues);
+    }
+
+    /* every note in the key, every backing note in the chord, and players in and out only on a phrase: each kind
+     * in each folk mode, the harp leading the airs, the band changing its mind every second and a half */
+    {
+        static const int MODES[4] = {MODE_IONIAN, MODE_DORIAN, MODE_MIXOLYDIAN, MODE_AEOLIAN};
+        int k, m, t, ok_notes;
+        notes = off_key = off_chord = 0;
+        midphrase = changes = 0;
+        for (k = 0; k < EN_NKIND; k++)
+            for (m = 0; m < 4; m++) {
+                uint32_t done = en_tunes_done;
+                band(70);
+                en_set(P_TEMPO, 130);
+                en_set(P_ROOT, (k * 5 + m * 7) % 12);
+                en_set(P_MODE, MODES[m]);
+                en_tune((uint16_t)(1000 + k * 37 + m), k, 1, k == K_AIR && (m & 1));
+                for (t = 0; t < 90 && en_tunes_done == done; t++) {
+                    run(1.5f);
+                    if (t % 3 == 1)
+                        en_inst((t * 3 + m) % EN_NINST, (t & 4) ? 0 : 70);
+                }
+                CHECK(en_tunes_done == done + 1, "kind %d mode %d ended", k, m);
+            }
+        ok_notes = notes > 5000u;
+        printf("  %u notes: %u outside the key, %u backing notes outside the chord; %d entries, %d mid-phrase\n",
+               notes, off_key, off_chord, changes, midphrase);
+        CHECK(ok_notes, "notes %u", notes);
+        CHECK(off_key == 0, "%u notes outside the key", off_key);
+        CHECK(off_chord == 0, "%u backing notes outside the chord", off_chord);
+        CHECK(changes > 20 && midphrase == 0, "%d of %d entries mid-phrase", midphrase, changes);
+    }
+
+    /* the air outside (the ambience): each texture sounds at its level, and at 0 is silent */
+    {
+        int tx;
+        band(0);
+        en_play(0);
+        run(25.0f);
+        for (tx = 0; tx < 4; tx++) {
+            en_set(P_TEXTURE, tx);
+            en_set(P_TEXMOD, 60);
+            en_set(P_TEXLVL, 55);
+            run(4.0f);
+            peak = 0.0f;
+            run(3.0f);
+            CHECK(peak > 0.003f && peak < 0.5f, "air %d at 55: peak %f", tx, (double)peak);
+            en_set(P_TEXLVL, 0);
+            run(15.0f);
+            peak = 0.0f;
+            run(2.0f);
+            CHECK(peak < 0.00002f, "air %d at 0: peak %f", tx, (double)peak);
+        }
+        en_play(1);
+    }
 
     /* the singer */
     band(0);
-    en_inst(I_VOICE, 90, 70);
-    en_inst(I_HARP, 50, 70);
+    en_inst(I_VOICE, 90);
+    en_inst(I_HARP, 50);
     en_tune(99, K_AIR, 1, 0);
     peak = 0.0f;
     run(10.0f);
@@ -223,7 +343,7 @@ int main(void)
         for (p = 0; p < P_NPARAMS; p++)
             en_set(p, en_param_info(p)->hi);
         for (i = 0; i < EN_NINST; i++)
-            en_inst(i, 100, 0);
+            en_inst(i, 100);
         en_tune(4321, K_REEL, 1, 0);
         peak = 0.0f;
         run(30.0f);
@@ -243,6 +363,31 @@ int main(void)
     run(1.0f);
     CHECK(peak < 0.01f, "quiet after stopping (%f)", (double)peak);
     CHECK(midi_count > 50u, "MIDI out (%u)", midi_count);
+
+    /* the cost: ns a frame, the busiest the session gets (the whole band and the singer on a quick reel, the
+     * rain, the shimmer, the stone hall's room); compare with AMB-1 Drift's busiest piece measured the same way */
+    {
+        struct timespec t0, t1;
+        double ns;
+        en_init();
+        en_play(1);
+        for (i = 0; i < EN_NINST; i++)
+            en_inst(i, 90);
+        en_set(P_TEMPO, 120);
+        en_set(P_ROOM, 90);
+        en_set(P_REVERB, 75);
+        en_set(P_ECHO, 25);
+        en_set(P_TEXTURE, 0);
+        en_set(P_TEXLVL, 70);
+        en_set(P_SHIMMER, 35);
+        en_tune(2222, K_REEL, 4, 0);
+        run(2.0f);
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+        run(60.0f);
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        ns = ((double)(t1.tv_sec - t0.tv_sec) * 1e9 + (double)(t1.tv_nsec - t0.tv_nsec)) / (60.0 * 44100.0);
+        printf("  render: %.1f ns/frame (the band, the singer, rain, shimmer)\n", ns);
+    }
 
     printf(fails ? "amb: %d FAILED\n" : "amb: ok\n", fails);
     return fails != 0;

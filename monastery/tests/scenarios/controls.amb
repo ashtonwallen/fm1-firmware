@@ -61,7 +61,7 @@ release SAVE
 expect par0 72
 expect par10 82
 expect office 3
-# a white key: a brother. Asleep, he wakes; ill, he is in the infirmary; else he stands to sing the next verse
+# a white key: a brother sings the next verse alone (one not in choir this office comes to it)
 tapkey w4
 wait 100
 expect events >0

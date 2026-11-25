@@ -1,0 +1,58 @@
+# 1.1's saved data loads (format 2 to 3): a real 1.1 flash (tests/fixtures/flash-1.1.bin.gz, made by 1.1's simulator:
+# day 27, Sext, the Cloister, Echo 19, Anselm vowed, Bede come), then one as 1.1 kept it with every old field set (the
+# old brother in the infirmary, the rivalry, the histories of mistakes, a chronicle of them). The world, the settings
+# and the preset are kept; the infirmary, the mistakes and their chronicle entries are gone; every Ambience at 100 %
+flash_load app/build/tests/flash-1.1.bin
+reboot
+wait 300
+expect format 3
+expect day 27
+expect office 4
+expect preset 3
+expect par8 19
+expect vowed1 1
+expect here6 1
+expect here2 1
+expect sung0 86
+expect amb 20
+expect eff37 45
+expect chron >0
+expect chrongone 0
+wait 60000
+expect phase 1
+expect singing >0
+tap ARP
+wait 300
+shot v11-brothers.png
+tap HOME
+# a 1.1 project with every old field in it
+storev2
+reboot
+wait 300
+expect format 3
+expect day 27
+expect preset 3
+expect here2 1
+expect here 7
+expect part1 47
+expect solos1 0
+expect cantor3 0
+expect chron 3
+expect chrongone 0
+expect amb 20
+tap ARP
+wait 300
+shot v11-chronicle.png
+tap HOME
+wait 200000
+expect offmode 0
+expect clash 0
+expect gone 0
+# the migrated project saves as 1.2's and loads again
+tap SAVE
+reboot
+wait 300
+expect format 3
+expect day 27
+expect part1 47
+expect chron >2

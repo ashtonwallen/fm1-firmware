@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "citypop",
+  "name": "CITY POP",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless 1980s Japanese city pop. New song, new title, every few minutes.",
+  "description": "CITY POP turns the M-VAVE FM-1 into an endless 1980s Japanese city pop band. Each song is written as it plays: lush seventh and ninth chords, the royal road and ii-V turns, intro, verse, pre-chorus, chorus, a bridge or solo, a key change up and a fade. Slap or fingered bass, Rhodes or DX piano, chorused guitar, brass, strings and a sung melody on synth lead or soprano sax. Then a new song with a new title. On screen a city at dusk over a car stereo: the reels turn, the sky drifts and the windows light up as the chorus arrives. Thirteen styles.",
+  "tags": ["generative", "chords", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/city-pop",
+  "screenshot": "docs/img/screen-city.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

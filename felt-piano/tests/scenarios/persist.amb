@@ -1,0 +1,43 @@
+# state survives a power-off: the style and its knobs, the lights, the keys' octave, and where the player is
+master 4096
+wait 500
+turn PRESET 2
+wait 300
+expect style 2
+spin K1 -12
+spin K4 20
+tap OCT+
+tap GLO
+spin K4 1
+wait 300
+expect par0 40
+expect par3 70
+expect leds 2
+tap SAVE
+wait 300
+expect dirty 0
+reboot
+wait 500
+expect style 2
+expect par0 40
+expect par3 70
+expect oct 3
+expect leds 2
+expect playing 1
+expect slot0p0 66
+# the player goes on: the next piece after the one that was playing
+expect track >1
+# by itself: a change saves once the knobs rest, at a quiet moment (between pieces), at most every 5 minutes
+spin K1 3
+wait 600000
+expect dirty 0
+expect store_writes >1
+reboot
+wait 500
+expect style 2
+expect par0 43
+# where the player is: kept at most hourly
+wait 4000000
+reboot
+wait 500
+expect track >15

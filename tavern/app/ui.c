@@ -10,7 +10,7 @@
  *   EDIT           call for a tune (between tunes: now)
  *   keys           ask for the next tune in that key
  *   HOME ENV ARP   the pages: the tavern, the regulars, memorable nights
- *   FX LFO GLO     the knobs: mix, room, setup (SELECT steps through all six)
+ *   FX LFO GLO     the knobs: mix, room (with the ambience outside), setup (SELECT steps through all six)
  *   KNOB 1-4       the page's four values (on the tavern: the mix)
  *   PRESETS        the preset (1.1): the session's style (project.c PRESET[]); the regulars and the night go on
  *   SAVE           saves (it also saves by itself, rarely, between tunes) */
@@ -19,16 +19,25 @@
 enum { V_TAVERN, V_REGULARS, V_NIGHTS, V_MIX, V_ROOM, V_SETUP, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Tavern", "Regulars", "Nights", "Mix", "Room", "Setup"};
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ENV, B_ARP, B_FX, B_LFO, B_GLO};
-enum { K_LEDS = 100, K_CPU, K_NIGHT, K_NONE };
+enum { K_LEDS = 100, K_CPU, K_NIGHT, K_AMB, K_NONE };
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_LEAD, P_BACK, P_DRUM, P_ECHO}, {P_LEAD, P_BACK, P_DRUM, P_ECHO}, {P_LEAD, P_BACK, P_DRUM, P_ECHO},
-    {P_LEAD, P_BACK, P_DRUM, P_ECHO}, {P_REVERB, P_ROOM, P_TONE, K_NIGHT}, {P_TUNE, P_MIDI, K_LEDS, K_CPU},
+    {P_LEAD, P_BACK, P_DRUM, P_ECHO}, {P_REVERB, P_ROOM, P_TONE, K_AMB}, {P_TUNE, P_MIDI, K_LEDS, K_NIGHT},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Melody", "Backing", "Bodhran", "Echo"}, {"Melody", "Backing", "Bodhran", "Echo"},
     {"Melody", "Backing", "Bodhran", "Echo"}, {"Melody", "Backing", "Bodhran", "Echo"},
-    {"Reverb", "Room", "Tone", "Night"},      {"Tune", "MIDI out", "Lights", "CPU"},
+    {"Reverb", "Room", "Tone", "Ambience"},   {"Tune", "MIDI out", "Lights", "Night"},
 };
+/* a knob's name: the ambience is called what it is outside (Rain, Wind, Sea, Fire), "Ambience" with none */
+static const char *knob_label(int view, int i)
+{
+    static const char *const AIR[4] = {"Rain", "Wind", "Sea", "Fire"};
+    int a;
+    if (VIEW_KNOB[view][i] == K_AMB && (a = preset_air(proj.preset)) >= 0)
+        return AIR[a & 3];
+    return KNOB_LABEL[view][i];
+}
 static int knob_view(int v) { return v >= V_MIX; }   /* a page of knobs (the others turn the mix's) */
 
 /* the screen's colours: a tavern corner by lamplight */
@@ -146,6 +155,8 @@ static int knob_get(int k)
         return (int)plat_cpu_pct();
     if (k == K_NIGHT)
         return proj.night_len;
+    if (k == K_AMB)
+        return proj.amb[proj.preset % NPRESET];
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -155,7 +166,7 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = en_param_info(k)->hi;
     } else {
         *lo = 0;
-        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_NIGHT ? 5 : 0;
+        *hi = k == K_LEDS ? 2 : k == K_CPU ? 100 : k == K_NIGHT ? 5 : k == K_AMB ? AMB_STEPS : 0;
     }
 }
 static void knob_text(int k, char *b)
@@ -171,6 +182,15 @@ static void knob_text(int k, char *b)
         cat_s(b + (v >= 100 ? 3 : v >= 10 ? 2 : 1), "%");
     } else if (k == K_NIGHT) {
         cat_s(b, NIGHT[v % 6]);
+    } else if (k == K_AMB) {                     /* 0 off .. 125 %, 100 % the preset's own; none on The Corner */
+        if (preset_air(proj.preset) < 0)
+            cat_s(b, "None");
+        else if (!v)
+            cat_s(b, "Off");
+        else {
+            itoa_u((uint32_t)v * 5u, b);
+            cat_s(b + (v >= 20 ? 3 : v >= 2 ? 2 : 1), "%");
+        }
     } else {
         b[0] = 0;
     }
@@ -178,7 +198,7 @@ static void knob_text(int k, char *b)
 static void knob_set(int k, int v)
 {
     int lo, hi;
-    if (k == K_CPU || k == K_NONE)
+    if (k == K_CPU || k == K_NONE || (k == K_AMB && preset_air(proj.preset) < 0))
         return;
     knob_range(k, &lo, &hi);
     v = v < lo ? lo : v > hi ? hi : v;
@@ -191,6 +211,9 @@ static void knob_set(int k, int v)
         proj.leds = (uint8_t)v;
     } else if (k == K_NIGHT) {
         proj.night_len = (uint8_t)v;
+    } else if (k == K_AMB) {
+        proj.amb[proj.preset % NPRESET] = (uint8_t)v;
+        en_set(P_TEXLVL, preset_par(P_TEXLVL, 0));
     }
     mark_dirty();
 }
@@ -705,16 +728,11 @@ static void draw_person(int i, int32_t cx, int leader)
             cv_rect(cx + 8, hy - 12, 3, 1, K_ACC);
             cv_disc(cx + 7, hy - 6, 1, K_ACC);
         }
-    } else if (c->mood > 40) {
-        cv_rect(cx - 1, hy + 2, 3, 1, RGB(120, 60, 50));   /* a smile */
-    } else if (c->mood < -40) {
-        cv_rect(cx - 2, hy - 2, 2, 1, RGB(40, 26, 20));    /* a frown */
-        cv_rect(cx + 2, hy - 2, 2, 1, RGB(40, 26, 20));
+    } else if (live) {
+        cv_rect(cx - 1, hy + 2, 3, 1, RGB(120, 60, 50));   /* playing: a smile */
     }
     if (c->inst != I_BASS && !(sing && c->inst != I_HARP))
         draw_inst(c->inst, cx, hy, a, live, skin);
-    if (c->state == S_MEND)                       /* mending: the broken string hangs loose */
-        cv_line(cx - 9, hy + 6, cx - 13, hy + 16, K_LOW);
 }
 
 /* someone standing at the bar */
@@ -829,8 +847,8 @@ static void draw_room(void)
     for (i = 0; i < NCH; i++) {
         const ch_t *c = &w->ch[i];
         int32_t cx = SEAT_X(i);
-        if (c->state == S_SEAT || c->state == S_MEND) {
-            draw_person(i, cx, i == ldr && world_state() == 1);
+        if (c->state == S_SEAT) {
+            draw_person(i, cx, (i == ldr && world_state() == 1) || i == world_solo());
         } else {                                 /* an empty chair */
             cv_rect(cx - 5, TY - 20, 2, 20, R_DARKWOOD);
             cv_rect(cx + 4, TY - 20, 2, 20, R_DARKWOOD);
@@ -845,7 +863,7 @@ static void draw_room(void)
     for (i = 0; i < NCH; i++) {                  /* the pints: emptier the thirstier */
         const ch_t *c = &w->ch[i];
         int32_t cx = SEAT_X(i) + 6, lv = (100 - c->thirst) * 7 / 100;
-        if (c->state != S_SEAT && c->state != S_MEND)
+        if (c->state != S_SEAT)
             continue;
         cv_rect(cx, TY - 8, 4, 8, R_GLASS);
         cv_rect(cx + 1, TY - 7, 2, 7, RGB(150, 150, 140));
@@ -859,7 +877,7 @@ static void draw_room(void)
         uint16_t col;
         if (c->state == S_HOME || c->state == S_GONE)
             continue;
-        col = i == ldr && world_state() == 1 ? K_ACC : c->state == S_MEND ? K_LOW : c->state == S_BAR ? K_DIM
+        col = (i == ldr && world_state() == 1) || i == world_solo() ? K_ACC : c->state == S_BAR ? K_DIM
               : playing_now(i) ? K_TEXT : RGB(206, 186, 156);
         {
             int32_t nx = SEAT_X(i), hw = text_w(&FONT_T, ch_name(i)) / 2 + 2;
@@ -870,40 +888,35 @@ static void draw_room(void)
         text_c(90, 70, &FONT_B, "Closed", RGB(206, 186, 156));
 }
 
-/* the regulars: each one's state of mind and glass */
+/* the regulars: each one's instrument, tunes led, glass, and where they are in the music */
 static void draw_regulars(void)
 {
-    static const char *const ST[5] = {"not in yet", "at the table", "at the bar", "mending", "gone home"};
+    static const char *const ST[5] = {"not in yet", "at the table", "at the bar", "at the table", "gone home"};
     const world_t *w = &proj.world;
     int i;
     for (i = 0; i < NCH; i++) {
         const ch_t *c = &w->ch[i];
-        int32_t y = i * 16, mx = 132, mw, r;
-        int here = c->state == S_SEAT || c->state == S_BAR || c->state == S_MEND;
-        const char *st = playing_now(i) ? (i == world_leader() ? "leading" : "playing") : ST[c->state % 5];
+        int32_t y = i * 16, r;
+        int here = c->state == S_SEAT || c->state == S_BAR;
+        const char *st = i == world_solo() && playing_now(i) ? "solo"
+                         : playing_now(i) ? (i == world_leader() ? "leading" : "playing")
+                         : c->play && world_state() == 1 && here ? "resting" : ST[c->state % 5];
+        char led[12];
         if (i == VISITOR && c->arrive == 99 && c->state == S_GONE)
             st = "nobody tonight";
-        if (i == VISITOR && c->state == S_GONE && c->arrive != 99 && !c->nights && !(c->flags & CF_ASKED))
-            st = "not in yet";
         if (i & 1)
             cv_rect(0, y, 240, 16, K_PANEL);
         cv_rect(4, y + 3, 6, 10, SHIRT[ch_shirt(i) % 12]);
         cv_text(14, y + 1, &FONT_XS, ch_name(i), here ? (playing_now(i) ? K_ACC : K_TEXT) : K_DIM);
         cv_text(68, y + 3, &FONT_T, EN_INST_NAME[c->inst], K_DIM);
-        cv_rect(mx - 15, y + 7, 30, 2, K_LINE);  /* mood: from the middle, green up, rust down */
-        mw = c->mood * 15 / 100;
-        if (mw > 0)
-            cv_rect(mx, y + 6, mw, 4, K_GOOD);
-        else if (mw < 0)
-            cv_rect(mx + mw, y + 6, -mw, 4, K_LOW);
-        cv_rect(mx, y + 4, 1, 8, K_DIM);
+        cat_s(led, "led ");                      /* tunes led, ever */
+        itoa_u(c->led > 999 ? 999u : c->led, led + 4);
+        cv_text(112, y + 3, &FONT_T, led, K_DIM);
         cv_rect(153, y + 3, 5, 10, R_GLASS);     /* the glass */
         r = (100 - c->thirst) * 9 / 100;
         if (r > 0)
             cv_rect(153, y + 13 - r, 5, r, R_ALE);
         cv_text(164, y + 3, &FONT_T, st, here ? RGB(214, 196, 166) : K_DIM);
-        if (i < VISITOR && ch_rival(i) >= 0 && here && present(ch_rival(i)))
-            cv_rect(236, y + 5, 3, 6, K_LOW);   /* their rival is in */
     }
 }
 
@@ -1048,11 +1061,11 @@ static int help_lines(int b, const char *l[HELP_LINES])
 #define L(t) (l[n++] = (t))
     switch (b) {
     case B_HOME: L("THE TAVERN"); L("WHO'S IN, WHO LEADS,"); L(" WHAT THEY PLAY"); L("PRESETS: THE STYLE"); break;
-    case B_ENV: L("THE REGULARS"); L("MOOD, GLASS, WHERE"); L(" THEY ARE"); break;
+    case B_ENV: L("THE REGULARS"); L("INSTRUMENT, TUNES LED,"); L(" GLASS, WHO PLAYS"); break;
     case B_ARP: L("MEMORABLE NIGHTS"); break;
     case B_FX: L("THE MIX"); L("MELODY, BACKING,"); L(" BODHRAN, ECHO"); break;
-    case B_LFO: L("THE ROOM"); L("REVERB, ROOM, TONE,"); L(" NIGHT LENGTH"); L("PRESETS: THE STYLE"); break;
-    case B_GLO: L("SETUP"); L("TUNE, MIDI OUT, LIGHTS"); break;
+    case B_LFO: L("THE ROOM"); L("REVERB, ROOM, TONE,"); L(" AMBIENCE (RAIN, SEA)"); L("OFF TO 125%, PER PRESET"); break;
+    case B_GLO: L("SETUP"); L("TUNE, MIDI OUT,"); L(" LIGHTS, NIGHT LENGTH"); break;
     case B_EDIT: L("CALL FOR A TUNE"); L("BETWEEN TUNES: NOW"); break;
     case B_REC: L("A ROUND FOR THE HOUSE"); L("ONCE AN HOUR"); break;
     case B_SAVE: L("SAVES THE TAVERN"); L("IT SAVES BY ITSELF"); L(" NOW AND THEN, TOO"); break;
@@ -1094,8 +1107,9 @@ static void draw_main(void)
     }
     for (i = 0; i < NCH; i++)
         h = hash(h, w->ch[i].state | (uint32_t)w->ch[i].play << 3 | (uint32_t)w->ch[i].thirst << 4 |
-                        (uint32_t)(w->ch[i].mood / 8 + 16) << 12 | (uint32_t)w->ch[i].busy << 20);
-    h = hash(h, en_live | (uint32_t)world_type() << 8 | (uint32_t)w->nmem << 12 | w->tunes << 16);
+                        (uint32_t)(w->ch[i].led & 255u) << 12 | (uint32_t)w->ch[i].busy << 20);
+    h = hash(h, en_live | (uint32_t)world_type() << 8 | (uint32_t)w->nmem << 12 | w->tunes << 16 |
+                    (uint32_t)(world_solo() + 1) << 28);
     if (ui.view != V_REGULARS && ui.view != V_NIGHTS)
         for (i = 0; i < EN_NINST; i++)
             h = hash(h, (uint32_t)(en_glow[i] * 4.0f));
@@ -1154,14 +1168,15 @@ static void draw_knobs(void)
             cv_round(x + 3, 11, 54, 57, 6, K_PANEL);
         knob_range(k, &lo, &hi);
         v = knob_get(k);
-        caps(t, KNOB_LABEL[ui.view][i], sizeof t);
+        caps(t, knob_label(ui.view, (int)i), sizeof t);
         text_c(cx, 12, &FONT_XS, t, hot ? K_TEXT : K_DIM);
         if (k != K_CPU && hi - lo < 6) {
             int n = hi - lo + 1, j, pw = n > 4 ? 6 : 9, gap = 3, w0 = n * (pw + gap) - gap;
             for (j = 0; j < n; j++)
                 cv_round(cx - w0 / 2 + j * (pw + gap), 33, pw, 8, 2, j == v - lo ? fill : K_LINE);
         } else if (k != K_CPU) {
-            arc(cx, 37, 12, hi > lo ? (float)(v - lo) / (float)(hi - lo) : 0.0f, K_LINE, fill, bg, lo < 0);
+            arc(cx, 37, 12, hi > lo && !(k == K_AMB && preset_air(proj.preset) < 0) ? (float)(v - lo) / (float)(hi - lo)
+                                                                                    : 0.0f, K_LINE, fill, bg, lo < 0);
         }
         knob_text(k, t);
         text_c(cx, 50, &FONT_B, t, hot ? K_ACC : K_TEXT);
@@ -1247,7 +1262,7 @@ static void sp_cat(const char *s)
 static void sp_knob(int view, int i)
 {
     char t[16];
-    sp_cat(KNOB_LABEL[view][i]);
+    sp_cat(knob_label(view, i));
     sp_cat(" ");
     knob_text(VIEW_KNOB[view][i], t);
     sp_cat(t);
@@ -1394,6 +1409,8 @@ static void speak_dump(void)
                     proj.leds = (uint8_t)x;
                 else if (k == K_NIGHT)
                     proj.night_len = (uint8_t)x;
+                else if (k == K_AMB)
+                    proj.amb[proj.preset % NPRESET] = (uint8_t)x;
                 sp_n = 0;
                 sp_knob(v, i);
                 sp_print("KNOB", sp_buf);

@@ -4,65 +4,49 @@ Monks sing the hours in a stone chapel. Self-playing firmware for the M-VAVE FM-
 
 ![The chapel at Lauds](docs/img/screen-chapel.png) ![The brothers](docs/img/screen-brothers.png)
 
-Seven brothers chant slow modal lines over a drone, side answering side, through a long reverb. A bell marks each
-office: Matins, Lauds, Prime, Terce, Sext, None, Vespers, Compline. Each has its own mode, pace and number of
-singers. A whole day takes two hours by default.
+Seven brothers chant modal psalm tones over a drone, through a long reverb. A bell marks each office, Matins to
+Compline. Each has its own mode, pace and choir: everyone at Lauds and Vespers, three at Sext. A day takes two hours.
 
-The brothers have their ways:
+How it's sung:
 
-- **Benedict**, the abbot. Intones, leads, frowns or nods at the novice.
-- **Anselm**, the novice. Comes in early, misses entries, practises between offices. Learns. Takes his vows in time.
-- **Ambrose**, the old brother. Sinks flat until the abbot gives him the note. Falls ill, comes back.
-- **Gregory** and **Bernard**. Argue over the pitch: a brief clash, then one gives way. Make peace, for a while.
-- **Columba**. Dozes off at Matins. Wakes with a start.
-- **Bede**. A new novice who turns up at the gate after some days.
+- **Benedict**, the abbot, intones each office.
+- **Gregory** and **Bernard**, the cantors, lead the antiphons. Some psalms they trade verses.
+- Verses go side to side, or a soloist sings and the choir answers.
+- **Ambrose** sings organum, a fifth under, at Lauds and Vespers. **Columba** holds the ison at Matins, Sext, Compline.
+- **Anselm**, the novice, starts in the choruses. Gets the verses, then solos, then takes his vows.
+- **Bede** turns up at the gate after some days.
+
+Nobody sings a wrong note. The brothers, the day and the chronicle survive power-offs.
 
 ## Presets
 
-Twelve presets, each a different place or rite: space, drone, bell, voices, finals, and AMB-1 Drift 1.1's harp,
-kalimba, bowed or glass lead, air and shimmer. Turn **PRESETS**. The brothers, the day and the chronicle go on as
-they were; knobs keep their values and act under the preset.
-
-- **Abbey Chapel**: 1.0's sound.
-- **Cathedral**: lower, slower, vast plate, shimmer, low bowed lead, deep bell.
-- **Hermitage**: small dry cell, quicker chant, a harp, a little wind.
-- **Cloister**: half-open walk, rain, a harp now and then.
-- **Mountain Abbey**: lower, strong drone, wind, high glass lead, some shimmer.
-- **Byzantine**: Phrygian, loud ison, wide vibrato, slow.
-- **Candlelight**: close and warm, soft bell, glass lead, crackle of candles.
-- **Island Abbey**: higher, sea outside, long echo, a harp.
-- **Crypt**: a fourth down, darker, deeper voices, low bowed lead.
-- **Snow Priory**: higher, bright, kalimba, glass lead, wind, shimmer.
-- **Pilgrims**: harp rolls, bowed lead, wind.
-- **Easter Vigil**: Lydian, bright, ringing bell, glass lead, shimmer.
-
-Who sings glows by candlelight. The line under the chapel says what just happened. Brothers, their histories and
-the chronicle survive power-offs. So does the preset; a 1.0 world loads whole on Abbey Chapel.
+Twelve places: Abbey Chapel, Cathedral, Hermitage, Cloister, Mountain Abbey, Byzantine, Candlelight, Island Abbey,
+Crypt, Snow Priory, Pilgrims, Easter Vigil. Turn **PRESETS**.
 
 ## Controls
 
 | | |
 |---|---|
-| PLAY | Sing / rest. The world's clock stops while resting |
-| EDIT | Ring the bell: the next office, now |
-| REC | Hold: the note holds, the chapel rings on |
+| PLAY | Sing / rest |
+| EDIT | Bell: next office now |
+| REC | Hold the note |
 | OCT− / OCT+ | Slower / faster chant |
-| White keys 1–7 | A brother. Asleep: he wakes. Otherwise he stands to sing the next verse |
-| PRESETS | Next or previous preset. Name shows at the top, and left of the knobs |
-| HOME · ARP · FX · GLO | Pages: Chapel, Brothers, Space, Setup. SELECT steps through them |
-| KNOB 1–4 | Chapel: Voices, Drone, Bell, Reverb. Space: Echo, Size, Colour, Pace. Setup: Day length, Tune, MIDI out, Lights |
-| SAVE | Save. Held: the sound back to defaults (the world stays) |
+| White keys 1–7 | A brother sings the next verse alone |
+| HOME · ARP · FX · GLO | Chapel (Voices, Drone, Bell, Reverb) · Brothers · Space (Echo, Size, Colour, Ambience) · Setup (Day length, Tune, MIDI out, Lights) |
+| Hold a button | Help card |
+| SAVE | Save. Held: sound back to defaults |
 
-Saves by itself, rarely, while nobody sings: the world about once an hour (a power-off can lose up to an hour),
-settings within 5 minutes. No USB level setting: USB audio is taken as AMB-1 takes it.
+**Ambience** sets the rain, wind, sea or candle crackle, off to 120 %, per preset.
+
+Saves itself while nobody sings: settings within 5 minutes, the world hourly. 1.0 and 1.1 saves load.
 
 ## Build
 
-See `CLAUDE.md` and `BUILDING.md`. `./build.sh`, `./build.sh --host`, `sh tests/run_tests.sh`.
+See `CLAUDE.md` and `BUILDING.md`.
 
 ## Credits
 
-Engine, UI and platform glue from [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal; strings, lead, air and shimmer from AMB-1 Drift 1.1. Platform:
-[fm1-base](https://github.com/charlesvestal/fm1-base) and [felucca-bsp](https://github.com/hugelton/felucca-bsp), from
-Felucca by Leo Kuroshita (Hügelton Instruments). All MPL-2.0; see `LICENSING.md`. The choir, the world and the
-chapel: ashtonwallen.
+Engine, UI and platform glue from [AMB-1](https://github.com/charlesvestal/fm1-amb) by Charles Vestal; strings,
+lead, air and shimmer from AMB-1 Drift 1.1. Platform: [fm1-base](https://github.com/charlesvestal/fm1-base) and
+[felucca-bsp](https://github.com/hugelton/felucca-bsp), from Felucca by Leo Kuroshita (Hügelton Instruments). All
+MPL-2.0; see `LICENSING.md`. Choir and chapel: ashtonwallen.

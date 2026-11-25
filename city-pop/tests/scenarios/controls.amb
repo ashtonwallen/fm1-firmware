@@ -1,0 +1,89 @@
+# the controls: the knobs, PLAY, EDIT (next song), REC (repeat), the keys, the octave, ALGORITHM, SAVE held
+master 4096
+wait 2000
+expect track 1
+# the drive page's knobs: tempo, sparkle, groove, gloss
+spin K1 10
+spin K2 -10
+spin K3 30
+spin K4 4
+wait 300
+expect par0 118
+expect par1 50
+expect par2 85
+expect par3 59
+expect dirty 1
+shot knobs.png
+# tempo follows at once (a song may sit up to 3 BPM either side)
+wait 3000
+expect bpm >114
+# the band page
+tap ENV
+spin K1 -20
+wait 200
+expect par4 50
+# PLAY: silence; again: it plays on
+tap PLAY
+wait 2500
+expect playing 0
+peakreset
+wait 1500
+expect peak_db_max -70
+shot paused.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the next song within a few seconds
+tap EDIT
+wait 4500
+expect track 2
+expect trackms <3000
+# the keys play along, even paused
+tap PLAY
+wait 3000
+peakreset
+key 10 down
+wait 300
+key 10 up
+expect peak_db_min -50
+tap OCT+
+wait 50
+expect oct 3
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+wait 50
+expect oct 0
+tap OCT-
+wait 50
+expect oct 0
+tap PLAY
+wait 500
+# REC: repeat; the song's last chorus goes round, no next song
+tap REC
+wait 100
+expect repeat 1
+tap GLO
+spin K3 -5
+wait 200
+expect par10 50
+wait 400000
+expect track 2
+shot repeat.png
+tap REC
+wait 100
+expect repeat 0
+# ALGORITHM: sparkle, from any page
+tap HOME
+spin ALGO -20
+wait 200
+expect par1 30
+# SAVE held: the style back to its recipe
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 108
+expect par1 60
+expect par2 55

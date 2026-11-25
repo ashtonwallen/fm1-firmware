@@ -2,31 +2,34 @@
  * Copyright (C) 2026 ashtonwallen */
 /* The tavern (world.h): the regulars, the visitor, Hugh, the night. Part of the unity build, after project.c and
  * before ui.c; the main loop's, never the audio interrupt's. It tells the engine (dsp/amb.h) what to play and who
- * plays it, and watches where the tune is (en_sess, en_part, en_rep) to bring players in on the repeat.
+ * plays it, and watches where the tune is (en_sess, en_pass, en_part, en_rep, en_bar) to shape the arrangement.
  *
  * The night runs 18:00 to 01:00 on its own clock (the length a night takes is a setting). Early, a few come in and
- * play slow airs and waltzes; the middle is busy, reels and jigs, most of the room in on them; late, airs again, a
- * lament perhaps, people drifting home; then last orders, "Time, please!", one last waltz for everyone, and Hugh
- * plays an air for the empty room before the next night begins. A leader starts each tune alone; the others come in
- * on the repeat (or on the B part), unless they won't play under that leader. Between tunes people go up for a
- * pint, mend strings, arrive and leave. */
+ * play slow airs and waltzes; the middle is busy, reels and jigs, sets of two or three run together (each tune in
+ * its own key, each a touch quicker), most of the room in on them; late, airs again, a lament perhaps, people
+ * drifting home; then last orders, "Time, please!", one last waltz for everyone, and Hugh plays an air for the empty
+ * room before the next night begins. A leader starts each tune alone; the others come in where a phrase begins: on
+ * the repeat, or on the B part. In a long tune two melody players may trade parts on the middle time through (one
+ * takes the A part alone, the other answers with the B), then all in for the last. Between tunes people go up for a
+ * pint, arrive and leave.
+ *
+ * 1.2: everyone plays well. 1.1's moods, skill, drink, quarrels, refusals, stand-offs, broken strings and strangers
+ * frozen out are gone, with every mishap they drove; what is left is the music's own shape. */
 
-/* the regulars: name, instrument, skill, temper (the mood they come back to), warmth (to strangers), whether they
- * sing, when they usually come and go (10-minute slots from 18:00), and how they look (hair, shirt, skin) */
+/* the regulars: name, instrument, whether they sing, when they usually come and go (10-minute slots from 18:00),
+ * and how they look (hair, shirt, skin) */
 static const struct {
     const char *name;
-    uint8_t inst, skill;
-    int8_t temper;
-    uint8_t warmth, sings, arrive, leave, hair, shirt, skin;
+    uint8_t inst, sings, arrive, leave, hair, shirt, skin;
 } REG[NREG] = {
-    {"Old Tom", I_FIDDLE, 88, -15, 20, 0, 6, 39, 0, 0, 0},
-    {"Rosie", I_FIDDLE, 74, 20, 55, 0, 12, 41, 1, 1, 1},
-    {"Maeve", I_WHISTLE, 76, 10, 65, 1, 3, 33, 2, 2, 1},
-    {"Brigid", I_HARP, 82, 15, 70, 0, 0, 36, 3, 3, 0},
-    {"Declan", I_LUTE, 55, 30, 80, 1, 15, 42, 4, 4, 2},
-    {"Nora", I_BOX, 70, 0, 40, 0, 9, 30, 5, 5, 0},
-    {"Finn", I_BASS, 62, 10, 60, 1, 6, 37, 6, 6, 2},
-    {"Seamus", I_DRUM, 50, 25, 50, 0, 12, 41, 7, 7, 1},
+    {"Old Tom", I_FIDDLE, 0, 6, 39, 0, 0, 0},
+    {"Rosie", I_FIDDLE, 0, 12, 41, 1, 1, 1},
+    {"Maeve", I_WHISTLE, 1, 3, 33, 2, 2, 1},
+    {"Brigid", I_HARP, 0, 0, 36, 3, 3, 0},
+    {"Declan", I_LUTE, 1, 15, 42, 4, 4, 2},
+    {"Nora", I_BOX, 0, 9, 30, 5, 5, 0},
+    {"Finn", I_BASS, 1, 6, 37, 6, 6, 2},
+    {"Seamus", I_DRUM, 0, 12, 41, 7, 7, 1},
 };
 #define LANDLORD "Hugh"
 static const char *const VISITOR_NAME[] = {"Ciaran", "Aoife", "Padraig", "Siobhan", "Eamon", "Grainne", "Liam",
@@ -44,16 +47,27 @@ static struct {
     uint8_t state;
     uint32_t prev, acc, gap;                     /* the last frame; ms toward the next minute; ms of the gap left */
     int8_t leader;                               /* who leads (NCH: Hugh), -1 nobody */
-    uint8_t kind, root, mode, passes, harp, type, joined, refused, fav;
+    uint8_t kind, root, mode, passes, harp, type, joined, fav;
+    int16_t tempo;
     uint16_t seed;
-    uint32_t done_seen;                          /* en_tunes_done as last seen */
+    uint32_t done_seen, segs_seen;               /* en_tunes_done, en_segues as last seen */
     int8_t req_root;                             /* a key asked for (-1 none) */
     uint8_t dirty, urgent;                       /* to save; something memorable (ui.c keep_due) */
     uint16_t warp;                               /* the host's "timewarp": minutes go by N times as fast */
-    uint8_t string_bar, string_who;              /* a string to break at this bar (+1), and whose */
     uint8_t waiting_said, last_leader, since_song, called;   /* (called: "another after this")*/
+    uint8_t all_in;                              /* a round was stood: everyone in on this (or the next) tune */
+    uint8_t set_left, set_n, queued;             /* a set: tunes still to come, this one's place, the next queued */
+    struct {
+        uint16_t seed;
+        uint8_t kind, root, mode;
+        int16_t tempo;
+    } nx;                                        /* the set's next tune, as queued */
+    int8_t solo, trade_with;                     /* trading parts: the instrument with the melody alone (-1 none);
+                                                  * the one who answers */
+    uint8_t trade;                               /* its stage: 0 not yet, 1 the leader's A, 2 the B, 3 done, 9 none */
     uint32_t tune_ms, quiet_t;                   /* when the tune began; when the room went quiet */
-    char tune_name[40];
+    uint32_t rounds, trades;                     /* (the host's checks: rounds stood, parts traded, this run) */
+    char tune_name[40], next_name[40];
 } ws;
 static uint32_t host_hold;                       /* (the host simulator's "hold": the next gap this long) */
 
@@ -78,23 +92,9 @@ const char *ch_name(int i)
     return REG[i].name;
 }
 static int sings(int i) { return i < NREG && REG[i].sings; }
-static int temper(int i) { return i < NREG ? REG[i].temper : 10; }
-static int warmth(int i) { return i < NREG ? REG[i].warmth : 50; }
-static int present(int i) { return W->ch[i].state == S_SEAT || W->ch[i].state == S_BAR || W->ch[i].state == S_MEND; }
+static int present(int i) { return W->ch[i].state == S_SEAT || W->ch[i].state == S_BAR; }
 static int free_to_play(int i) { return W->ch[i].state == S_SEAT && !W->ch[i].busy; }
 static int melodic(int i) { return W->ch[i].inst == I_FIDDLE || W->ch[i].inst == I_WHISTLE; }
-static int skill_now(int i)                      /* drink takes the edge off; a good mood puts some back */
-{
-    const ch_t *c = &W->ch[i];
-    return clampi((int)c->skill - (c->drinks > 2 ? (c->drinks - 2) * 7 : 0) + c->mood / 10, 5, 100);
-}
-static void mood(int i, int d) { W->ch[i].mood = (int8_t)clampi(W->ch[i].mood + d, -100, 100); }
-static void aff(int a, int b, int d)
-{
-    if (a == b || a >= NCH || b >= NCH)
-        return;
-    W->aff[a][b] = W->aff[b][a] = (int8_t)clampi(W->aff[a][b] + d, -100, 100);
-}
 
 /* ---------------------------------------------------------------- words --- */
 static char *wcat(char *d, const char *s, char *end)
@@ -122,6 +122,9 @@ static void fill(char *out, int n, const char *t, const char *a, const char *b, 
 }
 
 void say_event(const char *t);                   /* (ui.c) a screen reader hears it */
+#ifdef PLAT_HOST
+void host_event(const char *t);                  /* (host.c) the host's check of every event's words */
+#endif
 static void ev(const char *t, const char *a, const char *b, const char *c)
 {
     int i;
@@ -133,6 +136,9 @@ static void ev(const char *t, const char *a, const char *b, const char *c)
     W->log_min[0] = W->minute;
     ws.dirty = 1;
     say_event(W->log[0]);
+#ifdef PLAT_HOST
+    host_event(W->log[0]);
+#endif
 }
 static const char *pick(const char *const *a, int n) { return a[wr(n)]; }
 #define PICK(a) pick(a, (int)(sizeof a / sizeof a[0]))
@@ -140,6 +146,8 @@ static const char *pick(const char *const *a, int n) { return a[wr(n)]; }
 static void remember(int type, int a, int b, int n)
 {
     int i;
+    if (a == VISITOR)
+        b = W->ch[VISITOR].name;                 /* (a visitor: their name in b) */
     for (i = 0; i < W->nmem; i++)                /* once a night a kind of thing */
         if (W->mem[i].night == W->night && W->mem[i].type == type)
             return;
@@ -158,8 +166,9 @@ static void remember(int type, int a, int b, int n)
 /* a memorable night in words (the Nights page) */
 void mem_text(const mem_t *m, char *out, int n)
 {
+    static const char *const NUM[5] = {"", "", "two", "three", "four"};
     const char *a = m->a < NREG ? REG[m->a].name : m->a == NCH ? LANDLORD : VISITOR_NAME[m->b % NVNAME];
-    const char *b = m->b < NREG ? REG[m->b].name : "";
+    const char *b = m->b < NREG ? REG[m->b].name : m->b == VISITOR ? "the visitor" : "";
     char num[6];
     num[0] = (char)('0' + m->n / 10 % 10);
     num[1] = (char)('0' + m->n % 10);
@@ -167,14 +176,12 @@ void mem_text(const mem_t *m, char *out, int n)
     switch (m->type) {
     case M_LAMENT: fill(out, n, "%1 played a lament", a, 0, 0); break;
     case M_SONGS: fill(out, n, "a singers' night, %1 began it", a, 0, 0); break;
-    case M_STRING: fill(out, n, "%1 broke a string mid-tune", a, 0, 0); break;
-    case M_STANDOFF: fill(out, n, "%1 and %2 would not play", a, b, 0); break;
-    case M_PEACE: fill(out, n, "%1 and %2 made it up", a, b, 0); break;
-    case M_WELCOME: fill(out, n, "%1 the stranger, made welcome", a, 0, 0); break;
-    case M_FROZEN: fill(out, n, "%1 the stranger, frozen out", a, 0, 0); break;
+    case M_WELCOME: fill(out, n, "%1, a visitor, sat in", a, 0, 0); break;
     case M_GREAT: fill(out, n, "a great session: %1 in one tune", num[0] == '0' ? num + 1 : num, 0, 0); break;
     case M_NEWTUNE: fill(out, n, "%1 brought a new tune", a, 0, 0); break;
     case M_ROUND: fill(out, n, "you stood the house a round", 0, 0, 0); break;
+    case M_SET: fill(out, n, "%1 led a set of %2", a, NUM[m->n < 5 ? m->n : 4], 0); break;
+    case M_TRADE: fill(out, n, "%1 and %2 traded parts", a, b, 0); break;
     default: out[0] = 0; break;
     }
 }
@@ -261,30 +268,26 @@ static int lead_inst(void)                       /* the instrument with the tune
     return ws.leader >= 0 ? W->ch[ws.leader].inst : -1;
 }
 
-static void band(void)                           /* who plays now, to the engine */
+static void band(void)                           /* who plays now, to the engine (it takes it from the next phrase) */
 {
     int i, k, li = lead_inst();
     for (k = 0; k < EN_NINST; k++) {
-        int n = 0, sk = 0, level = 0;
+        int n = 0, level = 0;
         for (i = 0; i < NCH; i++)
-            if (W->ch[i].play && W->ch[i].inst == k && present(i)) {
+            if (W->ch[i].play && W->ch[i].inst == k && present(i))
                 n++;
-                sk += skill_now(i);
-            }
-        if (ws.state == W_TUNE && k == I_VOICE && ws.type == T_SONG && ws.leader >= 0 && ws.leader < NCH) {
+        if (ws.state == W_TUNE && k == I_VOICE && ws.type == T_SONG && ws.leader >= 0 && ws.leader < NCH)
             n = 1;
-            sk = skill_now(ws.leader);
-        }
-        if (ws.state == W_TUNE && k == I_WHISTLE && ws.leader == NCH) {   /* Hugh, after hours */
+        if (ws.state == W_TUNE && k == I_WHISTLE && ws.leader == NCH)   /* Hugh, after hours */
             n++;
-            sk += 60;
-        }
+        if (ws.solo >= 0 && k != ws.solo && (k == I_FIDDLE || k == I_WHISTLE || k == I_VOICE))
+            n = 0;                               /* trading parts: the other melody rests for the part */
         if (n) {
-            level = 66 + sk / n / 6 + (n - 1) * 10;
+            level = 77 + (n - 1) * 10;
             if ((ws.type == T_SONG || ws.kind == K_AIR) && k != li)
                 level = level * 2 / 3;            /* under a song or an air: softly */
         }
-        en_inst(k, preset_inst(k, level), n ? sk / n : 50);
+        en_inst(k, preset_inst(k, level));
     }
 }
 
@@ -310,14 +313,11 @@ static void new_night(void)
     W->peak = 0;
     for (i = 0; i < NCH; i++) {
         ch_t *c = &W->ch[i];
-        int comes = i < NREG ? chance(80 + c->mood / 8) : 0;
+        int comes = i < NREG ? chance(80) : 0;
         c->state = S_HOME;
         c->busy = c->play = 0;
-        c->drinks = 0;
         c->thirst = (uint8_t)(15 + wr(25));
-        c->flags &= (uint8_t)~CF_ASKED;
         if (i < NREG) {
-            c->mood = (int8_t)clampi(c->mood + (temper(i) - c->mood) / 3, -100, 100);
             c->arrive = (uint8_t)clampi(REG[i].arrive + wr(7) - 3, 0, 30);
             c->leave = (uint8_t)clampi(REG[i].leave + wr(7) - 3, c->arrive + 6, 41);
             if (!comes)
@@ -345,21 +345,18 @@ static void new_night(void)
         if (back >= 0)
             W->ch[back].arrive = 0;
     }
-    {                                            /* a visitor: an old friend back, or a stranger, or nobody */
+    {                                            /* a visitor: one who has sat in before, back, or a new one, or nobody */
         ch_t *v = &W->ch[VISITOR];
+        v->flags &= (uint8_t)~CF_WELCOME;
         if ((v->flags & CF_KNOWN) && chance(35)) {
-            v->flags |= CF_WELCOME;
+            /* the same one, back */
         } else if (chance(35)) {
             v->name = (uint8_t)wr(NVNAME);
             v->inst = VISITOR_INST[wr(5)];
-            v->skill = (uint8_t)(40 + wr(40));
-            v->mood = (int8_t)(wr(40));
             v->flags = 0;
             v->led = v->nights = 0;
             v->fav[0] = (uint16_t)(wrnd() & 0xFFFFu);
             v->fav[1] = (uint16_t)(wrnd() & 0xFFFFu);
-            for (i = 0; i < NCH; i++)
-                W->aff[VISITOR][i] = W->aff[i][VISITOR] = 0;
         } else {
             v->state = S_GONE;
             v->arrive = 99;
@@ -387,21 +384,22 @@ static void arrive(int i)
 {
     static const char *const IN[] = {"%1 comes in with the %2.", "%1 arrives, %2 under one arm.",
                                      "In comes %1 with the %2.", "%1 takes a seat, %2 out."};
-    static const char *const GLUM[] = {"%1 comes in, scowling.", "%1 slumps in by the fire.",
-                                       "%1 arrives with a face like thunder."};
     ch_t *c = &W->ch[i];
     c->state = S_SEAT;
     c->busy = 0;
-    if (i < NREG)
-        c->nights++;
-    if (i == VISITOR) {
-        if (c->flags & CF_WELCOME)
+    if (i == VISITOR) {                          /* a visitor: a chair is found, and in they play */
+        if (c->flags & CF_KNOWN) {
             ev("%1 is back, %2 and all.", ch_name(i), EN_INST_NAME[c->inst], 0);
-        else
-            ev("A stranger comes in with a %2: %1.", ch_name(i), EN_INST_NAME[c->inst], 0);
+        } else {
+            ev("A visitor sits in with a %2: %1.", ch_name(i), EN_INST_NAME[c->inst], 0);
+            remember(M_WELCOME, VISITOR, c->name, 0);
+        }
+        c->flags |= CF_WELCOME | CF_KNOWN;
+        c->nights++;
         return;
     }
-    ev(c->mood < -40 ? PICK(GLUM) : PICK(IN), ch_name(i), EN_INST_NAME[c->inst], 0);
+    c->nights++;
+    ev(PICK(IN), ch_name(i), EN_INST_NAME[c->inst], 0);
 }
 
 static void depart(int i, const char *why)
@@ -431,20 +429,19 @@ static void minute_tick(void)                    /* a minute of the tavern's clo
             if (present(i))
                 W->ch[i].thirst = (uint8_t)clampi(W->ch[i].thirst + 2, 0, 100);
     }
-    if (W->minute % 60 == 0)                     /* an hour: tempers settle */
-        for (i = 0; i < NCH; i++)
-            mood(i, (temper(i) - W->ch[i].mood) / 6);
     if (W->minute == MIN_ORDERS)
         ev("Hugh calls last orders.", 0, 0, 0);
     if (W->minute == MIN_TIME) {
         ev("\"Time, please!\" calls Hugh.", 0, 0, 0);
+        ws.set_left = 0;                         /* (a set queued: not now) */
+        ws.queued = 0;
         if (ws.state == W_TUNE && ws.type != T_LAST)
-            en_end();                            /* this one finishes its pass */
+            en_end();                            /* this one finishes its time through */
     }
     ws.dirty = 1;
 }
 
-/* between tunes: pints, the door, strangers */
+/* between tunes: pints, the door */
 static void gap_life(void)
 {
     static const char *const PINT[] = {"%1 goes up for a pint.", "%1 is at the bar.", "%1 gets a round in.",
@@ -456,57 +453,17 @@ static void gap_life(void)
         ch_t *c = &W->ch[i];
         if (c->state == S_BAR && !c->busy)
             c->state = S_SEAT;
-        if (c->state == S_MEND && !c->busy) {
-            c->state = S_SEAT;
-            ev("%1 has a new string on.", ch_name(i), 0, 0);
-        }
         if (!present(i) || ph >= PH_CLOSING)
             continue;
-        if (slot >= c->leave || c->drinks >= 6) {
-            static const char *const FULL[] = {"%1 has had enough and goes.", "%1 is poured out the door."};
-            depart(i, c->drinks >= 6 ? PICK(FULL) : PICK(HOME));
+        if (slot >= c->leave) {
+            depart(i, PICK(HOME));
             continue;
         }
-        if (c->mood < -75 && chance(30)) {
-            depart(i, "%1 storms out into the night.");
-            continue;
-        }
-        if (c->state == S_SEAT && c->thirst > 65 && chance(60)) {
+        if (c->state == S_SEAT && c->thirst > 65 && chance(60)) {   /* sits out the next tune at the bar */
             c->state = S_BAR;
             c->busy = 1;
             c->thirst = (uint8_t)clampi(c->thirst - 55, 0, 100);
-            c->drinks++;
-            mood(i, 5);
             ev(PICK(PINT), ch_name(i), 0, 0);
-        }
-    }
-    {   /* a stranger asks to sit in: the room decides */
-        ch_t *v = &W->ch[VISITOR];
-        if (v->state == S_SEAT && !(v->flags & CF_ASKED)) {
-            int n = 0, s = 0, host = -1;
-            v->flags |= CF_ASKED;
-            for (i = 0; i < NREG; i++)
-                if (present(i)) {
-                    n++;
-                    s += warmth(i) + W->ch[i].mood / 2;
-                    if (host < 0 || warmth(i) + W->ch[i].mood > warmth(host) + W->ch[host].mood)
-                        host = i;
-                }
-            if (!n)
-                return;
-            s = s / n + (v->flags & CF_KNOWN ? 40 : 0) + wr(60) - 30;
-            if (s > 40) {
-                if (!(v->flags & CF_KNOWN))
-                    remember(M_WELCOME, VISITOR, v->name, 0);
-                v->flags |= CF_WELCOME | CF_KNOWN;
-                aff(VISITOR, host, 25);
-                ev("%1 shifts up to make room for %2.", ch_name(host), ch_name(VISITOR), 0);
-            } else {
-                v->flags &= (uint8_t)~CF_WELCOME;
-                v->leave = (uint8_t)(slot + 2);
-                remember(M_FROZEN, VISITOR, v->name, 0);
-                ev("Nobody shifts up. %1 sips a pint alone.", ch_name(VISITOR), 0, 0);
-            }
         }
     }
 }
@@ -523,9 +480,9 @@ static int pick_leader(int song)
             continue;
         if (song ? !sings(i) : !(melodic(i) || W->ch[i].inst == I_HARP))
             continue;
-        w = 20 + skill_now(i) / 3 + W->ch[i].mood / 4 + wr(40);
+        w = 30 + wr(40);
         if (i == ws.last_leader)
-            w /= 3;
+            w /= 3;                              /* turns go round */
         if (W->ch[i].inst == I_HARP && !song)
             w = w * 2 / 3;
         if (w > bw) {
@@ -549,8 +506,6 @@ static int pick_kind(int ph, int leader)
     r = wr(sum > 0 ? sum : 100);
     if (leader >= 0 && leader < NCH && W->ch[leader].inst == I_HARP)
         return chance(60) ? K_AIR : K_WALTZ;     /* the harp leads the slow ones */
-    if (leader >= 0 && leader < NCH && W->ch[leader].mood < -30 && chance(50))
-        return K_AIR;
     for (k = 0; k < 4; k++) {
         r -= w[k];
         if (r < 0)
@@ -559,12 +514,34 @@ static int pick_kind(int ph, int leader)
     return K_REEL;
 }
 
+static int kind_tempo(int kind, int ph)          /* a kind's tempo, by the night (the preset's after) */
+{
+    int tempo;
+    switch (kind) {
+    case K_REEL: tempo = 74 + wr(10); break;
+    case K_JIG: tempo = 84 + wr(12); break;
+    case K_WALTZ: tempo = 92 + wr(14); break;
+    default: tempo = 50 + wr(8); break;
+    }
+    if (ph == PH_BUSY && kind != K_AIR)
+        tempo += 4;
+    if (ph >= PH_LATE)
+        tempo -= tempo / 12;
+    return preset_tempo(tempo);
+}
+
+static void key_text(char *q, int n, int root, int mode)   /* "A Dorian" */
+{
+    fill(q, n, "%1 %2", EN_NOTE_NAME[root % 12], EN_MODE_NAME[mode % EN_NMODES], 0);
+}
+
 static void start_tune(int leader, int type)
 {
     static const char *const START[] = {"%1 starts %2.", "%1 strikes up %2.", "%1 counts in %2.",
                                         "%1 launches into %2."};
     static const char *const FAVS[] = {"%1 plays an old favourite, %2.", "%1 starts %2, as ever."};
-    int i, ph = phase(), tempo;
+    static const char *const SET[] = {"%1 starts a set: %2.", "%1 leads off a set with %2."};
+    int i, ph = phase();
     ch_t *L = leader >= 0 && leader < NCH ? &W->ch[leader] : 0;
     ws.type = (uint8_t)type;
     ws.leader = (int8_t)leader;
@@ -600,19 +577,19 @@ static void start_tune(int leader, int type)
     ws.harp = L && L->inst == I_HARP && type != T_SONG;
     ws.passes = (uint8_t)(type == T_TUNE ? (ws.kind == K_AIR ? 1 + (ph == PH_BUSY) : ph == PH_BUSY ? 2 + chance(50) : 2)
                                          : type == T_LAST ? 2 : 1);
-    switch (ws.kind) {
-    case K_REEL: tempo = 74 + wr(10); break;
-    case K_JIG: tempo = 84 + wr(12); break;
-    case K_WALTZ: tempo = 92 + wr(14); break;
-    default: tempo = 50 + wr(8); break;
+    /* a set: in the busy hours a reel or a jig may run straight into one or two more; a waltz into one more late */
+    ws.set_left = 0;
+    if (type == T_TUNE && !ws.harp && ph < PH_CLOSING) {
+        if ((ws.kind == K_REEL || ws.kind == K_JIG) && ph == PH_BUSY && chance(50))
+            ws.set_left = (uint8_t)(1 + chance(40));
+        else if (ws.kind == K_WALTZ && ph != PH_BUSY && chance(25))
+            ws.set_left = 1;
     }
-    if (ph == PH_BUSY && ws.kind != K_AIR)
-        tempo += 4;
-    if (ph >= PH_LATE)
-        tempo -= tempo / 12;
-    if (L)
-        tempo += (skill_now(leader) - 60) / 10;
-    tempo = preset_tempo(tempo);
+    if (ws.set_left)
+        ws.passes = 2;                           /* (in a set, each tune twice through) */
+    ws.set_n = ws.set_left ? 1 : 0;
+    ws.queued = 0;
+    ws.tempo = (int16_t)kind_tempo(ws.kind, ph);
     tune_name(ws.seed, ws.kind, ws.tune_name, (int)sizeof ws.tune_name);
     if (type == T_LAST)
         fill(ws.tune_name, (int)sizeof ws.tune_name, "The Parting Glass", 0, 0, 0);
@@ -622,18 +599,15 @@ static void start_tune(int leader, int type)
         L->play = 1;
     ws.state = W_TUNE;
     ws.joined = 0;
-    ws.refused = 0;
-    ws.string_bar = 0;
+    ws.solo = -1;
+    ws.trade_with = -1;
+    ws.trade = 0;
     ws.tune_ms = plat_ms();
     if (type == T_SONG)                          /* a song: the harp and the box under it from the start */
         for (i = 0; i < NCH; i++)
             if (free_to_play(i) && (W->ch[i].inst == I_HARP || W->ch[i].inst == I_BOX) && i != leader)
                 W->ch[i].play = 1;
-    if (type == T_TUNE && L && (L->inst == I_FIDDLE || L->inst == I_LUTE) && chance(6 + (L->drinks > 2 ? 5 : 0))) {
-        ws.string_bar = (uint8_t)(3 + wr(10));   /* a string will go */
-        ws.string_who = (uint8_t)leader;
-    }
-    en_set(P_TEMPO, tempo);
+    en_set(P_TEMPO, ws.tempo);
     en_set(P_ROOT, ws.root);
     en_set(P_MODE, ws.mode);
     band();
@@ -648,22 +622,78 @@ static void start_tune(int leader, int type)
         case T_LAMENT: ev("Hush. %1 plays a lament.", ch_name(leader), 0, 0); break;
         case T_LAST: ev("The last tune: everyone in.", 0, 0, 0); break;
         case T_HUGH: ev("Hugh plays one for the empty room.", 0, 0, 0); break;
-        default: ev(ws.fav ? PICK(FAVS) : PICK(START), ch_name(leader), q, 0); break;
+        default: ev(ws.set_left ? PICK(SET) : ws.fav ? PICK(FAVS) : PICK(START), ch_name(leader), q, 0); break;
         }
     }
     ws.since_song++;
 }
 
-static void join(int stage)                      /* the repeat (1) or the B part (2): the others come in */
+/* the set's next tune, chosen as the last time through begins its B part, queued to follow straight on: the same
+ * kind (a jig set may turn to reels), another key, a touch quicker */
+static void queue_next(void)
 {
-    static const char *const REFUSE[] = {"%1 won't play under %2.", "%1 folds arms while %2 plays.",
-                                         "%1 sits this one out: %2 again."};
+    int ph = phase(), kind = ws.kind, tempo;
+    uint8_t root, mode;
+    uint16_t seed = (uint16_t)(wrnd() & 0x3FFFu);
+    if (kind == K_JIG && chance(40))
+        kind = K_REEL;
+    tune_key(seed, T_TUNE, &root, &mode);
+    if (ws.req_root >= 0) {
+        root = (uint8_t)ws.req_root;
+        ws.req_root = -1;
+    } else if (root == ws.root) {
+        root = (uint8_t)((root + 5) % 12);       /* a new key: up a fourth */
+    }
+    tempo = kind_tempo(kind, ph);
+    if (kind == ws.kind && tempo < ws.tempo + 2)
+        tempo = ws.tempo + 2;                    /* the set lifts */
+    tempo = clampi(tempo, 30, 140);
+    ws.nx.seed = seed;
+    ws.nx.kind = (uint8_t)kind;
+    ws.nx.root = root;
+    ws.nx.mode = mode;
+    ws.nx.tempo = (int16_t)tempo;
+    tune_name(seed, kind, ws.next_name, (int)sizeof ws.next_name);
+    en_next(seed, kind, 2, root, mode, tempo);
+    ws.queued = 1;
+}
+
+/* the set went straight on into the queued tune: it is now the tune; the band plays on as it was */
+static void segue(void)
+{
+    char q[44], k[24];
+    ws.seed = ws.nx.seed;
+    ws.kind = ws.nx.kind;
+    ws.root = ws.nx.root;
+    ws.mode = ws.nx.mode;
+    ws.tempo = ws.nx.tempo;
+    ws.passes = 2;
+    ws.harp = 0;
+    ws.fav = 0;
+    ws.queued = 0;
+    ws.set_left--;
+    ws.set_n++;
+    ws.joined = 2;                               /* (everyone who was in, stays in) */
+    ws.solo = -1;
+    ws.trade = 9;
+    ws.tune_ms = plat_ms();
+    memcpy(ws.tune_name, ws.next_name, sizeof ws.tune_name);
+    fill(q, (int)sizeof q, "%1", ws.tune_name, 0, 0);
+    key_text(k, (int)sizeof k, ws.root, ws.mode);
+    ev("On into %1, in %2.", q, k, 0);
+    if (ws.set_n >= 3 && ws.leader >= 0 && ws.leader < NCH)
+        remember(M_SET, ws.leader, 0, ws.set_n);
+    band();
+}
+
+static void join(int stage)                      /* the repeat (1), the B part (2), a round (3): the others come in */
+{
     int i, L = ws.leader, changed = 0;
     if (ws.type == T_LAMENT || ws.type == T_HUGH)
         return;                                  /* a lament, Hugh's air: alone */
     for (i = 0; i < NCH; i++) {
         ch_t *c = &W->ch[i];
-        int p, a = L >= 0 && L < NCH ? W->aff[i][L] : 0;
+        int p;
         if (c->play || !free_to_play(i) || i == L)
             continue;
         if (i == VISITOR && !(c->flags & CF_WELCOME))
@@ -672,21 +702,12 @@ static void join(int stage)                      /* the repeat (1) or the B part
             continue;                            /* a song: the room listens */
         if (ws.kind == K_AIR && c->inst == I_DRUM)
             continue;
-        if (ws.type == T_LAST) {
+        if (ws.type == T_LAST || ws.all_in || stage == 3) {
             c->play = 1;
             changed = 1;
             continue;
         }
-        if (a < -40 && !ws.refused && chance(75)) {
-            ws.refused = 1;
-            mood(i, -4);
-            aff(i, L, -2);
-            ev(PICK(REFUSE), ch_name(i), ch_name(L), 0);
-            continue;
-        }
-        if (a < -40)
-            continue;
-        p = (ws.kind == K_AIR ? 45 : 82) + c->mood / 5 + a / 5 + (stage == 2 ? 10 : 0);
+        p = (ws.kind == K_AIR ? 45 : 82) + (stage == 2 ? 10 : 0);
         if (stage == 1 && chance(35))
             continue;                            /* some wait for the B part */
         if (chance(p)) {
@@ -698,16 +719,50 @@ static void join(int stage)                      /* the repeat (1) or the B part
         band();
 }
 
-static void tune_over(void)                      /* the tune ended: how it went, and what it did to them */
+/* trading parts, on the middle time through of a tune played three times: the leader takes the A part alone, the
+ * other melody instrument answers with the B, then all in for the last. Each change is sent in the last bar before
+ * it, so it lands where the part begins. pos: bars into the tune */
+static void trade_tick(int pos)
+{
+    int i, L = ws.leader;
+    if (ws.trade == 0 && pos >= 31) {
+        int pick = -1, n = 0;
+        ws.trade = 9;
+        if (ws.type != T_TUNE || ws.passes < 3 || L < 0 || L >= NCH || !melodic(L) || en_passes < 3)
+            return;
+        for (i = 0; i < NCH; i++)                /* who answers: another melody instrument, in the tune */
+            if (i != L && W->ch[i].play && present(i) && melodic(i) && W->ch[i].inst != W->ch[L].inst &&
+                wr(++n) == 0)
+                pick = i;
+        if (pick < 0)
+            return;
+        ws.trade_with = (int8_t)pick;
+        ws.solo = (int8_t)W->ch[L].inst;
+        ws.trade = 1;
+        ws.trades++;
+        if (L < NREG && pick < NREG)
+            remember(M_TRADE, L, pick, 0);
+        ev("%1 takes the A part alone; %2 will answer.", ch_name(L), ch_name(pick), 0);
+        band();
+    } else if (ws.trade == 1 && pos >= 47) {
+        ws.trade = 2;
+        ws.solo = (int8_t)W->ch[(int)ws.trade_with].inst;
+        ev("%1 answers with the B part.", ch_name(ws.trade_with), 0, 0);
+        band();
+    } else if (ws.trade == 2 && pos >= 63) {
+        ws.trade = 3;
+        ws.solo = -1;
+        ev("All in together, the last time through.", 0, 0, 0);
+        band();
+    }
+}
+
+static void tune_over(int segued)                /* the tune ended: how it went */
 {
     static const char *const CHEER[] = {"A roar for %1.", "Feet stamp for %1.", "\"Grand!\" says someone.",
                                         "Glasses raised for %1."};
     static const char *const MILD[] = {"A murmur of approval.", "Polite applause.", "Someone whistles."};
-    int i, j, n = players(), q = 0, L = ws.leader;
-    for (i = 0; i < NCH; i++)
-        if (W->ch[i].play)
-            q += skill_now(i) + W->ch[i].mood / 4;
-    q = n ? q / n : 50;
+    int i, n = players(), L = ws.leader;
     W->tunes++;
     if (L >= 0 && L < NCH)
         W->ch[L].led++;
@@ -716,52 +771,35 @@ static void tune_over(void)                      /* the tune ended: how it went,
     for (i = 0; i < NCH; i++) {
         ch_t *c = &W->ch[i];
         int played = c->play || (i == L && ws.type == T_SONG);
-        if (c->busy && (c->state == S_BAR || c->state == S_MEND))
+        if (c->busy && c->state == S_BAR)
             c->busy--;
         if (!present(i))
             continue;
-        if (played) {
-            c->thirst = (uint8_t)clampi(c->thirst + 9 + wr(8) + (c->inst == I_DRUM ? 8 : 0), 0, 100);
-            mood(i, (q - 55) / 8 + 2);
-            if (chance(3) && c->skill < 95)
-                c->skill++;
-            for (j = 0; j < NCH; j++)
-                if (j != i && W->ch[j].play) {
-                    int before = W->aff[i][j];
-                    aff(i, j, before < -40 ? 2 : 1);
-                    if (before < -10 && W->aff[i][j] >= -10 && i < j) {
-                        remember(M_PEACE, i, j, 0);
-                        ev("%1 and %2 shake hands at last.", ch_name(i), ch_name(j), 0);
-                    }
-                }
-        } else {
-            c->thirst = (uint8_t)clampi(c->thirst + 4, 0, 100);
-        }
+        c->thirst = (uint8_t)clampi(c->thirst + (played ? 9 + wr(8) + (c->inst == I_DRUM ? 8 : 0) : 4), 0, 100);
     }
     if (ws.type == T_LAMENT) {
-        for (i = 0; i < NCH; i++)
-            if (present(i) && i != L) {
-                aff(i, L, 3);
-                mood(i, -3);
-            }
-        mood(L, 15);                             /* it did them good */
         W->lament_done = 1;
-    } else if (ws.type == T_TUNE && n >= 2) {
-        if (n >= 5 && q > 60)
-            ev(PICK(CHEER), ws.tune_name, 0, 0);
+    } else if (ws.type == T_TUNE && n >= 2 && !segued) {
+        if (n >= 5 || ws.set_n >= 2)
+            ev(PICK(CHEER), ws.set_n >= 2 ? "the set" : ws.tune_name, 0, 0);
         else if (chance(40))
             ev(PICK(MILD), 0, 0, 0);
     }
     if (n >= 7 && ws.type == T_TUNE)
         remember(M_GREAT, L >= 0 ? L : 0, 0, n);
-    if (ws.type == T_TUNE && !ws.fav && L >= 0 && L < NREG && q > 62 && chance(10)) {
+    if (ws.type == T_TUNE && !ws.fav && L >= 0 && L < NREG && n >= 3 && chance(10)) {
         W->ch[L].fav[1] = W->ch[L].fav[0];
         W->ch[L].fav[0] = (uint16_t)(ws.seed | (uint16_t)ws.kind << 14);
         remember(M_NEWTUNE, L, 0, 0);
         ev("%1 has a new one now: %2.", ch_name(L), ws.tune_name, 0);
     }
-    for (i = 0; i < NCH; i++)
-        W->ch[i].play = 0;
+    if (!segued) {
+        for (i = 0; i < NCH; i++)
+            W->ch[i].play = 0;
+        ws.all_in = 0;
+        ws.solo = -1;
+        ws.set_left = ws.set_n = ws.queued = 0;
+    }
     ws.dirty = 1;
 }
 
@@ -773,19 +811,15 @@ static uint32_t gap_len(void)                    /* how long the room talks befo
 
 static void next_tune(void)                      /* the gap is over: who starts what */
 {
-    int ph = phase(), L, i, rival = -1;
+    int ph = phase(), L, i;
     if (ph >= PH_CLOSING)
         return;
     gap_life();
-    if (ph >= PH_LATE && !W->lament_done) {      /* late: a lament, from the lowest heart */
-        int low = -1;
-        for (i = 0; i < NCH; i++)
-            if (free_to_play(i) && (melodic(i) || W->ch[i].inst == I_HARP) &&
-                (low < 0 || W->ch[i].mood < W->ch[low].mood))
-                low = i;
-        if (low >= 0 && (W->ch[low].mood < -20 || chance(20))) {
-            remember(M_LAMENT, low, 0, 0);
-            start_tune(low, T_LAMENT);
+    if (ph >= PH_LATE && !W->lament_done && chance(30)) {   /* late: a lament, alone */
+        L = pick_leader(0);
+        if (L >= 0) {
+            remember(M_LAMENT, L, 0, 0);
+            start_tune(L, T_LAMENT);
             return;
         }
     }
@@ -813,20 +847,6 @@ static void next_tune(void)                      /* the gap is over: who starts 
         return;
     }
     ws.waiting_said = 0;
-    for (i = 0; i < NCH; i++)                    /* a rival with a tune of their own? */
-        if (i != L && free_to_play(i) && melodic(i) && W->aff[i][L] < -50)
-            rival = i;
-    if (rival >= 0 && chance(35)) {
-        int win = W->ch[L].skill + wr(30) >= W->ch[rival].skill + wr(30) ? L : rival, lose = win == L ? rival : L;
-        ev("%1 and %2 both start at once.", ch_name(L), ch_name(rival), 0);
-        ev("%1 plays on; %2 stalks to the bar.", ch_name(win), ch_name(lose), 0);
-        remember(M_STANDOFF, win, lose, 0);
-        W->ch[lose].state = S_BAR;
-        W->ch[lose].busy = 1;
-        mood(lose, -12);
-        aff(win, lose, -4);
-        L = win;
-    }
     start_tune(L, T_TUNE);
 }
 
@@ -836,14 +856,13 @@ static void closing(void)                        /* after "Time": the last tune,
     for (i = 0; i < NCH; i++)
         any |= present(i);
     if (W->minute < MIN_SHUT && any && ws.type != T_LAST) {
-        int L = pick_leader(0);
+        int L;
         for (i = 0; i < NCH; i++)                /* everyone back to the table for it */
             if (present(i)) {
                 W->ch[i].state = S_SEAT;
                 W->ch[i].busy = 0;
             }
-        if (L < 0)
-            L = pick_leader(0);
+        L = pick_leader(0);
         if (L >= 0) {
             start_tune(L, T_LAST);
             return;
@@ -865,29 +884,16 @@ void world_bind(world_t *w) { W = w; }
 
 void world_defaults(void)
 {
-    int i, j;
+    int i;
     memset(W, 0, sizeof *W);
     W->rng = 0x7A5E1u;
     for (i = 0; i < NREG; i++) {
         ch_t *c = &W->ch[i];
         c->inst = REG[i].inst;
-        c->skill = REG[i].skill;
-        c->mood = REG[i].temper;
         c->name = (uint8_t)i;
         c->fav[0] = (uint16_t)((wrnd() & 0x3FFFu) | (uint32_t)(c->inst == I_HARP ? K_AIR : i & 1 ? K_JIG : K_REEL) << 14);
         c->fav[1] = (uint16_t)((wrnd() & 0x3FFFu) | (uint32_t)(c->inst == I_HARP ? K_WALTZ : i & 2 ? K_WALTZ : K_REEL) << 14);
     }
-    for (i = 0; i < NCH; i++)
-        for (j = 0; j < NCH; j++)
-            W->aff[i][j] = (int8_t)(i == j ? 0 : 5 + (int)((i * 7 + j * 7) % 11));
-    aff(0, 1, -75);                              /* Old Tom and Rosie: an old quarrel over a tune */
-    aff(0, 3, 35);
-    aff(1, 4, 30);
-    aff(2, 3, 30);
-    aff(5, 7, -45);                              /* Nora can't abide the drum */
-    aff(6, 7, 25);
-    aff(4, 7, 35);
-    aff(2, 5, 20);
     W->ch[VISITOR].state = S_GONE;
     W->ch[VISITOR].arrive = 99;
     W->night = 0;
@@ -901,9 +907,44 @@ int world_valid(void)                            /* a loaded world that makes se
     if (W->minute > MIN_DAWN || W->nmem > NMEM)
         return 0;
     for (i = 0; i < NCH; i++)
-        if (W->ch[i].state > S_GONE || W->ch[i].inst >= EN_NINST || W->ch[i].skill > 100 || W->ch[i].thirst > 100)
+        if (W->ch[i].state > S_GONE || W->ch[i].inst >= EN_NINST || W->ch[i].thirst > 100)
             return 0;
     return 1;
+}
+
+/* a 1.0 or 1.1 save (project.c): the night, who has come, the tunes, favourites and memories go on; 1.1's moods,
+ * skill, drink and quarrels are cleared, a player mending a string sits down, a stranger left out is made welcome,
+ * memories of mishaps (a string, a stand-off, a peace, a stranger frozen out) are dropped, and tonight's last events
+ * (some of them 1.1's quarrels) are let go */
+void world_migrate(void)
+{
+    int i, k = 0;
+    for (i = 0; i < NCH; i++) {
+        ch_t *c = &W->ch[i];
+        c->x_mood = 0;
+        c->x_skill = 0;
+        c->x_drinks = 0;
+        c->flags &= (uint8_t)~CF_X_ASKED;
+        if (c->state == S_X_MEND) {
+            c->state = S_SEAT;
+            c->busy = 0;
+        }
+        c->play = 0;
+    }
+    if (present(VISITOR))
+        W->ch[VISITOR].flags |= CF_WELCOME | CF_KNOWN;
+    memset(W->x_aff, 0, sizeof W->x_aff);
+    for (i = 0; i < W->nmem && i < NMEM; i++) {
+        int t = W->mem[i].type;
+        if (t == M_X_STRING || t == M_X_STANDOFF || t == M_X_PEACE || t == M_X_FROZEN || t >= M_N || t == M_NONE)
+            continue;
+        W->mem[k++] = W->mem[i];
+    }
+    for (i = k; i < NMEM; i++)
+        memset(&W->mem[i], 0, sizeof W->mem[i]);
+    W->nmem = (uint8_t)k;
+    memset(W->log, 0, sizeof W->log);
+    memset(W->log_min, 0, sizeof W->log_min);
 }
 
 void world_start(void)                           /* boot: the room as it was saved, between tunes */
@@ -912,8 +953,10 @@ void world_start(void)                           /* boot: the room as it was sav
     memset(&ws, 0, sizeof ws);
     ws.leader = -1;
     ws.req_root = -1;
+    ws.solo = ws.trade_with = -1;
     ws.prev = plat_ms();
     ws.done_seen = en_tunes_done;
+    ws.segs_seen = en_segues;
     ws.gap = 2500;                               /* a moment, then a tune */
     ws.warp = 1;
     ws.since_song = 3;
@@ -942,7 +985,13 @@ void world_tick(void)
     if (ws.state == W_TUNE) {
         if (en_tunes_done != ws.done_seen) {     /* it ended */
             ws.done_seen = en_tunes_done;
-            tune_over();
+            if (en_segues != ws.segs_seen) {     /* a set: straight on into the next */
+                ws.segs_seen = en_segues;
+                tune_over(1);
+                segue();
+                return;
+            }
+            tune_over(0);
             ws.state = W_GAP;
             ws.quiet_t = now;
             ws.gap = ws.called ? 1500u : gap_len();
@@ -963,38 +1012,19 @@ void world_tick(void)
             ws.joined = 9;                       /* (the engine never took it: let it end) */
             ws.done_seen = en_tunes_done - 1u;
         }
-        if (!ws.joined && en_sess == 1 && (en_rep == 1 || en_part == 1)) {
-            ws.joined = 1;
-            join(1);
-        }
-        if (ws.joined == 1 && en_sess == 1 && en_part == 1) {
-            ws.joined = 2;
-            join(2);
-        }
-        if (ws.string_bar && en_sess == 1 && en_part * 16 + en_rep * 8 + en_bar >= ws.string_bar) {
-            int who = ws.string_who;             /* snap */
-            static const char *const SNAP[] = {"Snap! %1 breaks a string.", "Twang! A string goes on %1's %2."};
-            ws.string_bar = 0;
-            if (W->ch[who].play) {
-                W->ch[who].play = 0;
-                W->ch[who].state = S_MEND;
-                W->ch[who].busy = 2;
-                mood(who, -10);
-                en_twang(W->ch[who].inst);
-                remember(M_STRING, who, 0, 0);
-                ev(PICK(SNAP), ch_name(who), EN_INST_NAME[W->ch[who].inst], 0);
-                if (who == ws.leader) {          /* someone takes the tune on, if they can */
-                    int i;
-                    for (i = 0; i < NCH; i++)
-                        if (W->ch[i].play && melodic(i)) {
-                            ev("%1 carries the tune on.", ch_name(i), 0, 0);
-                            break;
-                        }
-                    if (i == NCH)
-                        en_end();
-                }
-                band();
+        if (en_sess == 1) {
+            int pos = en_pass * 32 + en_part * 16 + en_rep * 8 + en_bar;   /* bars into the tune */
+            if (!ws.joined && pos >= 7) {        /* in the A part's last bar: in from the repeat */
+                ws.joined = 1;
+                join(1);
             }
+            if (ws.joined == 1 && pos >= 15) {   /* in the repeat's last bar: in from the B part */
+                ws.joined = 2;
+                join(2);
+            }
+            trade_tick(pos);
+            if (ws.set_left && !ws.queued && en_pass + 1 >= en_passes && en_part == 1 && W->minute < MIN_ORDERS)
+                queue_next();
         }
         return;
     }
@@ -1028,7 +1058,7 @@ void world_tick(void)
 }
 
 /* the player's part */
-void world_round(void)                           /* REC: a round for the house */
+void world_round(void)                           /* REC: a round for the house: full glasses, everyone in */
 {
     int i, n = 0;
     for (i = 0; i < NCH; i++)
@@ -1042,18 +1072,20 @@ void world_round(void)                           /* REC: a round for the house *
         return;
     }
     W->round_at = (uint16_t)(W->minute + 1);
+    ws.rounds++;
     for (i = 0; i < NCH; i++)
         if (present(i)) {
-            int j;
-            W->ch[i].thirst = (uint8_t)clampi(W->ch[i].thirst - 50, 0, 100);
-            W->ch[i].drinks++;
-            mood(i, 12);
-            for (j = i + 1; j < NCH; j++)
-                if (present(j))
-                    aff(i, j, 3);
+            W->ch[i].thirst = 0;
+            if (W->ch[i].state == S_BAR) {       /* back to the table with it */
+                W->ch[i].state = S_SEAT;
+                W->ch[i].busy = 0;
+            }
         }
+    ws.all_in = 1;
     remember(M_ROUND, 0, 0, (int)n);
-    ev("You stand the house a round. Slainte!", 0, 0, 0);
+    ev("You stand the house a round. Slainte! Everyone in.", 0, 0, 0);
+    if (ws.state == W_TUNE && en_sess == 1)
+        join(3);                                 /* in from the next phrase */
 }
 
 void world_call(void)                            /* EDIT: call for a tune */
@@ -1064,12 +1096,8 @@ void world_call(void)                            /* EDIT: call for a tune */
         ws.gap = 0;
         ev("You call for a tune.", 0, 0, 0);
     } else {
-        int i;
         ev("\"Another after this!\" you call.", 0, 0, 0);
         ws.called = 1;
-        for (i = 0; i < NCH; i++)
-            if (W->ch[i].play)
-                mood(i, 3);
     }
 }
 
@@ -1088,6 +1116,13 @@ int world_kind(void) { return ws.kind; }
 int world_root(void) { return ws.root; }
 int world_mode(void) { return ws.mode; }
 int world_phase(void) { return phase(); }
+int world_set(void) { return ws.state == W_TUNE ? ws.set_n : 0; }
+int world_solo(void)
+{
+    if (ws.state != W_TUNE)
+        return -1;
+    return ws.trade == 1 ? ws.leader : ws.trade == 2 ? ws.trade_with : -1;
+}
 int world_quiet(uint32_t now)                   /* a quiet moment for the flash: between tunes, the tails gone */
 {
     return ws.state != W_TUNE && en_sess == 0 && now - ws.quiet_t > 2500u && en_level < 0.03f;
@@ -1097,22 +1132,6 @@ int ch_hair(int i) { return i < NREG ? REG[i].hair : 8 + W->ch[i].name % 3; }
 int ch_shirt(int i) { return i < NREG ? REG[i].shirt : 8 + W->ch[i].name % 4; }
 int ch_skin(int i) { return i < NREG ? REG[i].skin : W->ch[i].name % 3; }
 int ch_sings(int i) { return sings(i); }
-int ch_rival(int i)                              /* the one they like least, if they truly don't */
-{
-    int j, r = -1;
-    for (j = 0; j < NCH; j++)
-        if (j != i && W->aff[i][j] < -40 && (r < 0 || W->aff[i][j] < W->aff[i][r]))
-            r = j;
-    return r;
-}
-int ch_friend(int i)
-{
-    int j, r = -1;
-    for (j = 0; j < NCH; j++)
-        if (j != i && W->aff[i][j] > 30 && (r < 0 || W->aff[i][j] > W->aff[i][r]))
-            r = j;
-    return r;
-}
 
 #ifdef PLAT_HOST
 void world_host_hold(int ms) { if (ws.state == W_GAP) ws.gap = (uint32_t)ms; else host_hold = (uint32_t)ms; }

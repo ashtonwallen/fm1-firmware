@@ -1,0 +1,250 @@
+# the Ambience (Space page, knob 4): the preset's air (rain, wind, sea, candles) from silent to 120 %, 100 % the preset
+# as it was; kept per preset. Measured while the choir rests (the air goes on): the default, off, full
+tap PLAY
+wait 300
+expect playing 0
+tap FX
+expect preset 0
+expect amb 20
+expect eff37 0
+spin K4 -3
+expect eff37 0
+spin K4 3
+turn PRESET 1
+expect preset 1
+expect amb 20
+expect eff37 0
+spin K4 -3
+expect eff37 0
+spin K4 3
+turn PRESET 1
+expect preset 2
+expect amb 20
+expect eff37 35
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 42
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 3
+expect amb 20
+expect eff37 45
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 54
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 4
+expect amb 20
+expect eff37 55
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 66
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 5
+expect amb 20
+expect eff37 0
+spin K4 -3
+expect eff37 0
+spin K4 3
+turn PRESET 1
+expect preset 6
+expect amb 20
+expect eff37 30
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 36
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 7
+expect amb 20
+expect eff37 55
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 66
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 8
+expect amb 20
+expect eff37 0
+spin K4 -3
+expect eff37 0
+spin K4 3
+turn PRESET 1
+expect preset 9
+expect amb 20
+expect eff37 30
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 36
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 10
+expect amb 20
+expect eff37 35
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -50
+expect peak_db_max -20
+spin K4 -30
+expect amb 0
+expect eff37 0
+wait 6000
+peakreset
+wait 4000
+expect peak_db_max -55
+spin K4 30
+expect amb 24
+expect eff37 42
+wait 6000
+peakreset
+wait 4000
+expect peak_db_min -48
+expect peak_db_max -20
+spin K4 -4
+expect amb 20
+turn PRESET 1
+expect preset 11
+expect amb 20
+expect eff37 0
+spin K4 -3
+expect eff37 0
+spin K4 3
+# kept per preset, and saved: the Cloister's rain down to 30 %, the others as they were
+turn PRESET -8
+expect preset 3
+spin K4 -14
+expect amb 6
+expect eff37 13
+wait 1300
+shot cloister-rain.png
+turn PRESET 1
+expect amb 20
+turn PRESET -1
+expect amb 6
+tap PLAY
+tap SAVE
+reboot
+wait 300
+expect preset 3
+expect amb 6
+expect eff37 13
+turn PRESET 1
+expect amb 20
+# SAVE held: the sound back to its defaults, the Ambience too
+turn PRESET -1
+press SAVE
+wait 1700
+release SAVE
+expect amb 20
+expect eff37 45

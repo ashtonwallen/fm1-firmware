@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new riddim
+wait 300
+listen
+wait 300
+where
+wait 300
+said Desk page: Engineer Busy, Echo 50, Time 3/16, Bass 70. Style Sixpence Bass, rolling
+tap ENV
+wait 400
+said Band page
+spin K1 -3
+wait 300
+said Drums 67
+tap EDIT
+wait 300
+said NEXT RIDDIM
+wait 14000
+said Version 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY STYLE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said STOPPED
+where
+wait 300
+said Style Sixpence Bass, stopped
+speakdump

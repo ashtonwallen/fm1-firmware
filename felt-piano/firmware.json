@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "feltpiano",
+  "name": "FELT PIANO",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless generated solo piano. Felt hammers, a soft pedal, a quiet room.",
+  "description": "FELT PIANO turns the M-VAVE FM-1 into an endless solo pianist. Every few minutes a new piece in one of five idioms: a slow Gymnopedie-like waltz, Airport-style loops drifting out of phase, a felt ostinato that changes one note at a time, a nocturne, or sparse modal improvising. A modal felt-piano voice with soft hammers, beating unisons, dampers, sympathetic strings, pedal and key noise, in a gentle room. A piano roll scrolls on the screen, each note a light that fades as it rings. Fourteen presets, from Erik's Bowler to Coat Check; knobs for tempo, density, felt and room.",
+  "tags": ["generative", "ambient"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/felt-piano",
+  "screenshot": "docs/img/screen-roll.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

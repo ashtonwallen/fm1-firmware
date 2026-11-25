@@ -14,3 +14,6 @@ flasher/CLAUDE.md
 __pycache__/
 *.tmp
 .claude-briefs/
+
+# Demo clips to judge by ear (local)
+demos/

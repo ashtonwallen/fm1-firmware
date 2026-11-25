@@ -1,11 +1,12 @@
 /* SPDX-License-Identifier: MPL-2.0
  * Copyright (C) 2026 Charles Vestal
  * Tavern: ashtonwallen, 2026 */
-/* TAVERN's project: one flash object (OBJ_PROJ): the settings and the whole tavern (the regulars, their moods and
- * quarrels, tonight's clock, the memorable nights). A project of another format or another firmware, or none,
- * gives the defaults: a fresh tavern on its first night. Format 1 (1.0) has the same layout (its spare byte, always
- * 0, is now the preset): it is carried over whole, on preset 0, The Corner, 1.0's session. Part of the unity build,
- * after app.h. */
+/* TAVERN's project: one flash object (OBJ_PROJ): the settings and the whole tavern (the regulars, tonight's clock,
+ * the memorable nights). A project of another format or another firmware, or none, gives the defaults: a fresh
+ * tavern on its first night. Formats 1 (1.0) and 2 (1.1) have the same layout (1.0's spare byte, always 0, is now
+ * the preset; 1.1's spare bytes, 0, are now the ambience): they are carried over, 1.0's on preset 0, The Corner,
+ * every ambience at the preset's own level, and the world's 1.1 moods and quarrels cleared away (world_migrate).
+ * Part of the unity build, after app.h. */
 project_t proj;
 
 static int player_par(int p) { return p < P_TEMPO; }   /* the tune's own (tempo, root, mode) are the world's */
@@ -20,6 +21,8 @@ void project_defaults(void)
         proj.par[i] = en_param_info(i)->def;
     proj.leds = 1;
     proj.night_len = 3;                          /* an hour a night */
+    for (i = 0; i < NPRESET; i++)
+        proj.amb[i] = AMB_DEF;
     world_bind(&proj.world);
     world_defaults();
 }
@@ -30,6 +33,9 @@ static int project_valid(void)
     if (proj.magic != PROJ_MAGIC || proj.format != PROJ_FORMAT || proj.leds > 2 || proj.night_len > 5 ||
         proj.preset >= NPRESET)
         return 0;
+    for (i = 0; i < NPRESET; i++)
+        if (proj.amb[i] > AMB_STEPS)
+            return 0;
     for (i = 0; i < P_NSAVED; i++) {
         const en_param_t *p = en_param_info(i);
         if (proj.par[i] < p->lo || proj.par[i] > p->hi)
@@ -44,9 +50,16 @@ int project_load(void)
     memset(&proj, 0, sizeof proj);
     world_bind(&proj.world);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
-    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {   /* 1.0's: on the first preset */
-        proj.format = PROJ_FORMAT;
-        proj.preset = 0;
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && (proj.format == 1u || proj.format == 2u)) {
+        int i;
+        if (proj.format == 1u)                   /* 1.0's: on the first preset */
+            proj.preset = 0;
+        proj.format = PROJ_FORMAT;               /* 1.0's, 1.1's: every preset's ambience its own */
+        for (i = 0; i < NPRESET; i++)
+            proj.amb[i] = AMB_DEF;
+        for (i = 0; i < (int)sizeof proj.rsv; i++)
+            proj.rsv[i] = 0;
+        world_migrate();
     }
     if (n == (int)sizeof proj && project_valid())
         return 0;
@@ -96,7 +109,9 @@ int preset_par(int p, int v)
     case P_ROOM: v += r[R_RM]; break;
     case P_TONE: v += r[R_TO]; break;
     case P_TEXTURE: v = r[R_TX]; break;
-    case P_TEXLVL: v = r[R_AIR]; break;
+    case P_TEXLVL:                               /* the air: the preset's level, by its ambience knob (0..125 %) */
+        v = r[R_AIR] * proj.amb[proj.preset < NPRESET ? proj.preset : 0] * 5 / 100;
+        break;
     case P_TEXMOD: v = r[R_SW]; break;
     case P_SHIMMER: v = r[R_SH]; break;
     default: break;
@@ -126,6 +141,11 @@ int preset_mode(uint32_t r10)
 }
 int preset_tempo(int t) { return t * pv()[R_TM] / 100; }
 int preset_songs(void) { return pv()[R_SG]; }
+int preset_air(int i)
+{
+    const int16_t *r = PRESET[(unsigned)i < NPRESET ? i : 0].v;
+    return r[R_AIR] > 0 ? r[R_TX] : -1;
+}
 int preset_inst(int inst, int level)
 {
     level = level * pv()[R_FI + inst] / 100;

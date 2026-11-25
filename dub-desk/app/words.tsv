@@ -1,0 +1,20 @@
+# DUB DESK's words for the screen reader (fm1-reader): the screen's text <TAB> what to say. "#" a number, "*" a
+# word left out. tools/gen_words.py makes web/words/<id>.json and the link the FM-1 sends. Change a line and a
+# new file is made: keep the old ones (devices in the wild point at them).
+# url: https://ashtonwallen.github.io/fm1-dub-desk/words/
+# "A" is the note: not the article (the reader says a capital A before a word as "a")
+A	A
+Eb	E flat
+Ab	A flat
+Bb	B flat
+C#	C sharp
+F#	F sharp
+BPM	B P M
+1/8	an eighth
+3/16	three sixteenths
+1/4	a quarter
+3/8	three eighths
+5 S	5 seconds
+NOT SAVED FLASH ERROR	not saved: flash error
+KEYS OCTAVE LOWEST	not changed: the keys are at their lowest octave
+KEYS OCTAVE HIGHEST	not changed: the keys are at their highest octave

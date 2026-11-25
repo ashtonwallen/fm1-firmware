@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new tune
+wait 300
+listen
+wait 300
+where
+wait 300
+said Tune page: Tempo 138, Feel 25, Mood Sunny, Melody 70. Style Cigarette Boat, playing
+tap ENV
+wait 400
+said Combo page
+spin K1 -3
+wait 300
+said Guitar 72
+tap EDIT
+wait 300
+said NEXT TUNE
+wait 6000
+said Tune 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY STYLE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said PAUSED
+where
+wait 300
+said Style Cigarette Boat, paused
+speakdump

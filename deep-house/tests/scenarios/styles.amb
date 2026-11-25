@@ -1,0 +1,123 @@
+# every set makes sound: PRESETS steps through all thirteen; each mixes into a record of the new set
+master 4096
+wait 300
+expect style 0
+peakreset
+wait 12000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 1
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 2
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 3
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 4
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot set-4.png
+turn PRESET 1
+wait 300
+expect style 5
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 6
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 7
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 8
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 9
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot set-9.png
+turn PRESET 1
+wait 300
+expect style 10
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 11
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 300
+expect style 12
+wait 40000
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot set-12.png
+expect mixes >5
+# and round again to the first; each set keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+turn K1 -5
+wait 200
+expect par0 65
+turn PRESET 1
+wait 3000
+expect style 1
+expect par0 55
+turn PRESET -1
+wait 3000
+expect style 0
+expect par0 65

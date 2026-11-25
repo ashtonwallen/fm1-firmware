@@ -19,7 +19,7 @@ expect day >25
 expect vowed1 1
 expect par16 7
 expect chron >5
-expect slips1 >0
+expect sung1 >0
 # it starts the office it was at, from the bell
 expect phase 0
 wait 40000

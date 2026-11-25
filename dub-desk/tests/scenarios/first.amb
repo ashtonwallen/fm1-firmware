@@ -1,0 +1,46 @@
+# a first look and listen: it plays from power-on, with no touch; the pages; the help cards
+wav first.wav
+wait 300
+expect playing 1
+expect track 1
+wait 8000
+shot intro.png
+wait 30000
+shot desk.png
+expect beats >20
+expect vu >5
+expect moves >3
+wavstop
+expect peak_db_max -1
+expect peak_db_min -40
+tap ENV
+wait 100
+expect view 1
+shot band.png
+tap GLO
+wait 100
+expect view 2
+shot room.png
+turn SELECT -5 100
+expect view 0
+tap HOME
+wait 100
+expect view 0
+# a throw, a spring crash: on the screen at once
+tap FX
+wait 700
+shot throw.png
+tap LFO
+wait 150
+shot spring.png
+# a help card: hold a button
+press REC
+wait 1200
+expect help 12
+shot help.png
+release REC
+wait 100
+expect repeat 0
+expect help 0
+wait 3000
+shot later.png

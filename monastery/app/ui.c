@@ -7,27 +7,28 @@
  *   PLAY           the choir sings / rests (the world's clock stops while it rests)
  *   EDIT           the bell: the next office, now
  *   REC            HOLD: the note holds, the chapel rings on        OCT- / OCT+   the chant's pace
- *   white keys 1-7 a brother: asleep, he wakes; else he stands to sing the next verse
+ *   white keys 1-7 a brother: he sings the next verse alone (one not in choir this office comes to it)
  *   HOME CHAPEL    ARP BROTHERS    FX SPACE    GLO SETUP          (SELECT steps through them)
  *   KNOB 1-4       the page's four values
  *   PRESETS        the preset (1.1): the chapel's sound (project.c PRESET[]); the brothers and the day go on
- *   SAVE           saves (it also saves by itself, rarely, while nobody sings); held 1.5 s: the sound's defaults */
+ *   SAVE           saves (it also saves by itself, rarely, while nobody sings); held 1.5 s: the sound's defaults
+ *   a button held alone: its help card */
 #include "fastmath.h"
 
 enum { V_CHAPEL, V_BROTHERS, V_SPACE, V_SETUP, NVIEWS };
 static const char *const VIEW_NAME[NVIEWS] = {"Chapel", "Brothers", "Space", "Setup"};
 static const uint8_t VIEW_BTN[NVIEWS] = {B_HOME, B_ARP, B_FX, B_GLO};
-enum { K_LEDS = 100, K_DAY, K_PACE, K_NONE };
+enum { K_LEDS = 100, K_DAY, K_PACE, K_AMB, K_NONE };   /* K_PACE: OCT- / OCT+ */
 static const uint8_t VIEW_KNOB[NVIEWS][4] = {
     {P_PAD, P_BASS, P_BELLS, P_REVERB},
     {K_NONE, K_NONE, K_NONE, K_NONE},
-    {P_ECHO, P_SIZE, P_BRIGHT, K_PACE},
+    {P_ECHO, P_SIZE, P_BRIGHT, K_AMB},
     {K_DAY, P_TUNE, P_MIDI, K_LEDS},
 };
 static const char *const KNOB_LABEL[NVIEWS][4] = {
     {"Voices", "Drone", "Bell", "Reverb"},
     {"", "", "", ""},
-    {"Echo", "Size", "Colour", "Pace"},
+    {"Echo", "Size", "Colour", "Ambience"},
     {"Day", "Tune", "MIDI out", "Lights"},
 };
 static const char *const DAY_NAME[WD_NDAY] = {"30 min", "1 h", "2 h", "4 h", "8 h"};
@@ -55,7 +56,7 @@ static const char *const DAY_NAME[WD_NDAY] = {"30 min", "1 h", "2 h", "4 h", "8 
 #define K_FAINT RGB(78, 72, 70)
 #define K_ACC RGB(228, 178, 84)
 #define K_RED RGB(214, 92, 70)
-#define K_ZZZ RGB(130, 150, 210)
+#define K_ZZZ RGB(130, 150, 210)        /* held */
 #define K_PANEL RGB(44, 40, 50)
 
 static struct {
@@ -66,7 +67,8 @@ static struct {
     uint32_t down_t[NB];
     uint8_t reset_done;
     uint8_t dirty;                     /* the settings changed since the last save */
-    uint32_t act_t, saved_t;
+    uint32_t act_t, saved_t, turn_t;
+    uint8_t help;                      /* a button's card is up: the button + 1 */
     char msg[2][24];
     uint32_t msg_until;
     int8_t touched;
@@ -118,6 +120,8 @@ static int knob_get(int k)
         return proj.daylen;
     if (k == K_PACE)
         return proj.pace;
+    if (k == K_AMB)
+        return proj.amb[proj.preset % NPRESET];
     return 0;
 }
 static void knob_range(int k, int *lo, int *hi)
@@ -127,7 +131,7 @@ static void knob_range(int k, int *lo, int *hi)
         *hi = en_param_info(k)->hi;
     } else {
         *lo = k == K_PACE ? 70 : 0;
-        *hi = k == K_LEDS ? 1 : k == K_DAY ? WD_NDAY - 1 : k == K_PACE ? 140 : 0;
+        *hi = k == K_LEDS ? 1 : k == K_DAY ? WD_NDAY - 1 : k == K_PACE ? 140 : k == K_AMB ? AMB_MAX : 0;
     }
 }
 static char *cat_s(char *b, const char *s)
@@ -150,6 +154,15 @@ static void knob_text(int k, char *b)
     } else if (k == K_PACE) {
         itoa_u((uint32_t)v, b);
         cat_s(b + (v >= 100 ? 3 : 2), "%");
+    } else if (k == K_AMB) {             /* % of the preset's air; a preset without: none */
+        if (!preset_has_air()) {
+            cat_s(b, "None");
+        } else if (!v) {
+            cat_s(b, "Off");
+        } else {
+            itoa_u((uint32_t)v * 5u, b);
+            cat_s(b + (v >= 20 ? 3 : v >= 2 ? 2 : 1), "%");
+        }
     } else {
         b[0] = 0;
     }
@@ -178,6 +191,9 @@ static void knob_set(int k, int v)
             wr.t = (int32_t)((float)wr.t * (float)wr.slot_ms / (float)old);
     } else if (k == K_PACE) {
         proj.pace = (uint8_t)v;
+    } else if (k == K_AMB) {
+        proj.amb[proj.preset % NPRESET] = (uint8_t)v;
+        en_set(P_TEXLVL, preset_par(P_TEXLVL, 0));
     }
     mark_dirty();
 }
@@ -295,7 +311,31 @@ static void midi_in(void)
     }
 }
 
+/* HELP CARDS (AMB-1's, from X0X): hold one button alone for HELP_HOLD and a card says what it does. A key, a turn
+ * or another button puts it away; letting go after its card does nothing else. PLAY acts on its press, and SEL has
+ * no card. */
+#define HELP_HOLD 900u
 #define RESET_HOLD 1500u
+static void help_tick(uint32_t btn, uint32_t keys)
+{
+    uint32_t now = plat_ms();
+    int i;
+    if (ui.help) {
+        uint32_t m = 1u << (ui.help - 1);
+        if (btn != m || keys || (int32_t)(ui.turn_t - ui.down_t[ui.help - 1]) > 0)
+            ui.help = 0;
+        return;
+    }
+    if (!btn || (btn & (btn - 1u)) || keys)
+        return;
+    for (i = 0; i < NB; i++)
+        if (btn == 1u << i && i != B_PLAY && i != B_SEL && !(ui.btn_used & btn) && now - ui.down_t[i] >= HELP_HOLD &&
+            (int32_t)(ui.turn_t - ui.down_t[i]) <= 0) {
+            ui.help = (uint8_t)(i + 1);
+            ui.btn_used |= btn;          /* its release now does nothing */
+        }
+}
+
 static const uint8_t WHITE[16] = PLAT_WHITE_KEYS;
 static void input(void)
 {
@@ -334,11 +374,12 @@ static void input(void)
     plat_enc(EN_ALGO);
     if ((e = plat_enc(EN_PRESET)) != 0) {
         preset_step(e > 0 ? 1 : -1);
-        ui.act_t = plat_ms();
+        ui.act_t = ui.turn_t = plat_ms();
     }
     if ((btn >> B_SAVE & 1u) && !ui.reset_done && plat_ms() - ui.down_t[B_SAVE] > RESET_HOLD) {
         ui.reset_done = 1;
         ui.btn_used |= 1u << B_SAVE;
+        ui.help = 0;
         project_sound_defaults();
         project_apply();
         say("RESET", "THE SOUND");
@@ -349,8 +390,9 @@ static void input(void)
             turn(EN_K1 + (int)i, VIEW_KNOB[ui.view][i], e);
             ui.touched = (int8_t)i;
             ui.touch_until = plat_ms() + 1200u;
-            ui.act_t = plat_ms();
+            ui.act_t = ui.turn_t = plat_ms();
         }
+    help_tick(btn, keys);
 }
 
 /* ------------------------------------------------------------- screen --- */
@@ -593,21 +635,12 @@ static void draw_bell(int32_t cx, int32_t cy, float g)
     cv_rect(cx + sw - 1, cy + 9, 3, 2, K_GOLD);
 }
 
-static void zigzag(int32_t x0, int32_t x1, int32_t y, uint16_t c)   /* the rivals' quarrel */
-{
-    int32_t x, k = 0;
-    for (x = x0; x < x1; x += 4, k++)
-        cv_line(x, y + ((k & 1) ? -2 : 2), x + 4, y + ((k & 1) ? 2 : -2), c);
-}
-
 /* a hooded brother standing in his stall: base the floor of the stall; lit 0..1 (he sings) */
 static void draw_monk(int m, int32_t cx, int32_t base, float lit, uint32_t fr)
 {
-    const monk_t *k = mk(m);
-    int nov = is_novice(m), sleep = wr.asleep[m], old = m == MK_ELDER;
+    int nov = is_novice(m), old = m == MK_ELDER;
     uint16_t robe = nov ? K_NOV : K_ROBE, edge = nov ? K_NOV_E : K_ROBE_E;
-    int32_t hx = cx + (sleep ? 3 : 0), hy = base - 21 + (sleep ? 3 : 0) + (old ? 2 : 0), y;
-    (void)k;
+    int32_t hx = cx, hy = base - 21 + (old ? 2 : 0), y;
     if (lit > 0.02f)
         glow(cx, base - 16, 26, K_GLOW, 0.5f + lit);
     for (y = base - 15; y <= base; y++) {   /* the habit, widening to the floor */
@@ -624,17 +657,11 @@ static void draw_monk(int m, int32_t cx, int32_t base, float lit, uint32_t fr)
     cv_rect(hx - 2, hy + 1, 5, 3, mix(K_FACE, K_FACE_LIT, q16(lit)));
     if (old)                             /* a white beard */
         cv_rect(hx - 1, hy + 4, 3, 2, RGB(200, 200, 196));
-    if (!sleep) {                        /* the book */
-        cv_rect(cx - 5, base - 11, 11, 4, K_WOOD_D);
-        cv_rect(cx - 4, base - 12, 4, 2, RGB(232, 222, 196));
-        cv_rect(cx + 1, base - 12, 4, 2, RGB(232, 222, 196));
-        if (lit > 0.3f)
-            cv_rect(cx - 1, base - 13 - (int32_t)(fr / 4 % 2), 1, 1, K_FLAME);
-    } else {                             /* asleep: z z */
-        int32_t b = (int32_t)(fr / 12 % 3);
-        cv_text(cx + 7, base - 34 - b, &FONT_XS, "z", K_ZZZ);
-        cv_text(cx + 12, base - 42 - b, &FONT_XS, "Z", K_ZZZ);
-    }
+    cv_rect(cx - 5, base - 11, 11, 4, K_WOOD_D);   /* the book */
+    cv_rect(cx - 4, base - 12, 4, 2, RGB(232, 222, 196));
+    cv_rect(cx + 1, base - 12, 4, 2, RGB(232, 222, 196));
+    if (lit > 0.3f)
+        cv_rect(cx - 1, base - 13 - (int32_t)(fr / 4 % 2), 1, 1, K_FLAME);
     if (m == MK_ABBOT) {                 /* the abbot's cross and crozier */
         cv_rect(cx, base - 9, 1, 5, K_GOLD);
         cv_rect(cx - 1, base - 8, 3, 1, K_GOLD);
@@ -642,11 +669,14 @@ static void draw_monk(int m, int32_t cx, int32_t base, float lit, uint32_t fr)
         cv_rect(cx + 10, base - 28, 3, 1, K_GOLD);
         cv_rect(cx + 13, base - 27, 1, 3, K_GOLD);
     }
-    if (wr.monk_cents[m] <= -12) {       /* sinking flat: an arrow down */
-        int32_t x = cx - 13, y0 = base - 28;
-        cv_rect(x, y0, 1, 6, K_ZZZ);
-        cv_rect(x - 1, y0 + 4, 3, 1, K_ZZZ);
-        cv_rect(x, y0 + 6, 1, 1, K_ZZZ);
+    if (wr.monk_slot[m] >= 0 && wr.monk_part[m] != PT_MELODY) {   /* the low part: a held line, or a fifth */
+        int32_t x = cx - 14, y0 = base - 30;
+        if (wr.monk_part[m] == PT_ISON) {
+            cv_rect(x - 2, y0 + 3, 6, 1, K_GOLD);
+        } else {
+            cv_rect(x, y0, 1, 7, K_GOLD);
+            cv_rect(x - 2, y0 + 7, 3, 2, K_GOLD);
+        }
     }
 }
 
@@ -728,18 +758,12 @@ static void draw_chapel(void)
     candle(126, 86, wr.phase == PH_CHANT && en_playing, fr + 7);
     for (i = 0; i < NMONK; i++) {
         int32_t cx = POS_X[MONK_POS[i]], base = ROW_BASE[MONK_ROW[i]];
-        if (mk(i)->here == 1) {
+        if (in_choir(i))                 /* (not in choir this office: his stall empty) */
             draw_monk(i, cx, base, monk_lit(i), fr);
-        } else if (mk(i)->here == 2) {   /* in the infirmary: his stall empty, a small red cross */
-            cv_rect(cx - 1, base - 16, 3, 9, K_RED);
-            cv_rect(cx - 4, base - 13, 9, 3, K_RED);
-        }
     }
-    if (wr.clash_now && here(MK_GREGORY) && here(MK_BERNARD))
-        zigzag(POS_X[MONK_POS[MK_GREGORY]] + 9, POS_X[MONK_POS[MK_BERNARD]] - 9, ROW_BASE[0] - 26, K_RED);
     for (i = 0; i < NMONK; i++) {        /* the names under the stalls */
         int32_t cx = POS_X[MONK_POS[i]], base = ROW_BASE[MONK_ROW[i]];
-        uint16_t c = wr.monk_slot[i] >= 0 ? K_TEXT : mk(i)->here == 1 ? K_DIM : K_FAINT;
+        uint16_t c = wr.monk_slot[i] >= 0 ? K_TEXT : in_choir(i) ? K_DIM : K_FAINT;
         if (mk(i)->here)
             text_c(cx, base + 1, &FONT_XS, MONK_NAME[i], c);
     }
@@ -747,7 +771,7 @@ static void draw_chapel(void)
         text_c(120, 128, &FONT_XS, "held", K_ZZZ);
 }
 
-/* the brothers: a row each, his place, his state, his history */
+/* the brothers: a row each, his place, his part, his history */
 static void monk_state(int i, char *a, char *b)
 {
     const monk_t *k = mk(i);
@@ -757,34 +781,28 @@ static void monk_state(int i, char *a, char *b)
         cat_s(a, i == MK_NEW ? "not yet come" : "gone");
         return;
     }
-    if (k->here == 2) {
-        cat_s(a, "in the infirmary");
-    } else if (i == MK_ABBOT && wr.monk_slot[i] < 0 && !wr.asleep[i]) {
-        cat_s(a, "abbot, leads");
-    } else if (is_novice(i) && wr.monk_slot[i] < 0) {
-        itoa_u(k->skill, n);
-        cat_s(cat_s(cat_s(a, "novice, "), n), "%");
-    } else if (wr.asleep[i]) {
-        cat_s(a, "asleep");
-    } else if (wr.monk_slot[i] >= 0) {
-        cat_s(a, "singing");
+    if (wr.monk_slot[i] >= 0) {
+        cat_s(a, wr.monk_part[i] == PT_ISON ? "holds the ison" : wr.monk_part[i] == PT_ORGANUM ? "sings the fifth"
+                                                                                               : "singing");
+    } else if (!wr.inchoir[i]) {
+        cat_s(cat_s(a, "not at "), OFFICE[proj.world.office].name);
+    } else if (is_novice(i)) {
+        cat_s(a, k->part >= PART_SOLO ? "novice, solo verses" : k->part >= PART_VERSES ? "novice, the verses"
+                                                                                       : "novice, the choruses");
     } else {
         switch (i) {
-        case MK_ELDER: cat_s(a, k->health < 60 ? "elder, frail" : "elder, steady"); break;
-        case MK_GREGORY: case MK_BERNARD:
-            cat_s(cat_s(a, proj.world.peace_days ? "at peace with " : "rival of "),
-                  MONK_NAME[i == MK_GREGORY ? MK_BERNARD : MK_GREGORY]);
-            break;
-        case MK_SLEEPER: cat_s(a, "dozes at Matins"); break;
+        case MK_ABBOT: cat_s(a, "abbot, intones"); break;
+        case MK_ELDER: cat_s(a, "elder, the organum"); break;
+        case MK_GREGORY: case MK_BERNARD: cat_s(a, "cantor"); break;
+        case MK_COLUMBA: cat_s(a, "bass, the ison"); break;
         default: cat_s(a, "took his vows"); break;
         }
     }
     switch (i) {                          /* his history, in one number */
-    case MK_ABBOT: itoa_u(k->sung, n); cat_s(cat_s(b, n), " sung"); break;
-    case MK_ELDER: itoa_u(k->flats, n); cat_s(cat_s(b, n), " flat"); break;
-    case MK_GREGORY: case MK_BERNARD: itoa_u(k->clashes, n); cat_s(cat_s(b, n), " clashes"); break;
-    case MK_SLEEPER: itoa_u(k->naps, n); cat_s(cat_s(b, n), " naps"); break;
-    default: itoa_u(k->slips, n); cat_s(cat_s(b, n), " slips"); break;
+    case MK_ABBOT: itoa_u(k->cantor, n); cat_s(cat_s(b, n), " led"); break;
+    case MK_GREGORY: case MK_BERNARD: itoa_u(k->cantor, n); cat_s(cat_s(b, n), " antiphons"); break;
+    case MK_ELDER: case MK_COLUMBA: itoa_u(k->sung, n); cat_s(cat_s(b, n), " sung"); break;
+    default: itoa_u(k->solos, n); cat_s(cat_s(b, n), " solos"); break;
     }
 }
 static const char *monk_title(int i)
@@ -799,14 +817,14 @@ static void draw_brothers(void)
     for (i = 0; i < NMONK; i++) {
         int32_t y = 2 + i * 20;
         char a[32], b[16];
-        uint16_t c = mk(i)->here == 1 ? K_TEXT : K_FAINT;
+        uint16_t c = in_choir(i) ? K_TEXT : mk(i)->here ? K_DIM : K_FAINT;
         monk_state(i, a, b);
         if (wr.monk_slot[i] >= 0)
             glow(10, y + 8, 9, K_GLOW, 0.8f);
         cv_disc(10, y + 7, 4, is_novice(i) ? K_NOV : K_ROBE_E);   /* a hood */
         cv_disc(10, y + 8, 2, K_HOODIN);
         cv_text(20, y, &FONT_B, MONK_NAME[i], c);
-        cv_text(86, y + 1, &FONT_XS, a, mk(i)->here == 2 ? K_RED : wr.monk_slot[i] >= 0 ? K_ACC : K_DIM);
+        cv_text(86, y + 1, &FONT_XS, a, wr.monk_slot[i] >= 0 ? K_ACC : K_DIM);
         if (mk(i)->here)
             cv_text(236 - text_w(&FONT_XS, b), y + 1, &FONT_XS, b, K_DIM);
         if (i < NMONK - 1)
@@ -814,23 +832,70 @@ static void draw_brothers(void)
     }
 }
 
+/* a button's card (help_tick): its name, then what it does, in the chapel's place. A line starting with a space goes
+ * on from the one before (a screen reader joins them: sp_line) */
+#define HELP_LINES 4
+static const char *const BTN_LABEL[NB] = {"FX", "SEL", "ENV", "LFO", "EDIT", "GLO", "HOME", "SAVE", "ARP", "SEQ",
+                                          "PLAY", "REC", "OCT-", "OCT+"};
+static int help_lines(int b, const char *l[HELP_LINES])
+{
+    int n = 0;
+#define L(t) (l[n++] = (t))
+    switch (b) {
+    case B_HOME: L("THE CHAPEL"); L("VOICES, DRONE, BELL,"); L(" REVERB"); break;
+    case B_ARP: L("THE BROTHERS"); L("WHO SINGS WHAT,"); L(" AND THE CHRONICLE"); break;
+    case B_FX: L("THE SPACE"); L("ECHO, SIZE, COLOUR,"); L(" AMBIENCE: THE RAIN, WIND,"); L(" SEA OR CANDLES"); break;
+    case B_GLO: L("SETUP"); L("DAY LENGTH, TUNE,"); L(" MIDI OUT, LIGHTS"); break;
+    case B_EDIT: L("THE BELL:"); L(" THE NEXT OFFICE, NOW"); break;
+    case B_REC: L("HOLD: THE NOTE HOLDS"); L(" AND THE CHAPEL RINGS ON"); L("AGAIN: LET GO"); break;
+    case B_OCTDN: L("SLOWER CHANT"); L("WITH OCT+, 5 S: UPDATE MODE"); break;
+    case B_OCTUP: L("FASTER CHANT"); L("WITH OCT-, 5 S: UPDATE MODE"); break;
+    case B_SAVE: L("SAVES NOW"); L("KEEP HOLDING: THE SOUND"); L(" BACK TO ITS DEFAULTS"); break;
+    default: break;
+    }
+#undef L
+    return n;
+}
+
+static void draw_help(void)
+{
+    const char *l[HELP_LINES];
+    int n = help_lines(ui.help - 1, l), k;
+    cv_round(16, 8, 208, 128, 6, K_PANEL);
+    cv_round(16, 8, 208, 26, 6, K_GOLD);
+    cv_rect(16, 28, 208, 6, K_GOLD);
+    text_c(120, 12, &FONT_B, BTN_LABEL[ui.help - 1], K_BG);
+    for (k = 0; k < n; k++)
+        text_c(120, 46 + k * 22, &FONT_S, l[k] + (l[k][0] == ' '), K_TEXT);
+}
+
 static void draw_main(void)
 {
     uint32_t h = hash(2166136261u, ui.view | (uint32_t)wr.phase << 4 | (uint32_t)en_frozen << 6 |
-                                       (uint32_t)en_playing << 7 | (uint32_t)wr.clash_now << 8),
+                                       (uint32_t)en_playing << 7),
              i;
     if (ui.frame % 3u)
         return;
+    if (ui.help) {
+        h = hash(0x48454C50u, ui.help);
+        if (h != ui.sig[1]) {
+            ui.sig[1] = h;
+            cv_begin(240, MAIN_H, K_BG);
+            draw_help();
+            cv_blit(0, MAIN_Y);
+        }
+        return;
+    }
     for (i = 0; i < NMONK; i++)
-        h = hash(h, (uint32_t)mk(i)->here | (uint32_t)wr.asleep[i] << 2 | (uint32_t)(wr.monk_slot[i] + 1) << 3 |
-                        (uint32_t)q16(monk_lit((int)i)) << 6 | (uint32_t)(wr.monk_cents[i] <= -12) << 11 |
-                        (uint32_t)mk(i)->vowed << 12);
+        h = hash(h, (uint32_t)mk(i)->here | (uint32_t)wr.inchoir[i] << 2 | (uint32_t)(wr.monk_slot[i] + 1) << 3 |
+                        (uint32_t)q16(monk_lit((int)i)) << 6 | (uint32_t)wr.monk_part[i] << 11 |
+                        (uint32_t)mk(i)->vowed << 13);
     h = hash(h, (uint32_t)q16(en_toll_glow) | (uint32_t)world_minutes() << 8);
     if (ui.view == V_CHAPEL)
-        h = hash(h, ui.frame / 6u);      /* candle flames, the sleeper's z */
+        h = hash(h, ui.frame / 6u);      /* candle flames */
     else
-        h = hash(h, (uint32_t)proj.world.peace_days | (uint32_t)mk(MK_NOVICE)->skill << 8 |
-                        (uint32_t)mk(MK_NEW)->skill << 16 | (uint32_t)proj.world.nchron << 24);
+        h = hash(h, (uint32_t)mk(MK_NOVICE)->part << 8 | (uint32_t)mk(MK_NEW)->part << 16 |
+                        (uint32_t)proj.world.nchron << 24);
     if (h == ui.sig[1])
         return;
     ui.sig[1] = h;
@@ -996,7 +1061,7 @@ static void autosave(void)
 static char sp_buf[ANN_MAX + 1];
 static uint32_t sp_n;
 static struct {
-    uint8_t view, started;
+    uint8_t view, started, help;
     int16_t val[4];
 } sp;
 static void sp_cat(const char *s)
@@ -1042,6 +1107,29 @@ static void sp_page(void)
         sp_knob(ui.view, i);
     }
 }
+/* a help card: its button, then its lines ("FX button. THE SPACE. ECHO, SIZE, COLOUR, AMBIENCE...") */
+static void sp_line(const char *s)
+{
+    char p = sp_n ? sp_buf[sp_n - 1] : 0;
+    if (*s == ' ')                       /* it goes on from the line before */
+        s++;
+    else if (p != ',' && p != ':')
+        sp_cat(".");
+    sp_cat(" ");
+    sp_cat(s);
+}
+static void sp_help(void)
+{
+    const char *l[HELP_LINES];
+    int n = help_lines(ui.help - 1, l), k;
+    sp_n = 0;
+    sp_buf[0] = 0;
+    sp_cat(BTN_LABEL[ui.help - 1]);
+    sp_cat(" button");
+    for (k = 0; k < n; k++)
+        sp_line(l[k]);
+}
+
 static void sp_where(void)
 {
     char c[8], t[8];
@@ -1078,6 +1166,7 @@ static void sp_snap(void)
     for (i = 0; i < 4; i++)
         sp.val[i] = (int16_t)knob_get(VIEW_KNOB[ui.view][i]);
     sp.view = ui.view;
+    sp.help = ui.help;
 }
 static void speak(void)
 {
@@ -1108,6 +1197,14 @@ static void speak(void)
     if (wr.said) {                       /* an event: queued */
         wr.said = 0;
         ann_say(wr.line, 0, 0);
+    }
+    if (ui.help != sp.help) {            /* a help card: at once */
+        sp.help = ui.help;
+        if (ui.help) {
+            sp_help();
+            ann_say(sp_buf, 0, ANN_NOW);
+            return;
+        }
     }
     if (ui.view != sp.view) {
         sp_snap();
@@ -1154,6 +1251,8 @@ static void speak_dump(void)
                     proj.leds = (uint8_t)x;
                 else if (k == K_DAY)
                     proj.daylen = (uint8_t)x;
+                else if (k == K_AMB)
+                    proj.amb[proj.preset % NPRESET] = (uint8_t)x;
                 else
                     proj.pace = (uint8_t)x;
                 sp_n = 0;
@@ -1180,6 +1279,26 @@ static void speak_dump(void)
         }
     for (x = 0; x <= 4; x++)
         sp_print("WHERE", batt_words(x));
+    for (i = 0; i < NB; i++) {               /* the help cards */
+        const char *l[HELP_LINES];
+        uint8_t keep_help = ui.help;
+        if (!help_lines(i, l))
+            continue;
+        ui.help = (uint8_t)(i + 1);
+        sp_help();
+        sp_print("HELP", sp_buf);
+        ui.help = keep_help;
+    }
+    for (i = 0; i < NPRESET; i++) {          /* the Ambience under every preset: none, off, a level */
+        proj.preset = (uint8_t)i;
+        for (x = 0; x <= AMB_MAX; x += AMB_MAX / 2) {
+            proj.amb[i] = (uint8_t)x;
+            sp_n = 0;
+            sp_knob(V_SPACE, 3);
+            sp_print("KNOB", sp_buf);
+        }
+    }
+    proj = keep;
 }
 #endif
 

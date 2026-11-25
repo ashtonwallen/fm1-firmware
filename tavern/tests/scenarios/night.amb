@@ -1,5 +1,5 @@
-# a whole night, the clock at 3x (the music as it is): the regulars come in, tunes come and go, someone
-# leads, last orders, "Time", the last tune, Hugh's air alone, then a new night
+# a whole night, the clock at 3x (the music as it is): the regulars come in, tunes come and go (every note in the
+# key and in the chord), someone leads, last orders, "Time", the last tune, Hugh's air alone, then a new night
 wait 300
 timewarp 3
 wait 240000
@@ -28,7 +28,9 @@ shot late.png
 wait 400000
 expect night 2
 expect tunes >5
-expect mem >0
+expect badev 0
+expect offkey 0
+expect offchord 0
 shot night2.png
 tap ARP
 wait 200

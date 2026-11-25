@@ -3,8 +3,10 @@
  * Copyright (C) 2026 ashtonwallen (MONASTERY) */
 /* MONASTERY's project: one flash object (OBJ_PROJ): the sound's settings and the world (the brothers, the day, the
  * chronicle). A project of another format or another firmware (AMB-1's, AMB-1 Drift's), or none, gives the
- * defaults. Format 1 (1.0) has the same layout (its spare byte, always 0, is now the preset): it is carried over
- * whole, on preset 0, Abbey Chapel, 1.0's sound. Part of the unity build, after app.h. */
+ * defaults. Formats 1 (1.0) and 2 (1.1) have the same layout (1.0's spare byte, always 0, is now the preset; the
+ * room to grow, always 0, now the Ambience per preset): they are carried over, the settings, the preset and the world
+ * kept (world.c world_migrate drops what 1.2 no longer has: the brothers' mistakes and dramas), every preset's
+ * Ambience at 100 %. Part of the unity build, after app.h. */
 project_t proj;
 _Static_assert(sizeof(project_t) <= PLAT_STORE_MAX, "the project fits one store object");
 
@@ -27,6 +29,8 @@ void project_sound_defaults(void)
     for (i = 0; i < P_NSAVED; i++)
         proj.par[i] = SOUND[i];
     proj.pace = 100;
+    for (i = 0; i < NPRESET; i++)
+        proj.amb[i] = AMB_DEF;
 }
 
 void project_defaults(void)
@@ -53,6 +57,10 @@ static int pars_ok(const int16_t *par)
 
 static int project_valid(void)
 {
+    int i;
+    for (i = 0; i < NPRESET; i++)
+        if (proj.amb[i] > AMB_MAX)
+            return 0;
     return proj.magic == PROJ_MAGIC && proj.format == PROJ_FORMAT && pars_ok(proj.par) && proj.leds <= 1 &&
            proj.daylen < WD_NDAY && proj.pace >= 70 && proj.pace <= 140 && proj.preset < NPRESET &&
            world_valid(&proj.world);
@@ -63,9 +71,15 @@ int project_load(void)
     int n;
     memset(&proj, 0, sizeof proj);
     n = plat_store_load(OBJ_PROJ, &proj, sizeof proj);
-    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && proj.format == 1u) {   /* 1.0's: on the first preset */
+    if (n == (int)sizeof proj && proj.magic == PROJ_MAGIC && (proj.format == 1u || proj.format == 2u)) {
+        int i;
+        if (proj.format == 1u)           /* 1.0's: on the first preset */
+            proj.preset = 0;
         proj.format = PROJ_FORMAT;
-        proj.preset = 0;
+        for (i = 0; i < NPRESET; i++)    /* the Ambience as the preset had it */
+            proj.amb[i] = AMB_DEF;
+        memset(proj.rsv, 0, sizeof proj.rsv);
+        world_migrate(&proj.world);
     }
     if (n == (int)sizeof proj && project_valid())
         return 0;
@@ -128,12 +142,20 @@ int preset_par(int p, int v)
     case P_LDDENS: v = r[R_LOFT]; break;
     case P_LDOCT: v = r[R_LOCT]; break;
     case P_TEXTURE: v = r[R_TEX]; break;
-    case P_TEXLVL: v = r[R_AIR]; break;
+    case P_TEXLVL:                       /* the Ambience knob: 0 .. 120 % of the preset's air */
+        v = r[R_AIR] * proj.amb[proj.preset < NPRESET ? proj.preset : 0] * 5 / 100;
+        break;
     case P_TEXMOD: v = r[R_SWAY]; break;
     case P_SHIMMER: v = r[R_SHIM]; break;
     default: break;
     }
     return v < pi->lo ? pi->lo : v > pi->hi ? pi->hi : v;
+}
+int preset_has_air(void) { return pv()[R_AIR] > 0; }
+const char *preset_air_name(void)
+{
+    static const char *const N[4] = {"rain", "wind", "sea", "candles"};
+    return N[pv()[R_TEX] & 3];
 }
 int preset_final(int final) { return final + pv()[R_TR]; }
 int preset_mode(int mode) { return pv()[R_MODE] >= 0 ? pv()[R_MODE] : mode; }

@@ -1,0 +1,31 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new song
+wait 300
+listen
+wait 300
+where
+wait 300
+said Play page: Tempo 150, Energy Lively, Echo 30, Mood Happy. Style Extra Life, playing. Battery full
+where
+wait 300
+said Song 1,
+tap ENV
+wait 400
+said Mix page
+spin K1 -3
+wait 300
+said Pulse 1 72
+tap EDIT
+wait 300
+said Song 2,
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY STYLE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said STOPPED
+where
+wait 300
+said Style Extra Life, stopped
+speakdump

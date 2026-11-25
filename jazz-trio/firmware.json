@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "jazztrio",
+  "name": "JAZZ TRIO",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless jazz piano trio in a small club. Walking bass, brushes, bebop lines.",
+  "description": "JAZZ TRIO turns the M-VAVE FM-1 into a piano trio playing an endless set in a small club. Every tune is new: medium swing, up tempo, ballads, blues, rhythm changes, modal tunes and jazz waltzes on original changes. The trio plays the head, piano solos that build chorus by chorus, sometimes a bass solo or fours with the drums, the head out and an ending; the room applauds and the next tune is counted in. On screen, the view from a table: a spotlight that finds the soloist, a candle, the chord on a chalkboard. Thirteen bands.",
+  "tags": ["generative", "chords", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/jazz-trio",
+  "screenshot": "docs/img/screen-club.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

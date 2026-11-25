@@ -9,7 +9,16 @@
 #include "ui.c"
 
 /* the engine's MIDI out (clock, notes when MIDI out is on): to USB */
-void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2) { plat_midi_out(st >> 4 | st << 8 | d1 << 16 | d2 << 24); }
+#ifdef PLAT_HOST
+void host_note(uint32_t st, uint32_t d1, uint32_t d2);   /* (host.c) every note the band plays, checked and logged */
+#endif
+void en_midi_out(uint32_t st, uint32_t d1, uint32_t d2)
+{
+#ifdef PLAT_HOST
+    host_note(st, d1, d2);
+#endif
+    plat_midi_out(st >> 4 | st << 8 | d1 << 16 | d2 << 24);
+}
 
 /* ---- the contract */
 void app_init(void)

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "bossalounge",
+  "name": "BOSSA LOUNGE",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless bossa nova from a small combo. Nylon guitar, brushes, upright bass, flute or vibes.",
+  "description": "BOSSA LOUNGE turns the M-VAVE FM-1 into a bossa nova combo that never stops. Each tune has its own title, key and form: nylon guitar comping in jazz voicings, brushed drums with a rim click on the clave, an upright bass on root and fifth, and a flute or vibraphone melody. Head, a solo chorus, head out, a soft tag ending, then the next tune. A reel-to-reel turns on the screen under a neon martini glass, with two VU meters and the chord. Fourteen styles, from fast samba to slow ballads; knobs for tempo, feel, mood and melody.",
+  "tags": ["generative", "chords"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/bossa-lounge",
+  "screenshot": "docs/img/screen-lounge.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

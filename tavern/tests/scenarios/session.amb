@@ -1,0 +1,44 @@
+# two nights and a bit, the clock at 2x: nobody plays badly. No event in the words of 1.1's mishaps and quarrels
+# (a string, a refusal, a stand-off, a storm-out, drink), every note the band plays in the tune's key, every backing
+# note in the bar's chord; sets run straight on into new keys, parts are traded; the night builds and winds down;
+# no peak near clipping all the while. What the band played, a bar a line, goes to notes.txt; the Night setting
+wait 300
+timewarp 2
+peakreset
+notelog app/build/scenarios/session/notes.txt
+wait 1200000
+notelog off
+expect night 1
+expect playing_n >0
+expect badev 0
+expect offkey 0
+expect offchord 0
+expect notes >3000
+shot midnight.png
+wait 2900000
+expect night >2
+expect mem >1
+expect segues >0
+expect trades >0
+expect badev 0
+expect logbad 0
+expect offkey 0
+expect offchord 0
+expect xfields 0
+expect peak_db_max -1
+tap ENV
+wait 200
+shot regulars.png
+tap ARP
+wait 200
+shot nights.png
+# Night: how long a night takes, 20 minutes to 2 hours (on the Setup page)
+tap GLO
+wait 100
+turn K4 -6
+wait 200
+expect nightlen 0
+turn K4 9
+wait 200
+expect nightlen 5
+shot setup.png

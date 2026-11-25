@@ -1,0 +1,124 @@
+# every style makes sound: PRESETS steps through all thirteen; each starts a new song within seconds
+master 4096
+wait 300
+expect style 0
+peakreset
+wait 12000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 1
+expect track >1
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 2
+expect track >2
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot thumb-and-pop.png
+turn PRESET 1
+wait 12000
+expect style 3
+expect track >3
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot curly-cord.png
+turn PRESET 1
+wait 12000
+expect style 4
+expect track >4
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 5
+expect track >5
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 6
+expect track >6
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 7
+expect track >7
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot pocket-bell.png
+turn PRESET 1
+wait 12000
+expect style 8
+expect track >8
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 9
+expect track >9
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 10
+expect track >10
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 11
+expect track >11
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 12
+expect track >12
+peakreset
+wait 8000
+expect peak_db_min -40
+expect peak_db_max -1
+shot escalator-kiss.png
+# and round again to the first; each style keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+expect par0 108
+turn K1 -5
+wait 200
+expect par0 103
+turn PRESET 1
+wait 3000
+expect style 1
+expect par0 114
+turn PRESET -1
+wait 3000
+expect style 0
+expect par0 103

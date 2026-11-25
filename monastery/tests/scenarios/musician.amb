@@ -1,0 +1,117 @@
+# a musician's ear over a long run: a whole day (Day length 30 min) under every preset. Every note sung is in the
+# office's mode and in tune; no two voices a second, a tritone or a seventh apart (the ison, a held final like the
+# drone, aside); no mistake of 1.1's kinds happens; none of it clips
+tap GLO
+spin K1 -2
+tap HOME
+wait 2000
+expect preset 0
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 1
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 2
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 3
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 4
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 5
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 6
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 7
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 8
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 9
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 10
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+turn PRESET 1
+expect preset 11
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect offmode 0
+expect offtune 0
+expect clash 0
+expect gone 0
+expect notes >10000
+expect chrongone 0
+expect day >11

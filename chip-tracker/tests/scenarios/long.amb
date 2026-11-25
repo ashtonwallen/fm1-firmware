@@ -1,0 +1,33 @@
+# an evening of it: the peaks stay under -1 dBFS with MASTER full, every knob at its top, then at its bottom
+master 4096
+wait 500
+peakreset
+wait 1800000
+expect peak_db_max -1
+expect songs >6
+spin K1 100
+spin K2 100
+spin K3 100
+spin K4 100
+tap ENV
+spin K1 100
+spin K2 100
+spin K3 100
+spin K4 100
+tap GLO
+spin K1 100
+spin K2 100
+peakreset
+wait 900000
+expect peak_db_max -1
+spin K1 -100
+spin K2 -100
+tap HOME
+spin K1 -200
+spin K2 -100
+spin K3 -100
+spin K4 -100
+peakreset
+wait 600000
+expect peak_db_max -1
+expect peak_db_min -40

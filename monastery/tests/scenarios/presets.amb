@@ -5,12 +5,12 @@
 wait 2000
 days 12
 expect preset 0
-expect format 2
+expect format 3
 expect eff10 82
 expect eff39 0
 expect day 13
 expect vowed1 0
-expect chron 4
+expect chron 3
 # resting: the world holds still while every preset goes by
 tap PLAY
 wait 300
@@ -27,7 +27,7 @@ turn PRESET 1
 expect preset 0
 expect day 13
 expect vowed1 0
-expect chron 4
+expect chron 3
 tap PLAY
 wait 300
 # every preset sings, none clips: from an office's bell, a minute and a half each, the last minute measured
@@ -157,15 +157,15 @@ wait 300
 expect preset 5
 expect day 13
 expect chron >3
-# 1.0's project: format 1, carried over whole on the first preset
+# 1.0's project: format 1, carried over on the first preset (its chronicle of mistakes dropped)
 storev1
 reboot
 wait 300
-expect format 2
+expect format 3
 expect preset 0
 expect day 13
 expect vowed1 0
-expect chron >3
+expect chron 3
 # another firmware's project: the defaults, day 1, the first preset
 storeamb
 reboot

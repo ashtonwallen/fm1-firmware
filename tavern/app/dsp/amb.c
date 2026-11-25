@@ -301,10 +301,21 @@ void en_tune_make(uint16_t seed, int kind, int mode, en_tune_t *t)
         cur = START[p][tg_irand(4)];
         dir = tg_irand(2) ? 1 : -1;
         for (b = 0; b < 4; b++) {
-            if (b == 2 && tg_irand(100) < 40) {       /* the phrase's third bar answers its first */
-                for (e = 0; e < 8; e++)
-                    t->mel[p][2][e] = t->mel[p][0][e];
-                continue;
+            if (b == 2 && tg_irand(100) < 40) {       /* the phrase's third bar answers its first, if its */
+                int fits = 1, last = -100;                /* notes on the beats are tones of the third's chord */
+                for (e = 0; e < t->eighths; e++) {
+                    int v = t->mel[p][0][e];
+                    if (v > -50 && e % t->beat == 0 && !chord_tone(v, pr[2]))
+                        fits = 0;
+                    if (v > -50)
+                        last = v;
+                }
+                if (fits) {
+                    for (e = 0; e < 8; e++)
+                        t->mel[p][2][e] = t->mel[p][0][e];
+                    cur = last > -50 ? last : cur;
+                    continue;
+                }
             }
             cur = tg_bar(t->mel[p][b], rhy(kind, pick_rhy(kind)), cur, pr[b], t->beat, lo, hi, &dir, -100);
         }
@@ -354,7 +365,7 @@ void en_tune_make(uint16_t seed, int kind, int mode, en_tune_t *t)
 }
 
 /* ------------------------------------------------------------ commands --- */
-enum { C_SET, C_PLAY, C_SEED, C_PANIC, C_CLOCK, C_TUNE, C_END, C_INST, C_TWANG };
+enum { C_SET, C_PLAY, C_SEED, C_PANIC, C_CLOCK, C_TUNE, C_END, C_INST, C_NEXTKEY, C_NEXT };
 #define QN 64u
 static uint32_t q[QN];
 static volatile uint32_t q_w, q_r;
@@ -378,18 +389,24 @@ void en_tune(uint16_t seed, int kind, int passes, int harp)
     post(C_TUNE, (kind & 3) | (passes - 1) << 2 | (harp ? 16 : 0), (int)seed);
 }
 void en_end(void) { post(C_END, 0, 0); }
-void en_inst(int inst, int level, int skill)
+void en_inst(int inst, int level)
 {
     level = level < 0 ? 0 : level > 100 ? 100 : level;
-    skill = skill < 0 ? 0 : skill > 100 ? 100 : skill;
-    post(C_INST, inst, level | skill << 8);
+    post(C_INST, inst, level);
 }
-void en_twang(int inst) { post(C_TWANG, inst, 0); }
+void en_next(uint16_t seed, int kind, int passes, int root, int mode, int tempo)
+{
+    passes = passes < 1 ? 1 : passes > 4 ? 4 : passes;
+    post(C_NEXTKEY, (root % 12) | (mode & 7) << 4, tempo);
+    post(C_NEXT, (kind & 3) | (passes - 1) << 2, (int)seed);
+}
 
 /* -------------------------------------------------------------- state --- */
 volatile uint8_t en_playing, en_ext;
 volatile uint8_t en_sess, en_part, en_rep, en_bar, en_pass, en_passes, en_kind;
-volatile uint32_t en_tunes_done;
+volatile uint32_t en_tunes_done, en_segues;
+volatile uint16_t en_keymask, en_chordmask;
+volatile uint8_t en_harp;
 volatile uint8_t en_live;
 volatile float en_glow[EN_NINST];
 volatile uint8_t en_chord_root, en_chord[EN_NPAD], en_mel;
@@ -481,7 +498,7 @@ static const float motion = 0.3f;               /* AMB-1's Motion, fixed: the ec
 static const uint8_t en_frozen = 0;
 
 /* -------------------------------------------------------------- the band --- */
-static uint8_t lvl_req[EN_NINST], lvl[EN_NINST], skill[EN_NINST];   /* asked for; playing (from the bar) */
+static uint8_t lvl_req[EN_NINST], lvl[EN_NINST];   /* asked for; playing (from the phrase) */
 static float ivol[EN_NINST];                     /* each one's gain: its level, times the mix's */
 static float step_len, pulse_left;               /* a sixteenth, in samples; to the next MIDI clock pulse */
 static uint32_t noise = 22222u;
@@ -491,9 +508,9 @@ static float nz(void)                            /* white noise, -1..1 */
     noise = noise * 1664525u + 1013904223u;
     return (float)(int32_t)noise * (1.0f / 2147483648.0f);
 }
-static int32_t slop(int i)                       /* a human hand: later by up to ~15 ms, less with skill */
+static int32_t slop(void)                        /* a human hand: a note up to ~4.5 ms behind the grid, never more */
 {
-    return irand(40 + (100 - skill[i]) * 6);
+    return irand(200);
 }
 
 /* the melody's voices: fiddle (a bowed saw, darkened, vibrato that grows on a held note), whistle (a sine and
@@ -509,10 +526,10 @@ typedef struct {
 } lead_t;
 static lead_t lead[NLEAD];
 
-/* the plucks: harp and lute (and a string's twang), two-operator FM with a quick index fall */
+/* the plucks: harp and lute, two-operator FM with a quick index fall */
 #define NPLUCK 10
 typedef struct {
-    float cph, mph, cinc, minc, amp, adec, idx, idec, att, gl, gr, bend;
+    float cph, mph, cinc, minc, amp, adec, idx, idec, att, gl, gr;
     int32_t wait;
     uint8_t on, note, inst;
 } pluck_t;
@@ -547,14 +564,15 @@ static drum_t drum[2];
 static const float LEAD_PAN[NLEAD] = {-0.25f, 0.3f, 0.0f};
 static const float VOWELS[2][2] = {{730.0f, 1090.0f}, {500.0f, 850.0f}};   /* "ah", "oh" */
 
-static void lead_note(int i, int n, int cut, int32_t wait)   /* n < 0: release */
+static void lead_note(int i, int n, int cut, int32_t wait)   /* n < 0: release; cut >= 0: a cut on that note */
 {
     lead_t *v = &lead[i];
     v->pend = n >= 0 ? 1 : 0;
     if (n >= 0) {
         v->pend_inc = mtof((float)n) * (1.0f / EN_SR);
-        v->pend_cut = (int8_t)cut;
-        v->cut_inc = mtof((float)(n + (n % 12 == 4 || n % 12 == 11 ? 1 : 2))) * (1.0f / EN_SR);
+        v->pend_cut = (int8_t)(cut >= 0);
+        if (cut >= 0)                            /* the cut: the scale's next note up, a flick (28 ms) */
+            v->cut_inc = mtof((float)cut) * (1.0f / EN_SR);
     }
     v->wait = wait > 0 ? wait : 1;
 }
@@ -607,7 +625,6 @@ static pluck_t *pluck(int inst, int n, float vel, int32_t wait, float pan)
     v->inst = (uint8_t)inst;
     v->cph = v->mph = 0.0f;
     v->cinc = mtof((float)n) * (1.0f / EN_SR);
-    v->bend = 1.0f;
     if (inst == I_LUTE) {                        /* gut strings: shorter, a little more bite */
         v->minc = v->cinc * 2.0f;
         t60 = 1.3f - (float)(n - 50) * 0.012f;
@@ -693,6 +710,13 @@ static void drums_wait_step(int32_t k)          /* k samples went by: hits whose
 /* ------------------------------------------------------------ the session --- */
 static en_tune_t tune;
 static int tonic = 62, sb, harp_leads, end_bars, mel_note = -1;
+static struct {                                  /* the next tune of a set, queued (en_next): it follows straight on */
+    uint8_t on, kind, passes, root, mode;
+    uint16_t seed;
+    int16_t tempo;
+} nx;
+static void apply(int p, int v);
+static void sess_start(uint16_t seed, int kind, int passes, int harp);
 static uint8_t box_midi[EN_NPAD];
 
 static int deg_midi(int d)                      /* a scale degree from the tonic: its note */
@@ -712,6 +736,13 @@ static void chord_set(int dg)                   /* the bar's chord: the box's re
     chord_nt = en_chord_tones(pool, par[P_ROOT], dg, chord_pcs);
     if (chord_nt > 3)
         chord_nt = 3;                            /* triads: a session's chords */
+    {
+        uint16_t m = 0;
+        for (i = 0; i < chord_nt; i++)
+            m |= (uint16_t)(1u << chord_pcs[i]);
+        en_chordmask = m;
+        en_chord_root = (uint8_t)chord_pcs[0];
+    }
     for (i = 0; i < EN_NPAD; i++)
         from[i] = (int)(reed[i].target + 0.5f);
     en_voice_lead(from, chord_pcs, chord_nt, to, 53, 72);
@@ -732,7 +763,6 @@ static void chord_set(int dg)                   /* the bar's chord: the box's re
             box_midi[i] = (uint8_t)to[i];
         }
     }
-    en_chord_root = (uint8_t)chord_pcs[0];
 }
 
 /* the backing's patterns, an eighth a slot: the chord's tone (0 root, 1 third, 2 fifth, 3 the octave; +8 low;
@@ -759,7 +789,7 @@ static void strum(int inst, int lo, float vel, int spread)
     int k;
     for (k = 0; k < chord_nt; k++) {
         int n = in_range(chord_pcs[k], lo);
-        pluck(inst, n, vel * (k ? 0.8f : 1.0f), slop(inst) + k * spread, 0.45f);
+        pluck(inst, n, vel * (k ? 0.8f : 1.0f), slop() + k * spread, 0.45f);
     }
 }
 
@@ -784,39 +814,43 @@ static void melody(int e, int v)                /* an eighth of the tune: to the
     if (n >= 0)
         midi(0x90, (uint32_t)n, 90);
     for (i = 0; i < NLEAD; i++) {
-        int m = n;
+        int m = n, up = 0;
         if (!lvl[i])
             continue;
         if (n >= 0 && i == I_WHISTLE && tonic <= 62)
-            m = n + 12;                          /* the whistle an octave up, while that stays sweet */
-        if (n >= 0)
+            up = 12;                             /* the whistle an octave up, while that stays sweet */
+        if (n >= 0) {
+            m = n + up;
             en_glow[i] = 1.0f;
-        lead_note(i, m, n >= 0 && held && (i != I_VOICE) && irand(100) < skill[i] / 3, slop(i) + lilt);
+        }
+        lead_note(i, m, n >= 0 && held && i != I_VOICE && irand(100) < 22 ? deg_midi(v + 1) + up : -1, slop() + lilt);
     }
     if (harp_leads && lvl[I_HARP] && n >= 0)
-        pluck(I_HARP, n + 12 <= 84 ? n + 12 : n, 0.75f, slop(I_HARP) + lilt, 0.1f);
+        pluck(I_HARP, n + 12 <= 84 ? n + 12 : n, 0.75f, slop() + lilt, 0.1f);
 }
 
 static void backing(int e)                      /* an eighth: harp, lute, bass */
 {
     int k = tune.kind, t, b, fifth;
     if (lvl[I_HARP] && !harp_leads && (t = HARP_PAT[k][e]) >= 0)
-        pluck(I_HARP, tone_note(t, t & 8 ? 45 : 57), t & 8 ? 0.7f : 0.5f, slop(I_HARP), -0.45f);
+        pluck(I_HARP, tone_note(t, t & 8 ? 45 : 57), t & 8 ? 0.7f : 0.5f, slop(), -0.45f);
     else if (lvl[I_HARP] && harp_leads && e == 0)
-        pluck(I_HARP, tone_note(0, 43), 0.55f, slop(I_HARP), -0.3f);
+        pluck(I_HARP, tone_note(0, 43), 0.55f, slop(), -0.3f);
     if (lvl[I_LUTE] && (t = LUTE_PAT[k][e]) >= 0) {
         if (t == 9)
             strum(I_LUTE, 55, 0.42f, k == K_AIR ? 2600 : 500);
         else
-            pluck(I_LUTE, tone_note(t == 10 ? 2 : 0, 43), 0.6f, slop(I_LUTE), 0.5f);
+            pluck(I_LUTE, tone_note(t == 10 ? 2 : 0, 43), 0.6f, slop(), 0.5f);
     }
     b = in_range(chord_pcs[0], 36);
-    fifth = b + 7 > 50 ? b - 5 : b + 7;
+    fifth = b + (chord_nt > 2 ? (chord_pcs[2] - chord_pcs[0] + 12) % 12 : 7);   /* the chord's own fifth */
+    if (fifth > 50)
+        fifth -= 12;
     if (lvl[I_BASS]) {
         if (e == 0)
-            bass_pluck(b, 0.9f, slop(I_BASS));
+            bass_pluck(b, 0.9f, slop());
         else if ((k == K_REEL && e == 4) || (k == K_JIG && e == 3))
-            bass_pluck(irand(3) ? fifth : b, 0.7f, slop(I_BASS));
+            bass_pluck(irand(3) ? fifth : b, 0.7f, slop());
     }
 }
 
@@ -827,10 +861,10 @@ static void drums(int s)                        /* a sixteenth: the bodhran */
     if (!lvl[I_DRUM] || k == K_AIR)
         return;
     h = DRUM_PAT[k == K_REEL ? 0 : k == K_JIG ? 1 : 2][s];
-    if (!h || (h == 1 && irand(100) < 25 - skill[I_DRUM] / 5))
-        return;                                  /* a tap or two let go */
+    if (!h)
+        return;
     v = (h == 3 ? 0.9f : h == 2 ? 0.65f : 0.32f) * (0.85f + 0.3f * frand());
-    drum_hit(h == 1 ? 1 : 0, v, slop(I_DRUM) + (s & 2 ? (int32_t)(step_len * 0.15f) : 0));
+    drum_hit(h == 1 ? 1 : 0, v, slop() + (s & 2 ? (int32_t)(step_len * 0.15f) : 0));
 }
 
 static void vols(void)                          /* each one's gain: its level, times the mix's */
@@ -841,12 +875,13 @@ static void vols(void)                          /* each one's gain: its level, t
         ivol[i] = (float)lvl[i] * 0.01f * (i < NLEAD ? l * l : i == I_DRUM ? d * d : b * b);
 }
 
-static void bar_start(void)                     /* a new bar: who plays, the chord */
+static void bar_start(void)                     /* a new bar: who plays (from a phrase's start), the chord */
 {
     int i;
     uint8_t live = 0;
     for (i = 0; i < EN_NINST; i++) {
-        lvl[i] = lvl_req[i];
+        if (en_sess != 1 || !(en_bar & 3))       /* in a tune, players come in and rest only where a phrase begins */
+            lvl[i] = lvl_req[i];
         live |= (uint8_t)((lvl[i] != 0) << i);
     }
     en_live = live;
@@ -872,7 +907,7 @@ static void final_notes(void)
     bar_start();
     for (i = 0; i < NLEAD; i++)
         if (lvl[i])
-            lead_note(i, i == I_WHISTLE && tonic <= 62 ? tonic + 12 : tonic, 0, slop(i));
+            lead_note(i, i == I_WHISTLE && tonic <= 62 ? tonic + 12 : tonic, -1, slop());
     if (lvl[I_HARP])
         strum(I_HARP, 50, 0.6f, 2200);
     if (lvl[I_LUTE])
@@ -928,6 +963,16 @@ static void sess_tick(void)                     /* a sixteenth of the session */
                 if (++en_part >= 2) {
                     en_part = 0;
                     if (++en_pass >= en_passes) {
+                        if (nx.on) {             /* a set: straight into the next tune, its key and tempo */
+                            nx.on = 0;
+                            apply(P_ROOT, nx.root);
+                            apply(P_MODE, nx.mode);
+                            apply(P_TEMPO, nx.tempo);
+                            sess_start(nx.seed, nx.kind, nx.passes, 0);
+                            en_segues++;
+                            en_tunes_done++;
+                            return;
+                        }
                         en_pass = (uint8_t)(en_passes - 1);
                         en_part = 1;
                         en_rep = 1;
@@ -944,25 +989,12 @@ static void sess_start(uint16_t seed, int kind, int passes, int harp)
 {
     en_tune_make(seed, kind, par[P_MODE], &tune);
     harp_leads = harp;
+    en_harp = (uint8_t)harp;
     en_kind = (uint8_t)kind;
     en_passes = (uint8_t)passes;
     en_pass = en_part = en_rep = en_bar = 0;
     sb = 0;
     en_sess = 1;
-}
-
-static void twang(int inst)                     /* a string gives: a bright note falling away, the player out */
-{
-    lvl_req[inst] = lvl[inst] = 0;
-    en_live &= (uint8_t)~(1u << inst);
-    if (inst < NLEAD)
-        lead[inst].gate = 0.0f;
-    {
-        pluck_t *v = pluck(I_LUTE, 81 + irand(6), 0.8f, 0, inst == I_HARP ? -0.4f : 0.3f);
-        v->bend = 0.99998f;                      /* sagging as it goes */
-        v->adec = fm_expf(-6.9f / (0.5f * EN_SR));
-        v->idx *= 3.0f;
-    }
 }
 
 /* ------------------------------------------------------------------ space --- */
@@ -1308,10 +1340,12 @@ static void apply(int p, int v)
         tonic = 60 + v;
         if (tonic > 66)
             tonic -= 12;                         /* the tonic in G3..F#4: a fiddle's home */
+        en_keymask = (uint16_t)(((uint32_t)pool << v | (uint32_t)pool >> (12 - v)) & 0xFFFu);
         break;
     case P_MODE:
         pool = EN_MODE_POOL[v];
         nsteps = en_scale(pool, steps);
+        en_keymask = (uint16_t)(((uint32_t)pool << par[P_ROOT] | (uint32_t)pool >> (12 - par[P_ROOT])) & 0xFFFu);
         break;
     case P_MIDI:
         if (!v)
@@ -1382,11 +1416,11 @@ void en_init(void)
     }
     for (i = 0; i < EN_NINST; i++) {
         lvl[i] = lvl_req[i] = 0;
-        skill[i] = 60;
         en_glow[i] = 0.0f;
     }
     en_sess = 0;
     en_live = 0;
+    nx.on = 0;
     box_gain = box_gate = 0.0f;
     for (i = 0; i < P_NPARAMS; i++)
         apply(i, PARAMS[i].def);
@@ -1477,24 +1511,36 @@ static void drain(void)
             }
             break;
         case C_PANIC: quiet(); break;
-        case C_TUNE: sess_start((uint16_t)(c & 0xFFFFu), a & 3, (a >> 2 & 3) + 1, a >> 4 & 1); break;
+        case C_TUNE:
+            nx.on = 0;
+            sess_start((uint16_t)(c & 0xFFFFu), a & 3, (a >> 2 & 3) + 1, a >> 4 & 1);
+            break;
         case C_END:
+            nx.on = 0;                           /* (closing time: no next tune of a set) */
             if (en_sess == 1)
                 en_passes = (uint8_t)(en_pass + 1);
             break;
         case C_INST:
             if (a < EN_NINST) {
                 lvl_req[a] = (uint8_t)(b & 0xFF);
-                skill[a] = (uint8_t)(b >> 8 & 0x7F);
                 if (en_sess == 0) {              /* between tunes: at once */
                     lvl[a] = lvl_req[a];
                     vols();
                 }
             }
             break;
-        case C_TWANG:
-            if (a < EN_NINST)
-                twang(a);
+        case C_NEXTKEY:
+            nx.root = (uint8_t)(a & 15);
+            nx.mode = (uint8_t)(a >> 4 & 7);
+            nx.tempo = (int16_t)b;
+            break;
+        case C_NEXT:
+            if (en_sess == 1) {
+                nx.seed = (uint16_t)(c & 0xFFFFu);
+                nx.kind = (uint8_t)(a & 3);
+                nx.passes = (uint8_t)((a >> 2 & 3) + 1);
+                nx.on = 1;
+            }
             break;
         }
     }
@@ -1590,8 +1636,6 @@ static void render_plucks(uint32_t n)
         uint32_t j = 0;
         if (!v->on)
             continue;
-        if (v->inst == I_LUTE && !lvl[I_LUTE] && v->note >= 81)
-            g = gb * 0.5f;                       /* a twang: heard whoever it was */
         if (v->wait > 0) {
             if ((uint32_t)v->wait >= n) {
                 v->wait -= (int32_t)n;
@@ -1616,11 +1660,6 @@ static void render_plucks(uint32_t n)
             amp *= v->adec;
             idx *= v->idec;
             att += (1.0f - att) * 0.08f;         /* the pluck: a couple of milliseconds */
-        }
-        if (v->bend != 1.0f) {
-            float b = fm_exp2f((float)n * fm_log2f(v->bend));
-            v->cinc *= b;
-            v->minc *= b;
         }
         v->cph = cph;
         v->mph = mph;

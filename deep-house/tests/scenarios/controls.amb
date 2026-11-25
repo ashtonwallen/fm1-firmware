@@ -1,0 +1,103 @@
+# the controls: the knobs, PLAY, EDIT (the next mix), REC (hold), the keys, the octave, ALGORITHM, SAVE held
+master 4096
+wait 2000
+expect track 1
+# USB audio follows MASTER
+expect usb_audio_full 0
+# the set page's knobs: energy, filter, mix, warmth
+spin K1 10
+spin K2 -10
+spin K3 1
+spin K4 -10
+wait 300
+expect par0 80
+expect par10 -10
+expect par11 2
+expect par1 30
+expect dirty 1
+shot knobs.png
+# the groove page: the tempo follows at once
+tap ENV
+spin K1 2
+wait 3000
+expect par2 124
+expect bpm 124
+# PLAY: the decks stop, silence; again: the set plays on
+tap PLAY
+wait 3000
+expect playing 0
+peakreset
+wait 1500
+expect peak_db_max -60
+shot stopped.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the DJ starts a blend at the next four-bar line; deck B comes in; asked again, nothing more
+tap EDIT
+wait 9000
+expect mixing 1
+expect on1 1
+expect master 0
+tap EDIT
+wait 300
+shot mixing.png
+# Mix at 64 bars: the blend runs about two minutes, then deck B is the set's
+wait 130000
+expect mixing 0
+expect master 1
+expect mixes 1
+expect track 2
+# the keys play along, even stopped
+tap PLAY
+wait 3000
+peakreset
+key 10 down
+wait 300
+key 10 up
+expect peak_db_min -50
+tap OCT+
+wait 50
+expect oct 3
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+wait 50
+expect oct 0
+tap OCT-
+wait 50
+expect oct 0
+tap PLAY
+wait 500
+# REC: hold; the record plays on, no blend, for ten minutes
+tap REC
+wait 100
+expect hold 1
+wait 600000
+expect track 2
+expect mixes 1
+expect mixing 0
+shot hold.png
+tap REC
+wait 100
+expect hold 0
+# the levels page: the bass down to nothing
+tap GLO
+spin K3 -80
+wait 200
+expect par8 0
+# ALGORITHM: the filter, from any page
+spin ALGO -20
+wait 200
+expect par10 -30
+shot filter.png
+# SAVE held: the set back to its recipe (Filter and Mix are the player's)
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 70
+expect par1 40
+expect par8 75
+expect par10 -30

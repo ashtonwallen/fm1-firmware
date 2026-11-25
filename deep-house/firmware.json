@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "deephouse",
+  "name": "DEEP HOUSE DECKS",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless deep house DJ set. Two decks, warm chords, long blends.",
+  "description": "DEEP HOUSE DECKS turns the M-VAVE FM-1 into an endless deep house DJ set. Every record is generated: a minor-key vamp of Rhodes, organ or pad stabs, a rolling bassline locked to a four-on-the-floor kick, offbeat hats, claps and percussion, now and then a lead hook or a chopped vocal stab. Records unfold in 16-bar phrases with a breakdown and a drop. A virtual DJ blends each into the next: bass swapped on the EQ, filter sweeps, the crossfader across, always into a neighbouring key. Two spinning decks and a moving mixer on screen. Thirteen sets, from Loading Bay to Pool Lights.",
+  "tags": ["generative", "groovebox", "chords", "fm"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/deep-house",
+  "screenshot": "docs/img/screen-decks.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

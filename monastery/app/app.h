@@ -20,21 +20,27 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x314E4F4Du           /* "MON1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 2u                   /* 2 (1.1): the preset; a format 1 project (1.0) is carried over whole */
+#define PROJ_FORMAT 3u                   /* 3 (1.2): the ambience per preset, the world without mistakes; formats 1 (1.0)
+                                          * and 2 (1.1) are carried over (project.c project_load) */
 #define P_NSAVED P_PLUCK                 /* the sound's settings saved: AMB-1's (Drift 1.1's are the preset's) */
 #define NPRESET 12
+#define AMB_MAX 24                       /* the Ambience knob: 0 .. 120 % of the preset's air, in 5 % steps */
+#define AMB_DEF 20                       /* 100 %: the preset as it was */
 
 /* the world (world.c): the brothers, the day, the chronicle */
 #define NMONK 7
 #define NCHRON 12
 #define WD_NDAY 5                        /* Day length: 30 min, 1 h, 2 h, 4 h, 8 h */
 typedef struct {
-    uint8_t here;                        /* 0 not (yet) in the community, 1 in choir, 2 in the infirmary */
-    uint8_t skill, health, mood;         /* 0..100 */
-    uint8_t ill_days;                    /* days left in the infirmary */
+    uint8_t here;                        /* 0 not (yet) in the community, 1 in choir (1.1's 2, the infirmary: gone) */
+    uint8_t part;                        /* a novice's part, 0..100: the choruses, the verses (30), a solo (60) */
+    uint8_t stage;                       /* the part he was last given (world.c part_stage) */
+    uint8_t rsv[2];                      /* (1.1: health, mood, days ill) */
     uint8_t vowed;                       /* a novice who took his vows */
-    uint8_t rsv[2];
-    uint16_t days, sung, slips, naps, flats, clashes;   /* his history */
+    uint8_t rsv0[2];
+    uint16_t days, sung;                 /* his history: days here, lines sung */
+    uint16_t solos, cantor;              /* verses sung alone; offices intoned and antiphons led */
+    uint16_t rsv2[2];
 } monk_t;
 typedef struct {
     uint16_t day;
@@ -44,8 +50,7 @@ typedef struct {
     uint32_t seed;                       /* the world's dice */
     uint16_t day;                        /* 1 .. */
     uint8_t office;                      /* the office now (world.c OF_*) */
-    uint8_t rivalry;                     /* Gregory and Bernard, 0..100 */
-    uint8_t peace_days;                  /* they made peace: days left */
+    uint8_t rsv1[2];                     /* (1.1: the rivalry, the peace) */
     uint8_t nchron, chron_w;             /* the chronicle: entries, the next one's place */
     uint8_t rsv;
     monk_t m[NMONK];
@@ -60,7 +65,8 @@ typedef struct {
     uint8_t pace;                        /* the chant's pace, % (70..140) */
     uint8_t preset;                      /* the preset (1.1): project.c PRESET[], 0 Abbey Chapel (1.0's sound) */
     world_t world;
-    uint8_t rsv[16];                     /* room to grow */
+    uint8_t amb[NPRESET];                /* (1.2) the Ambience, per preset: 0..AMB_MAX steps of 5 % of its air */
+    uint8_t rsv[16 - NPRESET];           /* room to grow */
 } project_t;
 
 extern project_t proj;
@@ -82,6 +88,9 @@ void world_key(void);                    /* the office's final and mode to the e
 void world_preset(void);                 /* a new preset: the chant and the voices follow it */
 
 void world_defaults(world_t *w);
+void world_migrate(world_t *w);          /* a 1.0 / 1.1 world to 1.2's */
+int preset_has_air(void);                /* the preset has an ambience (rain, wind, sea, candles) */
+const char *preset_air_name(void);
 int world_valid(const world_t *w);
 void world_init(void);
 void world_tick(void);

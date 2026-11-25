@@ -1,13 +1,13 @@
 # the presets (1.1): PRESETS turns through twelve session styles. Each leans the tunes (kinds, modes, tempo, songs),
 # the band's balance, the room, and puts Drift 1.1's air outside (rain, wind, sea, the fire) and its shimmer; each
 # makes sound and none clips; the regulars and the night are untouched; the preset is saved; 1.0's project (format
-# 1) comes back whole, on the first preset, The Corner
+# 1) and 1.1's (format 2) come back (1.0's on the first preset, The Corner), every ambience at the preset's own level,
+# 1.1's moods, quarrels and mishaps cleared away
 wait 300
 expect preset 0
-expect format 2
+expect format 3
 expect eff12 0
 expect eff4 55
-mood3 -60
 timewarp 3
 wait 240000
 expect night 1
@@ -29,8 +29,7 @@ expect preset 11
 turn PRESET 1
 expect preset 0
 expect night 1
-expect mood3 <-40
-expect aff_0_1 <-60
+expect tunes >0
 tap PLAY
 wait 300
 # every preset plays, none clips: two and a half minutes each (its next tune), the last minute measured
@@ -135,15 +134,43 @@ reboot
 wait 300
 expect preset 4
 expect night 2
-expect aff_0_1 <-60
-# 1.0's project: format 1, carried over whole on the first preset
+expect amb 20
+# 1.0's project: format 1, carried over whole on the first preset, every ambience the preset's own
 storev1
 reboot
 wait 300
-expect format 2
+expect format 3
 expect preset 0
 expect night 2
-expect aff_0_1 <-60
+expect amb7 20
+expect eff13 0
+# 1.1's project: format 2, on its preset; 1.1's moods, quarrels, a string being mended, the memory of it and its
+# events cleared away; the night, the tunes and the other memories kept; the ambience the preset's own
+turn PRESET 7
+tap SAVE
+reboot
+wait 300
+expect preset 7
+expect mem >0
+storev2
+reboot
+wait 300
+expect format 3
+expect preset 7
+expect night 2
+expect tunes >5
+expect mem >0
+expect memx 0
+expect xfields 0
+expect logbad 0
+expect amb 20
+expect amb1 20
+expect eff13 55
+expect state1 1
+shot v11-loaded.png
+wait 20000
+expect sess 1
+expect badev 0
 # another firmware's project: a fresh tavern, the first preset
 storeamb
 reboot

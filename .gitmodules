@@ -55,3 +55,9 @@
 [submodule "chip-tracker/base"]
 	path = chip-tracker/base
 	url = https://github.com/charlesvestal/fm1-base
+[submodule "jazz-trio/base"]
+	path = jazz-trio/base
+	url = https://github.com/charlesvestal/fm1-base
+[submodule "city-pop/base"]
+	path = city-pop/base
+	url = https://github.com/charlesvestal/fm1-base

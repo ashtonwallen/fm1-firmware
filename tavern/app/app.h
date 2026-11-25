@@ -21,9 +21,11 @@
 enum { OBJ_PROJ, OBJ_PANEL, OBJ_NOBJ };
 #define APP_STORE_MAP {0xFC000u, 0xDC000u}
 #define PROJ_MAGIC 0x31564154u           /* "TAV1": another firmware's project (AMB-1's "ENO1") gives the defaults */
-#define PROJ_FORMAT 2u                   /* 2 (1.1): the preset; a format 1 project (1.0) is carried over whole */
+#define PROJ_FORMAT 3u                   /* 3 (1.2): each preset's ambience; formats 1 (1.0) and 2 (1.1) carried over */
 #define P_NSAVED P_TEXTURE               /* the settings saved: 1.0's (Drift 1.1's air and shimmer are the preset's) */
 #define NPRESET 12
+#define AMB_STEPS 25                     /* the ambience knob: 0 (off) .. 25, 5 % a step: 125 % of the preset's air */
+#define AMB_DEF 20                       /* 100 %: the preset's own level */
 
 typedef struct {
     uint32_t magic, format;
@@ -33,7 +35,8 @@ typedef struct {
     uint8_t preset;                      /* the preset (1.1): project.c PRESET[], 0 The Corner (1.0's session) */
     uint8_t rsv0;
     world_t world;                       /* the tavern */
-    uint8_t rsv[16];                     /* room to grow */
+    uint8_t amb[NPRESET];                /* (1.2) each preset's ambience: AMB_STEPS, AMB_DEF its own level */
+    uint8_t rsv[4];                      /* room to grow */
 } project_t;
 typedef char project_fits_its_store[sizeof(project_t) <= 3840 ? 1 : -1];   /* (a saved object: 3840 bytes at most) */
 
@@ -52,6 +55,7 @@ int preset_mode(uint32_t r10);           /* a tune's mode from r10 (0..9): the p
 int preset_tempo(int t);
 int preset_songs(void);                  /* % chance of a song when one may come (1.0: 20) */
 int preset_inst(int inst, int level);    /* an instrument's level in the band, by the preset */
+int preset_air(int i);                   /* the preset's air outside: -1 none, else P_TEXTURE's (0 rain .. 3 fire) */
 
 void ui_init(void);
 void ui_frame(void);

@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "id": "chiptracker",
+  "name": "CHIP TRACKER",
+  "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
+  "license": "MPL-2.0",
+  "tagline": "Endless 8-bit game music, written live in a tracker. Two pulses, triangle, noise.",
+  "description": "CHIP TRACKER turns the M-VAVE FM-1 into an endless 8-bit console soundtrack. Each song is written as real tracker patterns: a hummable lead on a pulse wave, a second pulse echoing, arpeggiating or harmonising, a driving triangle bass and noise drums, through intro, verse, chorus and bridge. After a few loops it ends on a jingle and a new song with a new title starts. The screen is the tracker: four scrolling pattern columns under a cursor bar and four live oscilloscopes. Thirteen styles, from Extra Life to Propeller Keep; knobs for tempo, energy, echo and mood.",
+  "tags": ["generative", "chords", "sequencer"],
+  "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
+  "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/chip-tracker",
+  "screenshot": "docs/img/screen-tracker.png",
+  "hardware": {
+    "models": ["FM-1"],
+    "flash": ["856014", "B36014"],
+    "features": ["usb-audio-in", "screen-reader"]
+  },
+  "credits": "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+}

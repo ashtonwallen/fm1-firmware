@@ -7,14 +7,16 @@
  *   TUNES   generated from a seed in a folk mode (Ionian, Dorian, Mixolydian, Aeolian): two parts, A and B,
  *           eight bars each, each played twice (AABB) with a first and a second ending, the whole 1..4 times.
  *           Four kinds: reel (4/4), jig (6/8), waltz (3/4), air (slow 4/4, long notes).
- *   BAND    eight instruments, each with a level (0: sitting out) and a skill (timing, ornaments):
- *             fiddle, whistle, voice   the melody (heterophony: each its own ornaments and timing)
+ *   BAND    eight instruments, each with a level (0: sitting out); every one plays in time and in tune:
+ *             fiddle, whistle, voice   the melody (heterophony: each its own cuts and a human hand's few ms)
  *             harp                     arpeggios under the tune; in an air it may take the melody itself
  *             lute                     the bar's root and soft strums on the off beats
  *             box                      the bar's chord, held (reeds: AMB-1's formant voices)
  *             bass                     plucked roots and fifths
  *             bodhran                  a soft frame drum on the beats (none in an air)
- *           Levels set while a tune plays take effect on the next bar (a player joins on the bar).
+ *           Levels set while a tune plays take effect where the next phrase begins (bar 1 or 5 of a part):
+ *           a player comes in or rests on a phrase, never inside one. A set: the next tune queued (en_next)
+ *           follows straight on at the end of the last pass, in its own key and tempo.
  *
  * Then AMB-1's space: an Echoplex and a tape loop (quiet here), and Dattorro's plate as the room.
  *
@@ -69,8 +71,9 @@ void en_panic(void);                           /* everything quiet, now */
  * (1..4); harp: the harp plays the melody (an air) */
 void en_tune(uint16_t seed, int kind, int passes, int harp);
 void en_end(void);                             /* the tune ends at the end of this pass's B part (closing time) */
-void en_inst(int inst, int level, int skill);  /* 0..100 each: level 0 sits out (from the next bar) */
-void en_twang(int inst);                       /* a string breaks: out now, with a twang */
+void en_inst(int inst, int level);             /* 0..100: level 0 sits out (from the next phrase) */
+/* a set: the tune to follow this one straight on, at the end of its last pass (en_end or en_tune cancel it) */
+void en_next(uint16_t seed, int kind, int passes, int root, int mode, int tempo);
 /* MIDI clock in (as FoMni): ticks drive the 1/16 grid (6 a step) while they keep coming */
 enum { EN_CLK_TICK, EN_CLK_START, EN_CLK_CONTINUE, EN_CLK_STOP };
 void en_clock(int msg);
@@ -86,6 +89,10 @@ extern volatile uint8_t en_playing, en_ext;
 extern volatile uint8_t en_sess;               /* 0 no tune, 1 a tune playing, 2 its last note ringing */
 extern volatile uint8_t en_part, en_rep, en_bar, en_pass, en_passes, en_kind;   /* where in the tune */
 extern volatile uint32_t en_tunes_done;        /* tunes finished since the start */
+extern volatile uint32_t en_segues;            /* of them, those that went straight into a queued next (a set) */
+extern volatile uint16_t en_keymask;           /* the key now: bit i, pitch class i in the scale (tests) */
+extern volatile uint16_t en_chordmask;         /* the bar's chord: bit i, pitch class i a chord tone (tests) */
+extern volatile uint8_t en_harp;               /* the harp has the melody (tests) */
 extern volatile uint8_t en_live;               /* bit i: instrument i is playing */
 extern volatile float en_glow[EN_NINST];       /* 0..1: instrument i just played a note */
 extern volatile uint8_t en_chord_root;         /* the bar's chord: its root, pitch class */

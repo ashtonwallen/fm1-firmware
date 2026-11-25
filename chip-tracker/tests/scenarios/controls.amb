@@ -1,0 +1,99 @@
+# the controls: the knobs, PLAY, EDIT (next song), REC (repeat), the keys, the octave, ALGORITHM, SAVE held
+master 4096
+wait 2000
+expect song 1
+# the play page's knobs: tempo, energy, echo, mood
+spin K1 -30
+spin K2 -40
+spin K3 20
+wait 300
+expect par0 120
+expect par1 35
+expect par2 50
+expect dirty 1
+shot knobs.png
+# tempo follows at once
+wait 3000
+expect bpm 120
+# the mix page
+tap ENV
+spin K1 -20
+wait 200
+expect par4 55
+# PLAY: silence; again: it plays on
+tap PLAY
+wait 1500
+expect playing 0
+peakreset
+wait 1500
+expect peak_db_max -70
+shot stopped.png
+tap PLAY
+wait 3000
+expect playing 1
+# EDIT: the next song at once
+tap EDIT
+wait 1500
+expect song 2
+expect section 0
+# the keys play along, even stopped
+tap PLAY
+wait 1500
+peakreset
+key 10 down
+wait 300
+key 10 up
+expect peak_db_min -50
+tap OCT+
+wait 50
+expect oct 3
+tap OCT-
+tap OCT-
+tap OCT-
+tap OCT-
+wait 50
+expect oct 0
+tap OCT-
+wait 50
+expect oct 0
+tap OCT+
+tap OCT+
+tap PLAY
+wait 500
+# REC: repeat; the song loops on past its loops
+tap REC
+wait 100
+expect repeat 1
+tap GLO
+spin K3 -5
+wait 200
+expect par10 1
+wait 400000
+expect song 2
+expect loop >1
+shot repeat.png
+# REC again: the song ends on its jingle, the next one starts
+tap REC
+wait 100
+expect repeat 0
+wait 200000
+expect song >2
+# Mood: a turn closes the song on its jingle, the next comes in the new mood
+tap HOME
+wait 100
+spin K4 80
+wait 60000
+expect par3 92
+expect song >3
+# ALGORITHM: tone, from any page
+spin ALGO -20
+wait 200
+expect par9 40
+# SAVE held: the style back to its recipe
+press SAVE
+wait 1800
+release SAVE
+wait 100
+expect par0 150
+expect par3 12
+expect par9 60

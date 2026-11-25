@@ -1,0 +1,23 @@
+# DEEP HOUSE DECKS' build settings (fm1-base's tools/build.py: ./build.sh)
+name = "DEEPHOUSE"             # the build's files: deephouse.fwsc, deephouse-X.Y.fwsc
+id_prefix = "FM-1_95"          # package identity: dev FM-1_9500, releases FM-1_95XXYYZZ
+usb_manufacturer = "DEEP HOUSE DECKS"
+usb_product = "DEEP HOUSE FM-1"   # keeps "FM-1": M-Flasher finds the unit by it
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB (at MASTER's level)
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/house.c"]           # the engine, at -O2
+# the site
+tagline = "Endless deep house DJ set. Two decks, warm chords, long blends."
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/deep-house"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "DEEP HOUSE DECKS turns the M-VAVE FM-1 into an endless deep house DJ set. Every record is generated: a minor-key vamp of Rhodes, organ or pad stabs, a rolling bassline locked to a four-on-the-floor kick, offbeat hats, claps and percussion, now and then a lead hook or a chopped vocal stab. Records unfold in 16-bar phrases with a breakdown and a drop. A virtual DJ blends each into the next: bass swapped on the EQ, filter sweeps, the crossfader across, always into a neighbouring key. Two spinning decks and a moving mixer on screen. Thirteen sets, from Loading Bay to Pool Lights."
+tags = ["generative", "groovebox", "chords", "fm"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/img/screen-decks.png"

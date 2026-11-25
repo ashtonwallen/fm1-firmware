@@ -41,6 +41,7 @@ if command -v emcc >/dev/null 2>&1; then
 else
     echo "  skip emu, app (no emcc)"
 fi
+gunzip -c tests/fixtures/flash-1.1.bin.gz > $OUT/flash-1.1.bin   # 1.1's saved data (scenarios/migrate.amb)
 for s in tests/scenarios/*.amb; do
     n=$(basename "$s" .amb)
     mkdir -p "$B/scenarios/$n"

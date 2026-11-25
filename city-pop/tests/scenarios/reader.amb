@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new song
+wait 300
+listen
+wait 300
+where
+wait 300
+said Drive page: Tempo 108, Sparkle 60, Groove Smooth, Gloss 55. Style Sunroof, playing
+tap ENV
+wait 400
+said Band page
+spin K1 -3
+wait 300
+said Keys 67
+tap EDIT
+wait 300
+said NEXT SONG
+wait 6000
+said Song 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY STYLE
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said PAUSED
+where
+wait 300
+said Style Sunroof, paused
+speakdump

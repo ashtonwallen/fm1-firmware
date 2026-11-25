@@ -1,0 +1,30 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each record the set moves onto
+wait 300
+listen
+wait 300
+where
+wait 300
+said Set page: Energy 70, Filter Open, Mix 32 bars, Warmth 40. Set Loading Bay, playing
+tap ENV
+wait 400
+said Groove page
+spin K1 -3
+wait 300
+said Tempo 119
+tap EDIT
+wait 300
+said NEXT MIX
+wait 75000
+said Deck B, record 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY SET
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said STOPPED
+where
+wait 300
+said Set Loading Bay, stopped
+speakdump

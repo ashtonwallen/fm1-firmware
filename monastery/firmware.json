@@ -5,7 +5,7 @@
   "author": "ashtonwallen (built on AMB-1 by Charles Vestal)",
   "license": "MPL-2.0",
   "tagline": "Monks sing the hours in a stone chapel",
-  "description": "MONASTERY turns the M-VAVE FM-1 into a small monastery that sings the hours by itself. Seven brothers in a stone chapel chant slow modal lines over a drone, side answering side, through a long reverb. A bell marks each office, Matins to Compline, each with its own mode, pace and singers. The brothers have their ways: the novice comes in early or misses his entry and slowly learns, the old brother sinks flat and falls ill now and then, two rivals argue over the pitch, one dozes at Matins. Their histories are kept across power-offs.",
+  "description": "MONASTERY turns the M-VAVE FM-1 into a small monastery that sings the hours by itself. Seven brothers in a stone chapel chant modal psalm tones over a drone, through a long reverb. A bell marks each office, Matins to Compline, each with its own mode, pace and choir. The abbot intones, cantors lead the antiphons and trade verses, the sides of the choir answer each other, the low voices hold the ison or sing organum, and the novice is given more to sing as the days pass. Twelve presets, an Ambience control for the rain, wind or sea. The world is kept across power-offs.",
   "tags": ["ambient", "generative", "game"],
   "install": "https://github.com/ashtonwallen/fm1-firmware/releases",
   "source": "https://github.com/ashtonwallen/fm1-firmware/tree/main/monastery",

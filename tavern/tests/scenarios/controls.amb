@@ -14,16 +14,16 @@ shot paused.png
 tap PLAY
 wait 500
 expect playing 1
-# REC: a round for the house: every glass full
+# REC: a round for the house: every glass full, everyone in
 tap REC
 wait 300
 expect thirst3 0
-expect drinks3 1
+expect rounds 1
 shot round.png
 # again within the hour: Hugh says no
 tap REC
 wait 300
-expect drinks3 1
+expect rounds 1
 # the knobs: the Mix page from any page
 tap FX
 wait 100

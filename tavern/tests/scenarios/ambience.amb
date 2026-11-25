@@ -1,0 +1,379 @@
+# the ambience (1.2): the Room page's fourth knob, named for what is outside (Rain, Wind, Sea, Fire; "Ambience",
+# none, on The Corner). Off up to 125 % of the preset's own air, 100 % by default, kept for each preset and saved.
+# Paused (the band's tails gone), each preset's air sounds at its own level, is silent turned right down (the rainy
+# ones above all), and stays clear of clipping turned right up; the screen reader says it
+wait 300
+listen
+tap PLAY
+wait 300
+expect playing 0
+tap LFO
+wait 500
+said Room page: Reverb 55, Room 55, Tone 50, Ambience None
+expect amb 20
+spin K4 -5
+wait 300
+expect amb 20
+wait 25000
+peakreset
+wait 2000
+expect peak_db_max -100
+shot room-corner.png
+# Highland Pub: rain, 30
+turn PRESET 1
+wait 300
+expect preset 1
+expect amb 20
+expect eff13 30
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+said Rain Off
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 37
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Breton Fest-noz: fire, 20
+turn PRESET 1
+wait 300
+expect preset 2
+expect amb 20
+expect eff13 20
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 25
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Nordic Hall: wind, 35
+turn PRESET 1
+wait 300
+expect preset 3
+expect amb 20
+expect eff13 35
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 43
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Sea Shanty Inn: sea, 50
+turn PRESET 1
+wait 300
+expect preset 4
+expect amb 20
+expect eff13 50
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 62
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Quiet Corner: fire, 30
+turn PRESET 1
+wait 300
+expect preset 5
+expect amb 20
+expect eff13 30
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 37
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Harvest Night: fire, 35
+turn PRESET 1
+wait 300
+expect preset 6
+expect amb 20
+expect eff13 35
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 43
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Rainy Night: rain, 55
+turn PRESET 1
+wait 300
+expect preset 7
+expect amb 20
+expect eff13 55
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+said Rain Off
+expect amb 0
+expect eff13 0
+shot room-rain-off.png
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 68
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+said Rain 100%
+expect amb 20
+# Midwinter: wind, 45
+turn PRESET 1
+wait 300
+expect preset 8
+expect amb 20
+expect eff13 45
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 56
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Wedding Party: fire, 20
+turn PRESET 1
+wait 300
+expect preset 9
+expect amb 20
+expect eff13 20
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 25
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Stone Hall: wind, 20
+turn PRESET 1
+wait 300
+expect preset 10
+expect amb 20
+expect eff13 20
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 25
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# Lock-in: fire, 45
+turn PRESET 1
+wait 300
+expect preset 11
+expect amb 20
+expect eff13 45
+wait 4000
+peakreset
+wait 3000
+expect peak_db_min -70
+expect peak_db_max -10
+spin K4 -30
+wait 500
+expect amb 0
+expect eff13 0
+wait 15000
+peakreset
+wait 2000
+expect peak_db_max -100
+spin K4 30
+wait 500
+expect amb 25
+expect eff13 56
+wait 4000
+peakreset
+wait 4000
+expect peak_db_max -6
+spin K4 -5
+wait 500
+expect amb 20
+# each preset keeps its own: Rainy Night at 30 %, the others as they were; saved
+turn PRESET -4
+wait 300
+expect preset 7
+spin K4 -14
+wait 300
+expect amb 6
+expect eff13 16
+shot room-rain-30.png
+turn PRESET -6
+wait 300
+expect preset 1
+expect amb 20
+expect eff13 30
+tap SAVE
+reboot
+wait 300
+expect preset 1
+expect amb7 6
+expect amb1 20
+expect eff13 30
+turn PRESET 6
+wait 300
+expect eff13 16
