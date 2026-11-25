@@ -301,7 +301,8 @@ def run_app(smoke=False):
     BG, PANEL, FG, DIM, ACC = "#16161a", "#202026", "#e8e6e3", "#9a978f", "#e0a458"
     root = tk.Tk()
     root.title("FM-1 Flasher")
-    root.geometry("980x680")
+    root.geometry("1200x820")
+    root.minsize(1000, 680)
     root.configure(bg=BG)
     style = ttk.Style(root)
     style.theme_use("clam")
@@ -311,6 +312,13 @@ def run_app(smoke=False):
     style.configure("Accent.TButton", background=ACC, foreground="#16161a")
     style.map("Accent.TButton", background=[("active", "#f0b46a"), ("disabled", "#3a3328")])
     style.configure("TCombobox", fieldbackground=PANEL, background=PANEL, foreground=FG, arrowcolor=FG)
+    style.map("TCombobox", fieldbackground=[("readonly", PANEL)], foreground=[("readonly", FG)],
+              selectbackground=[("readonly", PANEL)], selectforeground=[("readonly", FG)])
+    root.option_add("*TCombobox*Listbox.background", PANEL)
+    root.option_add("*TCombobox*Listbox.foreground", FG)
+    style.configure("Vertical.TScrollbar", background="#34343c", troughcolor=PANEL, arrowcolor=DIM, borderwidth=0,
+                    bordercolor=PANEL, lightcolor="#34343c", darkcolor="#34343c", gripcount=0, arrowsize=12)
+    style.map("Vertical.TScrollbar", background=[("active", "#44444e")])
 
     q = queue.Queue()
     busy = {"on": False}
@@ -326,43 +334,62 @@ def run_app(smoke=False):
     body.pack(fill="both", expand=True, padx=16)
     left = tk.Frame(body, bg=BG)
     left.pack(side="left", fill="y")
-    lst = tk.Listbox(left, bg=PANEL, fg=FG, selectbackground=ACC, selectforeground="#16161a", activestyle="none",
-                     borderwidth=0, highlightthickness=0, font=("Segoe UI", 11), width=30)
-    lst.pack(side="top", fill="y", expand=True, pady=4)
     legend = tk.Frame(left, bg=BG)
-    legend.pack(side="top", fill="x")
+    legend.pack(side="bottom", fill="x", pady=(2, 0))
     tk.Label(legend, text="● Yours (Claude or ChatGPT)", bg=BG, fg=OWN_FG, font=("Segoe UI", 9)).pack(side="left")
     tk.Label(legend, text="● Downloaded", bg=BG, fg=FG, font=("Segoe UI", 9)).pack(side="left", padx=(10, 0))
+    lscroll = ttk.Scrollbar(left, orient="vertical")
+    lst = tk.Listbox(left, bg=PANEL, fg=FG, selectbackground=ACC, selectforeground="#16161a", activestyle="none",
+                     borderwidth=0, highlightthickness=0, font=("Segoe UI", 11), width=30,
+                     yscrollcommand=lscroll.set)
+    lscroll.config(command=lst.yview)
+    lscroll.pack(side="right", fill="y", pady=4)
+    lst.pack(side="left", fill="y", expand=True, pady=4)
     right = tk.Frame(body, bg=BG)
-    right.pack(side="left", fill="both", expand=True, padx=(14, 0))
-    title = tk.Label(right, text="", bg=BG, fg=FG, font=("Segoe UI Semibold", 14), anchor="w")
+    right.pack(side="left", fill="both", expand=True, padx=(18, 0))
+    title = tk.Label(right, text="", bg=BG, fg=FG, font=("Segoe UI Semibold", 18), anchor="w")
     title.pack(fill="x")
-    sub = tk.Label(right, text="", bg=BG, fg=ACC, anchor="w")
+    sub = tk.Label(right, text="", bg=BG, fg=ACC, anchor="w", font=("Segoe UI", 11))
     sub.pack(fill="x")
     who = tk.Label(right, text="", bg=BG, fg=DIM, anchor="w")
-    who.pack(fill="x")
-    detail = tk.Text(right, bg=BG, fg=FG, wrap="word", borderwidth=0, highlightthickness=0, height=12,
-                     font=("Segoe UI", 10))
-    detail.pack(fill="both", expand=True, pady=(6, 6))
-    btns = tk.Frame(right, bg=BG)
-    btns.pack(fill="x")
-    b_install = ttk.Button(btns, text="Install this firmware", style="Accent.TButton")
+    who.pack(fill="x", pady=(2, 0))
+    btns = tk.Frame(right, bg=BG)              # what you can do with it, right under its name
+    btns.pack(fill="x", pady=(12, 2))
+    b_install = ttk.Button(btns, text="Install", style="Accent.TButton")
     b_install.pack(side="left")
-    b_mine = ttk.Button(btns, text="Restore my saved version")
+    b_mine = ttk.Button(btns, text="Restore my copy")
     b_mine.pack(side="left", padx=8)
     b_fav = ttk.Button(btns, text="☆ Favourite")
     b_fav.pack(side="left")
-    rest = tk.Frame(right, bg=BG)
-    rest.pack(fill="x", pady=(10, 0))
-    tk.Label(rest, text="Any backup:", bg=BG, fg=DIM).pack(side="left")
+    hint = tk.Label(right, text="", bg=BG, fg=DIM, anchor="w", justify="left", font=("Segoe UI", 9))
+    hint.pack(fill="x", pady=(2, 6))
+    hint.bind("<Configure>", lambda e: hint.config(wraplength=max(200, e.width - 8)))
+    tk.Frame(right, bg=PANEL, height=1).pack(fill="x")
+    detail = tk.Text(right, bg=BG, fg=FG, wrap="word", borderwidth=0, highlightthickness=0, height=12,
+                     font=("Segoe UI", 10), padx=2)
+    dscroll = ttk.Scrollbar(right, orient="vertical", command=detail.yview)
+    detail.config(yscrollcommand=dscroll.set, spacing1=1, spacing3=1)
+    detail.tag_configure("h", font=("Segoe UI Semibold", 11), foreground=ACC, spacing1=10, spacing3=2)
+    detail.tag_configure("sub", font=("Segoe UI Semibold", 10), foreground=FG, spacing1=8, spacing3=1)
+    detail.tag_configure("k", font=("Segoe UI Semibold", 10))
+    detail.tag_configure("item", lmargin1=12, lmargin2=24)
+    detail.tag_configure("dim", foreground=DIM)
+    dscroll.pack(side="right", fill="y", pady=(6, 6))
+    detail.pack(fill="both", expand=True, pady=(6, 6))
+    # the bottom: what the app is doing, and restoring any whole-unit backup (not tied to one firmware)
+    foot = tk.Frame(root, bg=BG)
+    foot.pack(fill="x", padx=16, pady=(6, 0))
+    tk.Label(foot, text="Activity", bg=BG, fg=DIM, font=("Segoe UI Semibold", 9)).pack(side="left")
+    b_restore = ttk.Button(foot, text="Restore")
+    b_restore.pack(side="right")
     backups = list_backups()
-    combo = ttk.Combobox(rest, values=[b[0] for b in backups], state="readonly", width=48)
-    combo.pack(side="left", padx=8)
-    b_restore = ttk.Button(rest, text="Restore")
-    b_restore.pack(side="left")
-    out = tk.Text(root, bg="#0f0f12", fg="#bdbab3", height=11, borderwidth=0, highlightthickness=0,
-                  font=("Cascadia Mono", 9), wrap="word")
-    out.pack(fill="x", padx=16, pady=(8, 14))
+    combo = ttk.Combobox(foot, values=[b[0] for b in backups], state="readonly", width=44)
+    combo.pack(side="right", padx=8)
+    tk.Label(foot, text="Put back a whole-unit backup:", bg=BG, fg=DIM, font=("Segoe UI", 9)).pack(side="right")
+    out = tk.Text(root, bg="#0f0f12", fg="#bdbab3", height=6, borderwidth=0, highlightthickness=0,
+                  font=("Cascadia Mono", 9), wrap="word", padx=8, pady=6)
+    out.pack(fill="x", padx=16, pady=(4, 14))
+    out.insert("end", "Pick a firmware and press Install. Every install backs up the whole FM-1 first.")
 
     def say(text):
         q.put(("log", text))
@@ -416,16 +443,38 @@ def run_app(smoke=False):
         fw = selected()
         if not fw:
             return
-        title.config(text=f"{fw['name']}  {fw['version']}")
+        title.config(text=f"{'★ ' if fw.get('favorite') else ''}{fw['name']}  {fw['version']}")
         sub.config(text=fw.get("kind", ""))
+        b_install.config(text=f"Install {fw['name']} {fw['version']}")
+        b_mine.pack_forget()                 # only when there is a copy of it to go back to
+        if fw.get("backup"):
+            b_mine.pack(side="left", padx=8, before=b_fav)
+            when = re.search(r"(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})", fw["backup"])
+            hint.config(text="Restore my copy: puts back the FM-1 exactly as it was when you last switched away from "
+                             f"{fw['name']}" + (f" ({when[1]}-{when[2]}-{when[3]} {when[4]}:{when[5]})" if when else "")
+                             + ", with your settings and saves.")
+        else:
+            hint.config(text="Installing backs up the whole FM-1 first, so you can always go back.")
         who.config(text=f"{category(fw)}   ·   {MADE_LABEL[made(fw)]}",
                    fg=OWN_FG if made(fw) != "downloaded" else DIM)
         detail.config(state="normal")
         detail.delete("1.0", "end")
-        detail.insert("end", fw["about"] + "\n\nHow to use it\n" + fw["how"]
-                      + "\n\nYour chip: " + fw["chip"] + "\nSound over USB: " + fw.get("usb", "Not stated."))
+        detail.insert("end", fw["about"] + "\n")
+        if fw.get("controls"):               # the full guide: every button, light, page and knob
+            detail.insert("end", "Controls\n", "h")
+            for sec in fw["controls"]:
+                detail.insert("end", sec["title"] + "\n", "sub")
+                for label, text in sec["items"]:
+                    detail.insert("end", label, ("item", "k"))
+                    detail.insert("end", "   " + text + "\n", "item")
+        else:
+            detail.insert("end", "How to use it\n", "h")
+            detail.insert("end", fw["how"] + "\n")
+        detail.insert("end", "Compatibility\n", "h")
+        detail.insert("end", "Your chip: " + fw["chip"] + "\nSound over USB: " + fw.get("usb", "Not stated."), "dim")
+        detail.yview_moveto(0)
         detail.config(state="disabled")
-        b_fav.config(text="★ Favourite" if fw.get("favorite") else "☆ Favourite")
+        b_fav.config(text="★ In favourites" if fw.get("favorite") else "☆ Add to favourites")
         set_buttons()
 
     def set_buttons():
