@@ -1,0 +1,23 @@
+# ORGAN TRIO's build settings (fm1-base's tools/build.py: ./build.sh)
+name = "ORGANTRIO"             # the build's files: organtrio.fwsc, organtrio-X.Y.fwsc
+id_prefix = "FM-1_53"          # package identity: dev FM-1_5300, releases FM-1_53XXYYZZ
+usb_manufacturer = "ORGAN TRIO"
+usb_product = "ORGAN TRIO FM-1"  # keeps "FM-1": M-Flasher finds the unit by it
+ble = false                    # never uses the radio
+usb_audio_in = true            # the music recordable over USB (at MASTER's level)
+usb_audio_out = false
+words = "words.tsv"
+include = ["dsp"]
+o2 = ["dsp/organ.c"]           # the engine, at -O2
+# the site
+tagline = "Endless soul-jazz organ trio. Drawbars, rotating speaker, guitar, drums."
+repo = "https://github.com/ashtonwallen/fm1-firmware/tree/main/organ-trio"
+licence = "MPL-2.0"
+credits = "Built on AMB-1 by Charles Vestal, on fm1-base and felucca-bsp, from Felucca by Leo Kuroshita (Hügelton Instruments)."
+
+# firmware.json, for firmware hubs (fm1-base docs/FIRMWARE-JSON.md)
+author = "ashtonwallen (built on AMB-1 by Charles Vestal)"
+description = "ORGAN TRIO turns the M-VAVE FM-1 into a soul-jazz organ trio playing an endless set: tonewheel organ with drawbars, percussion and a rotating speaker, jazz guitar, drums, the organist's left hand on bass. Every tune is new: greasy medium blues, slow minor blues in 12/8, soul-jazz grooves, gospel ballads with swells, shuffles and swing. Organ and guitar solo and trade fours; the organ builds to a climax with the speaker on fast and the drawbars pulled out. On screen, the drawbars moving and the speaker's horn and drum turning. Thirteen bands."
+tags = ["generative", "arranger", "chords"]
+install = "https://github.com/ashtonwallen/fm1-firmware/releases"
+screenshot = "docs/img/screen-organ.png"

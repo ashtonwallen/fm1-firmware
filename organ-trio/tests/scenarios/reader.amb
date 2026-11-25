@@ -1,0 +1,33 @@
+# the screen reader (fm1-reader, announce.c): the pages, the knobs, the help cards and each new tune
+wait 300
+listen
+wait 300
+where
+wait 300
+said Band page: Tempo Natural, Intensity 55, Room 40, Swing Natural. Band Gravy Boat, playing
+tap ENV
+wait 400
+said Mix page
+spin K1 -3
+wait 300
+said Organ 72
+tap LFO
+wait 400
+said Organ page: Drawbars
+tap EDIT
+wait 300
+said NEXT TUNE
+wait 6000
+said Tune 2
+press SAVE
+wait 1200
+said SAVE button. SAVES EVERY BAND
+release SAVE
+wait 300
+tap PLAY
+wait 300
+said BREAK
+where
+wait 300
+said Band Gravy Boat, on a break
+speakdump

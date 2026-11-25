@@ -1,0 +1,119 @@
+# every band makes sound: PRESETS steps through all thirteen; each starts a new tune within seconds
+master 4096
+wait 300
+expect style 0
+peakreset
+wait 12000
+expect peak_db_min -40
+expect peak_db_max -1
+turn PRESET 1
+wait 12000
+expect style 1
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band1.png
+turn PRESET 1
+wait 12000
+expect style 2
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band2.png
+turn PRESET 1
+wait 12000
+expect style 3
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band3.png
+turn PRESET 1
+wait 12000
+expect style 4
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band4.png
+turn PRESET 1
+wait 12000
+expect style 5
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band5.png
+turn PRESET 1
+wait 12000
+expect style 6
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band6.png
+turn PRESET 1
+wait 12000
+expect style 7
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band7.png
+turn PRESET 1
+wait 12000
+expect style 8
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band8.png
+turn PRESET 1
+wait 12000
+expect style 9
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band9.png
+turn PRESET 1
+wait 12000
+expect style 10
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band10.png
+turn PRESET 1
+wait 12000
+expect style 11
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band11.png
+turn PRESET 1
+wait 12000
+expect style 12
+peakreset
+wait 10000
+expect peak_db_min -40
+expect peak_db_max -1
+shot band12.png
+# and round again to the first; each band keeps its own settings
+turn PRESET 1
+wait 3000
+expect style 0
+turn K2 -5
+wait 200
+expect par1 50
+turn PRESET 1
+wait 3000
+expect style 1
+expect par1 60
+turn PRESET -1
+wait 3000
+expect style 0
+expect par1 50
