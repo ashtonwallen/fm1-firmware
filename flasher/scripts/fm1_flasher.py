@@ -316,6 +316,10 @@ def run_app(smoke=False):
     BG, PANEL, FG, DIM, ACC = "#16161a", "#202026", "#e8e6e3", "#9a978f", "#e0a458"
     root = tk.Tk()
     root.title("FM-1 Flasher")
+    try:
+        root.iconbitmap(default=str(ROOT / "icon.ico"))
+    except Exception:
+        pass
     root.geometry("1200x820")
     root.minsize(1000, 680)
     root.configure(bg=BG)
